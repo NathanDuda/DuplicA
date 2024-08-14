@@ -5,7 +5,6 @@ library(tidyverse)
 
 
 
-
 get_dups_from_OF <- function(OF_dir_path) {
   
   orthogroup_gene_count <- read.delim(paste0(OF_dir_path, "Orthogroups/Orthogroups.GeneCount.tsv"))
@@ -34,13 +33,13 @@ get_dups_from_OF <- function(OF_dir_path) {
   dups <- two_to_ones %>%
     rowwise() %>%
     mutate(duplicate_pair = toString(c_across(2:(n_species + 1))[grep(",", c_across(2:(n_species + 1)))])) %>%
-    select(Orthogroup, duplicate_pair) %>%
+    select(Orthogroup, duplicate_pair, duplicate_pair_species) %>%
     separate(duplicate_pair, into = c("dup_1", "dup_2"), sep = ", ")
   
   return(list(dups = dups, dup_pair_orthologs = two_to_ones))
 }
 
-add_exp_to_dups <- function(exp_path, dups, add_pseudofunc, missing_expr_is_pseudo, set_exp_lower_than_X_to_0) {
+clean_exp_and_pseudo <- function(exp_path, dups, add_pseudofunc, missing_expr_is_pseudo, set_exp_lower_than_X_to_0) {
   all_expression <- read.delim(exp_path, sep = ' ')
   all_expression[all_expression < set_exp_lower_than_X_to_0] <- 0 
   colnames(all_expression)[1] <- 'id'
@@ -68,17 +67,17 @@ add_exp_to_dups <- function(exp_path, dups, add_pseudofunc, missing_expr_is_pseu
       all_expression[is.na(all_expression)] <- 0 
     }
     
-  n_tissues <- (ncol(dups) - 3) / 2
+  n_tissues <- (ncol(dups) - 4) / 2
     
   pseudo <- dups %>%
     rowwise() %>%
-    mutate(pseudo = case_when(sum(across(4:(n_tissues + 3))) == 0 & sum(across((n_tissues + 4):((n_tissues*2) + 3))) == 0 ~ 'pseudo_both',
-                              sum(across(4:(n_tissues + 3))) == 0 ~ 'pseudo_dup_1',
-                              sum(across((n_tissues + 4):((n_tissues*2) + 3))) == 0 ~ 'pseudo_dup_2')) %>%
-    select(Orthogroup, dup_1, dup_2, pseudo)
+    mutate(pseudo = case_when(sum(across(5:(n_tissues + 4))) == 0 & sum(across((n_tissues + 5):((n_tissues*2) + 4))) == 0 ~ 'pseudo_both',
+                              sum(across(5:(n_tissues + 4))) == 0 ~ 'pseudo_dup_1',
+                              sum(across((n_tissues + 5):((n_tissues*2) + 4))) == 0 ~ 'pseudo_dup_2')) %>%
+    select(Orthogroup, pseudo)
   
   
-  return(list(pseudo = pseudo, dups = dups, clean_expression = clean_expression))
+  return(list(pseudo = pseudo, clean_expression = clean_expression))
   }
 }
 
@@ -109,26 +108,31 @@ get_anc_copy <- function(OF_dir_path, dups, dup_pair_orthologs, clean_expression
     closest_species <- names(which.min(distances)) # find the closest species by minimum distance
     
     
-    if (is.null(closest_species)) {return(NA)}
+    if (is.null(closest_species)) {return(list(closest_gene = NA, closest_species = NA))}
     
     # get the ortholog from that species 
     closest_gene <- row[[closest_species]]
     
-    if (exists("closest_gene")) {return(closest_gene)}
-    return(NA)
+    if (exists("closest_gene")) {return(list(closest_gene = closest_gene, 
+                                             closest_species = as.character(closest_species)))}
+    return(list(closest_gene = NA, closest_species = NA))
     
   }
   
   # apply the function to each row of the ortholog table 
   orthologs$ancestral_copy <- NA
+  orthologs$ancestral_species <- NA
   for (row_num in 1:nrow(orthologs)) {
     row <- orthologs[row_num,] 
-    orthologs[row_num, 'ancestral_copy'] <- find_closest_ortholog(row, species = row$duplicate_pair_species, newick_tree)
-    if (exists("closest_gene")) {rm(closest_gene)}
+    out <- find_closest_ortholog(row, species = row$duplicate_pair_species, newick_tree)
+    orthologs[row_num, 'ancestral_copy'] <- out$closest_gene
+    orthologs[row_num, 'ancestral_species'] <- out$closest_species
+    
+    #if (exists("closest_gene")) {rm(closest_gene)}
   }
   
   dups <- orthologs %>%
-    select(Orthogroup, ancestral_copy) %>%
+    select(Orthogroup, ancestral_copy, ancestral_species) %>%
     merge(., dups, by = 'Orthogroup') %>%
     filter(!is.na(ancestral_copy)) # remove duplicates without ancestral copies 
     
@@ -137,89 +141,75 @@ get_anc_copy <- function(OF_dir_path, dups, dup_pair_orthologs, clean_expression
 }
 
 
-
-########
-
-
-OF_dir_path <- 'C:/Users/17735/Downloads/Eight_Species/OrthoFinder_Output/Results_Jan01/'
-exp_path <- 'C:/Users/17735/Downloads/Eight_Species/All_Expression_Data.tsv'
-add_pseudofunc <- TRUE
-missing_expr_is_pseudo <- TRUE # only when add_pseudofunc is TRUE 
-set_exp_lower_than_X_to_0 <- 1 # set default to 1 - ensure numeric 
-
-
-main_CDROM <- function(OF_dir_path, exp_path, add_pseudofunc, missing_expr_is_pseudo, rm_exp_lower_than){
+list_species_pairs <- function(dups_anc) {
   
-  out1 <- get_dups_from_OF(OF_dir_path)
-  dups <- out1$dups
-  dup_pair_orthologs <- out1$dup_pair_orthologs
-
+  dups_anc <- dups_anc %>%
+    mutate(species_pair = paste0(duplicate_pair_species, ancestral_species))
   
-  out2 <- add_exp_to_dups(exp_path, dups, add_pseudofunc, missing_expr_is_pseudo, set_exp_lower_than_X_to_0)
-  dups_exp <- out2$dups
-  clean_expression <- out2$clean_expression
+  species_pair_list <- unique(dups_anc$species_pair)
   
-  dups_anc <- get_anc_copy(OF_dir_path, dups, dup_pair_orthologs, clean_expression)
+  return(species_pair_list)
   
-  get_sc_genes()
-  
-  
-  
-  
-  
-  pseudo <- out2$pseudo
-  
-  return(func)
 }
 
-# allow folder of expression for each species (just combine) (unit test if ncol same)
+
+get_all_sc_genes <- function(OF_dir_path) {
+  orthogroups <- read.delim(paste0(OF_dir_path, "Orthogroups/Orthogroups.tsv"))
+  sc_orthogroups <- read.table("C:/Users/17735/Downloads/Eight_Species/OrthoFinder_Output/Results_Jan01/Orthogroups/Orthogroups_SingleCopyOrthologues.txt", quote="\"", comment.char="")
+  colnames(sc_orthogroups)[1] <- 'sc_og'
+  
+  sc_orthogroups <- orthogroups %>% 
+    filter(Orthogroup %in% sc_orthogroups$sc_og) %>%
+    select(-Orthogroup)
+  
+  return(sc_orthogroups)
+}
+
+get_CDROM_inputs <- function(spec_pair, dups_anc, all_sc_genes, clean_expression) {
+  
+  
+  # get duplicate gene input (CPA columns) and sc gene input (two ortholog columns)
+  dups_for_spec_pair <- dups_anc %>%
+    mutate(species_pair = paste0(duplicate_pair_species, ancestral_species)) %>% 
+    filter(species_pair == spec_pair) 
+  
+  duplicate_pair_species <- dups_for_spec_pair$duplicate_pair_species[1]
+  ancestral_species <- dups_for_spec_pair$ancestral_species[1]
+  
+  sc_for_spec_pair <- all_sc_genes %>%
+    select(all_of(c(duplicate_pair_species, ancestral_species)))
+  
+  dups_for_spec_pair <- dups_for_spec_pair %>%
+    select(dup_1, dup_2, ancestral_copy)
+  
+  # get expression file for the ancestral species 
+  exp_anc_species <- clean_expression %>%
+    filter((id %in% dups_for_spec_pair$ancestral_copy) | 
+           (id %in% sc_for_spec_pair[[2]])) %>%
+    column_to_rownames(var = 'id')
+  
+  # get expression file for the dup species 
+  exp_dup_species <- clean_expression %>%
+    filter((id %in% dups_for_spec_pair$dup_1) | 
+           (id %in% dups_for_spec_pair$dup_2) | 
+           (id %in% sc_for_spec_pair[[1]])) %>%
+    column_to_rownames(var = 'id')
+  
+  
+  return(list(dup_input = dups_for_spec_pair,
+              sc_input = sc_for_spec_pair,
+              exp_1_input = exp_dup_species,
+              exp_2_input = exp_anc_species))
+  
+  
+}
 
 
 
 
-
-#################################################################################
-#' CDROM: Classification of Duplicate gene Retention Mechanisms
-#'
-#' Classification is based on the recently developed phylogenetic approach by Assis and Bachtrog (2013). The method classifies the evolutionary mechanisms
-#' retaining pairs of duplicate genes (conservation, neofunctionalization, subfunctionalization, or specialization) by comparing gene expression profiles of 
-#' duplicate genes in one species to those of their single-copy ancestral genes in a sister species. 
-#'
-#' @param dupFile a tab-separated file containing duplicate gene pairs and their orthologs (three gene IDs per line).
-#' @param singleFile a tab-separated file containing orthologous single-copy genes (two gene IDs per line).
-#' @param exprFile1 a tab-separated file containing gene expression levels for all genes in species 1 (one gene ID and its expression levels per line).
-#' @param exprFile2 a tab-separated file containing gene expression levels for all genes in species 2 (one gene ID and its expression levels per line).
-#' @param out the prefix to be used in the names of the three output files. Defaults to 'out'.
-#' @param PC a logical value indicating whether parent and child copies are separated in dupFile. Defaults to FALSE.
-#' @param Ediv the divergence cutoff to be used in classifications. Defaults to semi-interquartile range of the median (SIQR).
-#' @param useAbsExpr a logical value indicating whether absolute or relative expression values are used for Euclidean distance calculations. Defaults to FALSE.
-#' @param head1 a logical value indicating whether exprFile1 contains the names of its variables as the first line. Defaults to TRUE.
-#' @param head2 a logical value indicating whether exprFile2 contains the names of its variables as the first line. Defaults to TRUE.
-#' @param head3 a logical value indicating whether dupFile contains the names of its variables as the first line. Defaults to TRUE.
-#' @param head4 a logical value indicating whether singleFile contains the names of its variables as the first line. Defaults to TRUE.
-#' @param legend a keyword indicating the position of the legend in the output plot. Options are 'topright' and 'topleft'. Defaults to 'topleft'.
-#' @return A table with the classifications of all duplicate gene pairs.
-#' @return A table with counts of classifications with five Ediv values.
-#' @return A plot showing distributions of all Euclidean distances and the position of Ediv.
-#' @author Brent Perry <brp5173@psu.edu>, Raquel Assis <rassis@psu.edu>
-#' @importFrom grDevices dev.off png
-#' @importFrom graphics abline lines par plot title
-#' @importFrom stats IQR density median quantile sd
-#' @importFrom utils read.table write.table
-#' @examples CDROM(dupFile=system.file("extdata","human_chicken_dups.txt",package="CDROM"),
-#' singleFile=system.file("extdata","human_chicken_singles.txt",package="CDROM"),
-#' exprFile1=system.file("extdata","human_expr.txt",package="CDROM"),
-#' exprFile2=system.file("extdata","chicken_expr.txt",package="CDROM"))
-#' @export
-#' 
-#'
-#' @keywords gene duplication, neofunctionalization, subfunctionalization
-#' @references 
-#' [1] Assis R and Bachtrog D. Neofunctionalization of young duplicate genes in Drosophila. Proc. Natl. Acad. Sci. USA. 110: 17409-17414 (2013). 
-#################################################################################
 
 CDROM <- function(dupFile, singleFile, exprFile1, exprFile2, out = "out", Ediv,  
-                  PC = FALSE, useAbsExpr = FALSE, head1 = TRUE, head2 = TRUE, head3 = TRUE, head4 = TRUE, legend = "topleft") {
+                  PC = FALSE, useAbsExpr = FALSE, legend = "topleft") {
   
   
   ## General checks are made
@@ -241,30 +231,10 @@ CDROM <- function(dupFile, singleFile, exprFile1, exprFile2, out = "out", Ediv,
   
   
   ## Input files are read
-  
-  if (head1 == TRUE) {
-    expr1 <- read.table(exprFile1, row.names = 1, header = TRUE)
-  } else {
-    expr1 <- read.table(exprFile1, row.names = 1, header = FALSE)
-  }
-  
-  if (head2 == TRUE) {
-    expr2 <- read.table(exprFile2, row.names = 1, header = TRUE)
-  } else {
-    expr2 <- read.table(exprFile2, row.names = 1, header = FALSE)
-  }
-  
-  if (head3 == TRUE) {
-    dups <- read.table(dupFile, header = TRUE)
-  } else {
-    dups <- read.table(dupFile, header = FALSE)
-  }
-  
-  if (head4 == TRUE) {
-    singles <- read.table(singleFile, header = TRUE)
-  } else {
-    singles <- read.table(singleFile, header = FALSE)
-  }
+  expr1 <- exprFile1
+  expr2 <- exprFile2
+  dups <- dupFile
+  singles <- singleFile
   
   
   ## Expression data are obtained from expression files
@@ -639,4 +609,64 @@ CDROM <- function(dupFile, singleFile, exprFile1, exprFile2, out = "out", Ediv,
     sink()
   }
 } 
+
+
+
+########
+
+
+OF_dir_path <- 'C:/Users/17735/Downloads/Eight_Species/OrthoFinder_Output/Results_Jan01/'
+exp_path <- 'C:/Users/17735/Downloads/Eight_Species/All_Expression_Data.tsv'
+add_pseudofunc <- TRUE
+missing_expr_is_pseudo <- FALSE # only when add_pseudofunc is TRUE 
+set_exp_lower_than_X_to_0 <- 1 # set default to 1 - ensure numeric 
+# ensure OGs dont repeat
+# rm unecessary objects throughout code 
+# make sure all necessary orthofinder files exist 
+
+main_CDROM <- function(OF_dir_path, exp_path, add_pseudofunc, missing_expr_is_pseudo, rm_exp_lower_than){
+  
+  out1 <- get_dups_from_OF(OF_dir_path)
+  dups <- out1$dups
+  dup_pair_orthologs <- out1$dup_pair_orthologs
+
+  
+  out2 <- clean_exp_and_pseudo(exp_path, dups, add_pseudofunc, missing_expr_is_pseudo, set_exp_lower_than_X_to_0)
+  clean_expression <- out2$clean_expression
+  
+  dups_anc <- get_anc_copy(OF_dir_path, dups, dup_pair_orthologs, clean_expression)
+  
+  
+
+  all_sc_genes <- get_all_sc_genes(OF_dir_path)
+  
+
+  species_pairs <- list_species_pairs(dups_anc)
+  
+  for (spec_pair in species_pairs){
+  
+
+    out3 <- get_CDROM_inputs(spec_pair, dups_anc, all_sc_genes, clean_expression)
+    
+    CDROM(dupFile = out3$dup_input,
+          singleFile = out3$sc_input,
+          exprFile1 = out3$exp_1_input,
+          exprFile2 = out3$exp_2_input)
+    
+    
+    
+  }
+  
+  
+  
+  pseudo <- out2$pseudo
+  
+  return(func)
+}
+
+# allow folder of expression for each species (just combine) (unit test if ncol same)
+# allow only keep duplicates in one species and not the other (or in a couple species) 
+# allow CHILD PARENTAL or NOT 
+
+
 
