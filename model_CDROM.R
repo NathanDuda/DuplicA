@@ -38,6 +38,8 @@ get_dups_from_OF <- function(OF_dir_path) {
   
   return(list(dups = dups, dup_pair_orthologs = two_to_ones))
 }
+# ensure no genes repeat in either column 
+# no repeating gene pairs 
 
 clean_exp_and_pseudo <- function(exp_path, dups, add_pseudofunc, missing_expr_is_pseudo, set_exp_lower_than_X_to_0) {
   all_expression <- read.delim(exp_path, sep = ' ')
@@ -74,11 +76,12 @@ clean_exp_and_pseudo <- function(exp_path, dups, add_pseudofunc, missing_expr_is
     mutate(pseudo = case_when(sum(across(5:(n_tissues + 4))) == 0 & sum(across((n_tissues + 5):((n_tissues*2) + 4))) == 0 ~ 'pseudo_both',
                               sum(across(5:(n_tissues + 4))) == 0 ~ 'pseudo_dup_1',
                               sum(across((n_tissues + 5):((n_tissues*2) + 4))) == 0 ~ 'pseudo_dup_2')) %>%
-    select(Orthogroup, pseudo)
+    select(dup_1, dup_2, pseudo) # add Orthogroup column if genes not unique
   
   
   return(list(pseudo = pseudo, clean_expression = clean_expression))
   }
+ return(list(clean_expression = clean_expression))
 }
 
 library(ape)
@@ -183,6 +186,7 @@ get_CDROM_inputs <- function(spec_pair, dups_anc, all_sc_genes, clean_expression
     select(dup_1, dup_2, ancestral_copy)
   
   # get expression file for the ancestral species 
+  rownames(clean_expression) <- NULL
   exp_anc_species <- clean_expression %>%
     filter((id %in% dups_for_spec_pair$ancestral_copy) | 
            (id %in% sc_for_spec_pair[[2]])) %>%
@@ -207,10 +211,96 @@ get_CDROM_inputs <- function(spec_pair, dups_anc, all_sc_genes, clean_expression
 
 
 
-
-CDROM <- function(dupFile, singleFile, exprFile1, exprFile2, out = "out", Ediv,  
-                  PC = FALSE, useAbsExpr = FALSE, legend = "topleft") {
+# CDROM functions:
+CreatePlot_EuclideanDistanceDensities_NOTPC <- function(densS1S2, densBoth, densPCA, 
+                                                        lowerX, upperX, upperY, Ediv, legend) {
+  par(mar = c(4, 5, 1, 1), cex.axis = 1.4, cex.lab = 2)
+  plot(densS1S2, col = "black", main = "", xlab = "Euclidean Distance", ylab = "", 
+       lwd = 6, mgp = c(3, 1, 0), yaxt = "n", ylim = c(0, upperY), 
+       xlim = c(lowerX, upperX), xaxs = "i", yaxs = "i")
+  lines(densBoth, col = "green3", lwd = 6)
+  lines(densPCA, col = "purple3", lwd = 6)
+  abline(v = Ediv, col = "grey50", lty = 2, lwd = 4)
   
+  if (legend == "topright") {
+    legend("topright", c(expression(italic("E")["S1,S2"]), expression(italic("E")["D1,A"]+italic("E")["D2,A"]),
+                         expression(italic("E")["D1+D2,A"]), paste("Ediv = ",round(Ediv, 4))), 
+           fill = c("black", "green3", "purple3", "grey50"), cex = 2, pt.cex = 1.1)
+  } else {
+    legend("topleft", c(expression(italic("E")["S1,S2"]), expression(italic("E")["D1,A"]+italic("E")["D2,A"]),
+                        expression(italic("E")["D1+D2,A"]), paste("Ediv = ",round(Ediv, 4))), 
+           fill = c("black", "green3", "purple3", "grey50"), cex = 2, pt.cex = 1.1)
+  }
+  
+  title(ylab = "Density", mgp = c(1.6, 1, 0), cex.lab = 2.2)
+}
+CreatePlot_EuclideanDistanceDensities_PC <- function(densS1S2, densCA, densPA, densPCA, 
+                                                     lowerX, upperX, upperY, Ediv, legend) {
+  par(mar = c(4, 5, 1, 1), cex.axis = 1.4, cex.lab = 2)
+  plot(densS1S2, col = "black", main = "", xlab = "Euclidean Distance", ylab = "", 
+       lwd = 6, mgp = c(3, 1, 0), yaxt = "n", ylim = c(0, upperY), 
+       xlim = c(lowerX, upperX), xaxs = "i", yaxs = "i")
+  lines(densCA, col = "red", lwd = 6)
+  lines(densPA, col = "blue3", lwd = 6)
+  lines(densPCA, col = "purple3", lwd = 6)
+  abline(v = Ediv, col = "grey50", lty = 2, lwd = 4)
+  
+  if (legend == "topright") {
+    legend("topright", c(expression(italic("E")["S1,S2"]), expression(italic("E")["C,A"]), 
+                         expression(italic("E")["P,A"]), expression(italic("E")["P+C,A"]), 
+                         paste("Ediv = ",round(Ediv, 4))), 
+           fill = c("black", "red", "blue3", "purple3", "grey50"), cex = 2, pt.cex = 1.1)
+  } else {
+    legend("topleft", c(expression(italic("E")["S1,S2"]), expression(italic("E")["C,A"]), 
+                        expression(italic("E")["P,A"]), expression(italic("E")["P+C,A"]), 
+                        paste("Ediv = ",round(Ediv, 4))), 
+           fill = c("black", "red", "blue3", "purple3", "grey50"), cex = 2, pt.cex = 1.1)
+  }
+  
+  title(ylab = "Density", mgp = c(1.6, 1, 0), cex.lab = 2.2)
+}
+# change so the plot does not appear when generating 
+CreatePlot_ClassificationCross <- function(classes, PC, Ediv) {
+  
+  if(PC == FALSE){
+    ClassificationCross <- classes %>%
+      filter(Classification != 'NA') %>% # remove pseudo if exists because unplottable 
+      mutate(`E_D1,A` = as.numeric(`E_D1,A`),
+             `E_D2,A` = as.numeric(`E_D2,A`)) %>%
+    
+      ggplot(aes(x = `E_D2,A`, color = Classification, y = `E_D1,A`)) +
+        geom_point() +
+        theme_bw() +
+        geom_hline(yintercept = Ediv, linewidth = 1) +
+        geom_vline(xintercept = Ediv, linewidth = 1) +
+        geom_point(aes(x = Ediv, y = Ediv), color = "gray", fill = 'gray', size = 3, shape = 21)
+    
+    return(ClassificationCross)
+  }
+  
+  if(PC == FALSE){
+    ClassificationCross <- classes %>%
+      filter(Classification != 'NA') %>% # remove pseudo if exists because unplottable 
+      mutate(`E_C,A` = as.numeric(`E_C,A`),
+             `E_P,A` = as.numeric(`E_P,A`)) %>%
+      
+      ggplot(aes(x = `E_P,A`, color = Classification, y = `E_C,A`)) +
+        geom_point() +
+        theme_bw() +
+        geom_hline(yintercept = Ediv, linewidth = 1) +
+        geom_vline(xintercept = Ediv, linewidth = 1) +
+        geom_point(aes(x = Ediv, y = Ediv), color = "gray", fill = 'gray', size = 3, shape = 21)
+    
+    return(ClassificationCross)
+  }
+  
+  
+}
+CDROM <- function(dupFile, singleFile, exprFile1, exprFile2, out = "out", Ediv,  
+                  PC = FALSE, useAbsExpr = FALSE, legend = "topleft", 
+                  PlotEuclideanDistanceDensities = TRUE, PlotClassificationCross = TRUE) {
+  
+  out <- list()
   
   ## General checks are made
   
@@ -264,47 +354,31 @@ CDROM <- function(dupFile, singleFile, exprFile1, exprFile2, out = "out", Ediv,
   exprPC <- exprP + exprC
   
   if (useAbsExpr == FALSE) {
-    
-    ## Relative expression values are calculated 
-    
-    relP <- exprP / rowSums(exprP)
-    relC <- exprC / rowSums(exprC)
-    relA <- exprA / rowSums(exprA)
-    relPC <- exprPC / rowSums(exprPC)
-    relS1 <- exprS1 / rowSums(exprS1)
-    relS2 <- exprS2 / rowSums(exprS2)
-    
-    ## Euclidean distances are calculated
-    
-    eucPA <- (rowSums((relP - relA) ^ 2)) ^ (1/2)
-    eucCA <- (rowSums((relC - relA) ^ 2)) ^ (1/2)
-    eucPCA <- (rowSums((relPC - relA) ^ 2)) ^ (1/2)
-    eucS1S2 <- (rowSums((relS1 - relS2) ^ 2)) ^ (1/2)
+    ## Relative expression values are calculated
+    exprP <- exprP / rowSums(exprP)
+    exprC <- exprC / rowSums(exprC)
+    exprA <- exprA / rowSums(exprA)
+    exprPC <- exprPC / rowSums(exprPC)
+    exprS1 <- exprS1 / rowSums(exprS1)
+    exprS2 <- exprS2 / rowSums(exprS2)
   }
   
-  if (useAbsExpr == TRUE) {
-    
-    ## Euclidean distances are calculated
-    
+  ## Euclidean distances are calculated
     eucPA <- (rowSums((exprP - exprA) ^ 2)) ^ (1/2)
     eucCA <- (rowSums((exprC - exprA) ^ 2)) ^ (1/2)
     eucPCA <- (rowSums((exprPC - exprA) ^ 2)) ^ (1/2)
     eucS1S2 <- (rowSums((exprS1 - exprS2) ^ 2)) ^ (1/2)
-  }
   
   ## Ediv is calculated 
-  
   if (missing(Ediv)) {
     SIQR <- (IQR(eucS1S2, na.rm = TRUE) / 2)
-    Ediv <- median(eucS1S2, na.rm = TRUE) + SIQR
-  } else {
-    Ediv
-    if (Ediv < 0) 
-      stop("'Ediv' must be greater than or equal to zero\n")
+    Ediv <- median(eucS1S2, na.rm = TRUE) + SIQR} 
+    else {
+      Ediv
+      if (Ediv < 0) stop("'Ediv' must be greater than or equal to zero\n")
   }
   
   ## Classifications are made
-  
   eucDists <- data.frame((eucPA), (eucCA), (eucPCA))
   eucDists <- replace(eucDists, is.na(eucDists), "NA")
   
@@ -326,61 +400,50 @@ CDROM <- function(dupFile, singleFile, exprFile1, exprFile2, out = "out", Ediv,
     
     ## Densities of Euclidian distances are plotted 
     
-    densS1S2 <- density(eucS1S2, na.rm = TRUE)
-    Ymax_S1S2 <- max(densS1S2$y)
-    Xmax_S1S2 <- max(densS1S2$x)
-    Xmin_S1S2 <- min(densS1S2$x)
-    
-    densBoth <- density(c(eucCA, eucPA), na.rm = TRUE)
-    Ymax_Both <- max(densBoth$y)
-    Xmax_Both <- max(densBoth$x)
-    Xmin_Both <- min(densBoth$x)
-    
-    densPCA <- density(eucPCA, na.rm = TRUE)
-    Ymax_PCA <- max(densPCA$y)
-    Xmax_PCA <- max(densPCA$x)
-    Xmin_PCA <- min(densPCA$x)
-    
-    Ymax <- max(Ymax_S1S2, Ymax_Both, Ymax_PCA)
-    Xmax <- max(Xmax_S1S2, Xmax_Both, Xmax_PCA)
-    Xmin <- min(Xmin_S1S2, Xmin_Both, Xmin_PCA)
-    
-    Yrange <- (Ymax - 0)
-    Xrange <- (Xmax - Xmin)
-    
-    if (useAbsExpr == FALSE) {
-      upperY <- (Ymax + (0.05 * Yrange))
-      lowerX <- (Xmin - (0.02 * Xrange))
-      upperX <- (Xmax + (0.02 * Xrange))
+    if (PlotEuclideanDistanceDensities == TRUE) {
+      densS1S2 <- density(eucS1S2, na.rm = TRUE)
+      Ymax_S1S2 <- max(densS1S2$y)
+      Xmax_S1S2 <- max(densS1S2$x)
+      Xmin_S1S2 <- min(densS1S2$x)
+      
+      densBoth <- density(c(eucCA, eucPA), na.rm = TRUE)
+      Ymax_Both <- max(densBoth$y)
+      Xmax_Both <- max(densBoth$x)
+      Xmin_Both <- min(densBoth$x)
+      
+      densPCA <- density(eucPCA, na.rm = TRUE)
+      Ymax_PCA <- max(densPCA$y)
+      Xmax_PCA <- max(densPCA$x)
+      Xmin_PCA <- min(densPCA$x)
+      
+      Ymax <- max(Ymax_S1S2, Ymax_Both, Ymax_PCA)
+      Xmax <- max(Xmax_S1S2, Xmax_Both, Xmax_PCA)
+      Xmin <- min(Xmin_S1S2, Xmin_Both, Xmin_PCA)
+      
+      Yrange <- (Ymax - 0)
+      Xrange <- (Xmax - Xmin)
+      
+      if (useAbsExpr == FALSE) {
+        upperY <- (Ymax + (0.05 * Yrange))
+        lowerX <- (Xmin - (0.02 * Xrange))
+        upperX <- (Xmax + (0.02 * Xrange))
+      }
+      
+      if (useAbsExpr == TRUE) {
+        upperY <- (Ymax + (0.05 * Yrange))			
+        upperX <- (20 * IQR(eucS1S2, na.rm = TRUE))
+        lowerX <- -IQR(eucS1S2, na.rm = TRUE)
+      }
+      
+      
+      
+      
+      CreatePlot_EuclideanDistanceDensities_NOTPC(densS1S2, densBoth, densPCA, 
+                                                  lowerX, upperX, upperY, Ediv, legend)
+      
+      out[['EuclideanDistanceDensities']] <- recordPlot()
+
     }
-    
-    if (useAbsExpr == TRUE) {
-      upperY <- (Ymax + (0.05 * Yrange))			
-      upperX <- (20 * IQR(eucS1S2, na.rm = TRUE))
-      lowerX <- -IQR(eucS1S2, na.rm = TRUE)
-    }
-    
-    png(filename = paste0(out, ".png"), width = 700, height = 700)
-    par(mar = c(4, 5, 1, 1), cex.axis = 1.4, cex.lab = 2)
-    plot(densS1S2, col = "black", main = "", xlab = "Euclidean Distance", ylab = "", 
-         lwd = 6, mgp = c(3, 1, 0), yaxt = "n", ylim = c(0, upperY), 
-         xlim = c(lowerX, upperX), xaxs = "i", yaxs = "i")
-    lines(densBoth, col = "green3", lwd = 6)
-    lines(densPCA, col = "purple3", lwd = 6)
-    abline(v = Ediv, col = "grey50", lty = 2, lwd = 4)
-    
-    if (legend == "topright") {
-      legend("topright", c(expression(italic("E")["S1,S2"]), expression(italic("E")["D1,A"]+italic("E")["D2,A"]),
-                           expression(italic("E")["D1+D2,A"]), paste("Ediv = ",round(Ediv, 4))), 
-             fill = c("black", "green3", "purple3", "grey50"), cex = 2, pt.cex = 1.1)
-    } else {
-      legend("topleft", c(expression(italic("E")["S1,S2"]), expression(italic("E")["D1,A"]+italic("E")["D2,A"]),
-                          expression(italic("E")["D1+D2,A"]), paste("Ediv = ",round(Ediv, 4))), 
-             fill = c("black", "green3", "purple3", "grey50"), cex = 2, pt.cex = 1.1)
-    }
-    
-    title(ylab = "Density", mgp = c(1.6, 1, 0), cex.lab = 2.2)
-    dev.off()
     
     
     ## Output file1 is written
@@ -389,9 +452,8 @@ CDROM <- function(dupFile, singleFile, exprFile1, exprFile2, out = "out", Ediv,
     rownames(classes) <- NULL
     colnames(classes) <- c("Dup1", "Dup2", "Ancestor", "E_D1,A", "E_D2,A", 
                            "E_D1+D2,A", "Classification")
-    sink(paste0(out, "1.txt"))
-    write.table(classes, quote = FALSE, sep = "\t", row.names = FALSE)
-    sink()
+    
+    out[['classes']] <- classes
     
     
     ## Five E_div values are calculated
@@ -450,9 +512,8 @@ CDROM <- function(dupFile, singleFile, exprFile1, exprFile2, out = "out", Ediv,
     total[is.na(total)] <- 0
     totalOrdered <- total[match(c("meanSD","mean2SD","medSIQR","medIQR","quant75"), total[[1]]),]
     
-    sink(paste0(out, "2.txt"))
-    write.table(totalOrdered, quote = FALSE, sep = "\t", row.names = FALSE)
-    sink()
+    out[['EDiv_values']] <- totalOrdered
+    
     
   }
   
@@ -474,67 +535,59 @@ CDROM <- function(dupFile, singleFile, exprFile1, exprFile2, out = "out", Ediv,
     
     ## Densities of Euclidian distances are plotted 
     
-    densS1S2 <- density(eucS1S2, na.rm = TRUE)
-    Ymax_S1S2 <- max(densS1S2$y)
-    Xmax_S1S2 <- max(densS1S2$x)
-    Xmin_S1S2 <- min(densS1S2$x)
     
-    densCA <- density(eucCA, na.rm = TRUE)
-    Ymax_CA <- max(densCA$y)
-    Xmax_CA <- max(densCA$x)
-    Xmin_CA <- min(densCA$x)
-    
-    densPA <- density(eucPA, na.rm = TRUE)
-    Ymax_PA <- max(densPA$y)
-    Xmax_PA <- max(densPA$x)
-    Xmin_PA <- min(densPA$x)
-    
-    densPCA <- density(eucPCA, na.rm = TRUE)
-    Ymax_PCA <- max(densPCA$y)
-    Xmax_PCA <- max(densPCA$x)
-    Xmin_PCA <- min(densPCA$x)
-    
-    Ymax <- max(Ymax_S1S2, Ymax_CA, Ymax_PA, Ymax_PCA)
-    Xmax <- max(Xmax_S1S2, Xmax_CA, Xmax_PA, Xmax_PCA)
-    Xmin <- min(Xmin_S1S2, Xmin_CA, Xmin_PA, Xmin_PCA)
-    
-    Yrange <- (Ymax - 0)
-    Xrange <- (Xmax - Xmin)
-    
-    if (useAbsExpr == FALSE) {
-      upperY <- (Ymax + (0.05 * Yrange))
-      lowerX <- (Xmin - (0.02 * Xrange))
-      upperX <- (Xmax + (0.02 * Xrange))
+    if (PlotEuclideanDistanceDensities == TRUE) {
+      
+      densS1S2 <- density(eucS1S2, na.rm = TRUE)
+      Ymax_S1S2 <- max(densS1S2$y)
+      Xmax_S1S2 <- max(densS1S2$x)
+      Xmin_S1S2 <- min(densS1S2$x)
+      
+      densCA <- density(eucCA, na.rm = TRUE)
+      Ymax_CA <- max(densCA$y)
+      Xmax_CA <- max(densCA$x)
+      Xmin_CA <- min(densCA$x)
+      
+      densPA <- density(eucPA, na.rm = TRUE)
+      Ymax_PA <- max(densPA$y)
+      Xmax_PA <- max(densPA$x)
+      Xmin_PA <- min(densPA$x)
+      
+      densPCA <- density(eucPCA, na.rm = TRUE)
+      Ymax_PCA <- max(densPCA$y)
+      Xmax_PCA <- max(densPCA$x)
+      Xmin_PCA <- min(densPCA$x)
+      
+      Ymax <- max(Ymax_S1S2, Ymax_CA, Ymax_PA, Ymax_PCA)
+      Xmax <- max(Xmax_S1S2, Xmax_CA, Xmax_PA, Xmax_PCA)
+      Xmin <- min(Xmin_S1S2, Xmin_CA, Xmin_PA, Xmin_PCA)
+      
+      Yrange <- (Ymax - 0)
+      Xrange <- (Xmax - Xmin)
+      
+      if (useAbsExpr == FALSE) {
+        upperY <- (Ymax + (0.05 * Yrange))
+        lowerX <- (Xmin - (0.02 * Xrange))
+        upperX <- (Xmax + (0.02 * Xrange))
+      }
+      
+      if (useAbsExpr == TRUE) {
+        upperY <- (Ymax + (0.05 * Yrange))			
+        upperX <- (20 * IQR(eucS1S2, na.rm = TRUE))
+        lowerX <- -IQR(eucS1S2, na.rm = TRUE)
+      }
+      
+      
+      
+      
+      CreatePlot_EuclideanDistanceDensities_PC(densS1S2, densCA, densPA, densPCA,
+                                               lowerX, upperX, upperY, Ediv, legend)
+      
+      out[['EuclideanDistanceDensities']] <- recordPlot()
+      
+      
+      
     }
-    
-    if (useAbsExpr == TRUE) {
-      upperY <- (Ymax + (0.05 * Yrange))			
-      upperX <- (20 * IQR(eucS1S2, na.rm = TRUE))
-      lowerX <- -IQR(eucS1S2, na.rm = TRUE)
-    }
-    
-    png(filename = paste0(out, ".png"), width = 700, height = 700)
-    par(mar = c(4, 5, 1, 1), cex.axis = 1.4, cex.lab = 2)
-    plot(densS1S2, col = "black", main = "", xlab = "Euclidean Distance", ylab = "", 
-         lwd = 6, mgp = c(3, 1, 0), yaxt = "n", ylim = c(0, upperY), 
-         xlim = c(lowerX, upperX), xaxs = "i", yaxs = "i")
-    lines(densCA, col = "red", lwd = 6)
-    lines(densPA, col = "blue3", lwd = 6)
-    lines(densPCA, col = "purple3", lwd = 6)
-    abline(v = Ediv, col = "grey50", lty = 2, lwd = 4)
-    
-    if (legend == "topright") {
-      legend("topright", c(expression(italic("E")["S1,S2"]), expression(italic("E")["C,A"]), 
-                           expression(italic("E")["P,A"]), expression(italic("E")["P+C,A"]), paste("Ediv = ",round(Ediv, 4))), 
-             fill = c("black", "red", "blue3", "purple3", "grey50"), cex = 2, pt.cex = 1.1)
-    } else {
-      legend("topleft", c(expression(italic("E")["S1,S2"]), expression(italic("E")["C,A"]), 
-                          expression(italic("E")["P,A"]), expression(italic("E")["P+C,A"]), paste("Ediv = ",round(Ediv, 4))), 
-             fill = c("black", "red", "blue3", "purple3", "grey50"), cex = 2, pt.cex = 1.1)
-    }
-    
-    title(ylab = "Density", mgp = c(1.6, 1, 0), cex.lab = 2.2)
-    dev.off()
     
     
     ## Output file1 is written
@@ -543,9 +596,8 @@ CDROM <- function(dupFile, singleFile, exprFile1, exprFile2, out = "out", Ediv,
     rownames(classes) <- NULL
     colnames(classes) <- c("Parent", "Child", "Ancestor", "E_P,A", "E_C,A", 
                            "E_P+C,A", "Classification")
-    sink(paste0(out, "1.txt"))
-    write.table(classes, quote = FALSE, sep = "\t", row.names = FALSE)
-    sink()
+    out[['classes']] <- classes
+    
     
     
     ## Five E_div values are calculated
@@ -598,18 +650,42 @@ CDROM <- function(dupFile, singleFile, exprFile1, exprFile2, out = "out", Ediv,
     
     names(idDF)[1] <- "Ediv"
     
-    total <- merge(idDF,classDF,by="Ediv")
+    total <- merge(idDF, classDF, by = "Ediv")
     colnames(total) <- c("E_div","Value","Conservation","Neofunctionalization(Parent)",
                          "Neofunctionalization(Child)","Subfunctionalization","Specialization")
     total[is.na(total)] <- 0
     totalOrdered <- total[match(c("meanSD","mean2SD","medSIQR","medIQR","quant75"), total[[1]]),]
     
-    sink(paste0(out, "2.txt"))
-    write.table(totalOrdered, quote = FALSE, sep = "\t", row.names = FALSE)
-    sink()
+    out[['EDiv_values']] <- totalOrdered
+    
   }
+  
+  
+  if (PlotClassificationCross == TRUE){
+    out[['ClassificationCross']] <- CreatePlot_ClassificationCross(out$classes, PC, Ediv)
+  }
+  
+  return(out)
 } 
 
+####
+
+
+add_pseudo_to_func <- function(all_func, pseudo) {
+  
+  all_func <- all_func %>%
+    left_join(., pseudo, by = c('dup_1', 'dup_2')) %>%
+    mutate(func = gsub('NA', NA, func),
+           func = coalesce(func, pseudo)) %>%
+    select(-pseudo)
+    
+  return(all_func)
+  
+}
+
+CreatePlot_FuncPie <- function(all_func){
+  
+}
 
 
 ########
@@ -643,30 +719,51 @@ main_CDROM <- function(OF_dir_path, exp_path, add_pseudofunc, missing_expr_is_ps
 
   species_pairs <- list_species_pairs(dups_anc)
   
+  
+  all_func <- data.frame()
   for (spec_pair in species_pairs){
   
 
     out3 <- get_CDROM_inputs(spec_pair, dups_anc, all_sc_genes, clean_expression)
+    dups_spec_pair <- out3$dup_input
     
-    CDROM(dupFile = out3$dup_input,
-          singleFile = out3$sc_input,
-          exprFile1 = out3$exp_1_input,
-          exprFile2 = out3$exp_2_input)
+    out4 <- CDROM(dupFile = out3$dup_input,
+                  singleFile = out3$sc_input,
+                  exprFile1 = out3$exp_1_input,
+                  exprFile2 = out3$exp_2_input)
     
     
+    out4$EDiv_values
+    out4$EuclideanDistanceDensities
+    out4$ClassificationCross
     
+
+    func <- out4$classes %>%
+      select(dup_1 = Dup1, dup_2 = Dup2, ancestral_copy = Ancestor, func = Classification) %>%
+      left_join(dups_spec_pair, ., by = c('dup_1', 'dup_2', 'ancestral_copy'))
+    
+    all_func <- rbind(all_func, func)
+  }
+  
+  if (add_pseudofunc == TRUE) {
+    pseudo <- out2$pseudo
+    all_func <- add_pseudo_to_func(all_func, pseudo)
   }
   
   
+  CreatePlot_FuncPie(all_func)
   
-  pseudo <- out2$pseudo
   
-  return(func)
+  
+  
+  return()
 }
 
 # allow folder of expression for each species (just combine) (unit test if ncol same)
 # allow only keep duplicates in one species and not the other (or in a couple species) 
 # allow CHILD PARENTAL or NOT 
 
+# allow custom colors for each func 
 
+# when custom input (not orthofinder) force separate files for each species 
 
