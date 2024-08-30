@@ -719,12 +719,12 @@ CreatePlot_FuncPie <- function(all_func){
 ########
 
 
-OF_dir_path <- 'C:/Users/17735/Downloads/Eight_Species/OrthoFinder_Output/Results_Jan01/'
-exp_path <- 'C:/Users/17735/Downloads/Eight_Species/All_Expression_Data.tsv'
-add_pseudofunc <- TRUE
-missing_expr_is_pseudo <- FALSE # only when add_pseudofunc is TRUE 
-set_exp_lower_than_X_to_0 <- 1 # set default to 1 - ensure numeric 
-PC <- T 
+#OF_dir_path <- 'C:/Users/17735/Downloads/Eight_Species/OrthoFinder_Output/Results_Jan01/'
+#exp_path <- 'C:/Users/17735/Downloads/Eight_Species/All_Expression_Data.tsv'
+#add_pseudofunc <- TRUE
+#missing_expr_is_pseudo <- FALSE # only when add_pseudofunc is TRUE 
+#set_exp_lower_than_X_to_0 <- 1 # set default to 1 - ensure numeric 
+#PC <- T 
 # MAKE SURE first column is p (dup_1) then c then a 
 # ensure OGs dont repeat
 # rm unecessary objects throughout code 
@@ -799,10 +799,9 @@ main_CDROM <- function(OF_dir_path, exp_path, add_pseudofunc, missing_expr_is_ps
 
 
 
-
 args <- commandArgs(trailingOnly = TRUE)
-#main_CDROM(OF_dir_path, exp_path, add_pseudofunc, missing_expr_is_pseudo, rm_exp_lower_than)
 main_CDROM(args[1], args[2], args[3], args[4], args[5])
+
 
 
 
