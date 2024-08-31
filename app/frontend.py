@@ -13,7 +13,7 @@ def create_model_page(parent_frame, model_name, description, param_vars, run_com
     # Modify button to select files or directories based on parameter type
     for param_name, (param_type, var) in param_vars.items():
         if param_type == "file":
-            tk.Button(page_frame, text=f"Browse {param_name}", command=lambda p=param_name: select_file(var, p)).pack(pady=5)
+            tk.Button(page_frame, text=f"Browse {param_name}", command=lambda p=param_name: var.set(select_file(var, p))).pack(pady=5)
             tk.Label(page_frame, textvariable=var, text="No file selected").pack(pady=5)
         elif param_type == "directory":
             tk.Button(page_frame, text=f"Browse {param_name}", command=lambda p=param_name: select_directory(var, p)).pack(pady=5)
@@ -24,8 +24,8 @@ def create_model_page(parent_frame, model_name, description, param_vars, run_com
     # Add parameter inputs
     for param_name, (param_type, options) in param_vars.items():
         if param_type == "numeric":
-            tk.Label(page_frame, text=f"{param_name}:").pack(pady=5)
-            tk.Entry(page_frame, textvariable=options).pack(pady=5)
+            tk.Label(page_frame, text=f"{param_name}:", font=('Arial', 15)).pack(pady=5)
+            tk.Entry(page_frame, textvariable=options).pack(pady=5, padx = 300)
         elif param_type == "option":
             tk.Label(page_frame, text=f"{param_name}:").pack(pady=5)
             tk.OptionMenu(page_frame, options[0], *options[1]).pack(pady=5)
@@ -49,9 +49,10 @@ def create_model_listbox(side_pane, model_names, on_select):
     return model_listbox
 
 def select_file(var, param_name):
-    file_path = filedialog.askopenfilename(title=f"Select {param_name}")
+    file_path = filedialog.askopenfilename(title=f"Seleeeect {param_name}")
     if file_path:
         var.set(file_path)
+    return(var)
         
 def select_directory(var, param_name):
     directory_path = filedialog.askdirectory(title=f"Select {param_name}")
