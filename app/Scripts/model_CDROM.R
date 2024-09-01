@@ -145,10 +145,14 @@ get_anc_copy <- function(OF_dir_path, dups, dup_pair_orthologs, clean_expression
 }
 
 
-list_species_pairs <- function(dups_anc) {
+list_species_pairs <- function(dups_anc, min_dups_per_species_pair) {
   
   dups_anc <- dups_anc %>%
-    mutate(species_pair = paste0(duplicate_pair_species, ancestral_species))
+    mutate(species_pair = paste0(duplicate_pair_species, ancestral_species)) %>%
+    group_by(species_pair) %>%
+    mutate(n = n()) %>%
+    filter(n >= min_dups_per_species_pair)
+  
   
   species_pair_list <- unique(dups_anc$species_pair)
   
@@ -730,7 +734,7 @@ CreatePlot_FuncPie <- function(all_func){
 # rm unecessary objects throughout code 
 # make sure all necessary orthofinder files exist 
 
-main_CDROM <- function(exp_path, OF_dir_path, add_pseudofunc, missing_expr_is_pseudo, rm_exp_lower_than, PC){
+main_CDROM <- function(exp_path, OF_dir_path, add_pseudofunc, missing_expr_is_pseudo, rm_exp_lower_than, PC, min_dups_per_species_pair){
   
   OF_dir_path <- paste0(OF_dir_path, '/')
   
@@ -749,7 +753,7 @@ main_CDROM <- function(exp_path, OF_dir_path, add_pseudofunc, missing_expr_is_ps
   all_sc_genes <- get_all_sc_genes(OF_dir_path)
   
 
-  species_pairs <- list_species_pairs(dups_anc)
+  species_pairs <- list_species_pairs(dups_anc, min_dups_per_species_pair)
   
   
   all_func <- data.frame()
@@ -773,7 +777,7 @@ main_CDROM <- function(exp_path, OF_dir_path, add_pseudofunc, missing_expr_is_ps
     if (PC == F) {
       func <- out4$classes %>%
       select(dup_1 = Dup1, dup_2 = Dup2, ancestral_copy = Ancestor, func = Classification) %>%
-      left_join(dups_spec_pair, ., by = c('parent', 'child', 'ancestral_copy'))
+      left_join(dups_spec_pair, ., by = c('dup_1', 'dup_2', 'ancestral_copy'))
     }
     if (PC == T) {
       func <- out4$classes %>%
@@ -794,6 +798,7 @@ main_CDROM <- function(exp_path, OF_dir_path, add_pseudofunc, missing_expr_is_ps
   FuncPie <- CreatePlot_FuncPie(all_func)
   
   
+  print('DONE :)')
   
   
   return()
@@ -801,10 +806,22 @@ main_CDROM <- function(exp_path, OF_dir_path, add_pseudofunc, missing_expr_is_ps
 
 
 
+
+args <- c('C:/Users/17735/Downloads/EXAMPLE_Expression.tsv', 'C:/Users/17735/Downloads/EXAMPLE_OF_dir', 'True', 'False', '2', 'False', '10')
+
+exp_path <- args[1]
+OF_dir_path <- args[2]
+add_pseudofunc <- as.logical(args[3])
+missing_expr_is_pseudo <- as.logical(args[4])
+rm_exp_lower_than <- as.numeric(args[5])
+PC <- as.logical(args[6])
+min_dups_per_species_pair <- as.numeric(args[7])
+
+
 args <- commandArgs(trailingOnly = TRUE)
-main_CDROM(args[1], args[2], args[3], args[4], args[5], args[6])
+main_CDROM(args[1], args[2], as.logical(args[3]), as.logical(args[4]), as.numeric(args[5]), as.logical(args[6]), as.numeric(args[7]))
 
-
+# min_dups_per_species_pair must be above 2 (maybe 3) 
 
 
 # allow folder of expression for each species (just combine) (unit test if ncol same)
