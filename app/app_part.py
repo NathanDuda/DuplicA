@@ -6,8 +6,10 @@ from frontend import create_model_page, create_model_listbox
 
 def run_CDROM():
     script_name = "model_CDROM.R"
-    input_file = selected_files["CDROM"].get("Expression Data")
-    ortho_dir = selected_files["CDROM"].get("OrthoFinder Output Directory")
+    
+    input_file = input_file_var.get()
+    ortho_dir = ortho_dir_var.get()
+    
     param1 = param1_var.get()
     param2 = param2_var.get()
     param3 = param3_var.get()
@@ -18,12 +20,14 @@ def run_CDROM():
     else:
         messagebox.showerror("Error", "Input file or parameters not selected.")
 
+
+
 def run_model(model_name):
     script_name = model_scripts.get(model_name)
-    input_file = selected_files[model_name].get("file")
+#    input_file = selected_files[model_name].get("file")
 
-    if script_name and input_file:
-        result = run_r_script(script_name, input_file)
+    if script_name and input_file_var:
+        result = run_r_script(script_name, input_file_var)
         messagebox.showinfo("Result", result)
     else:
         messagebox.showerror("Error", "Input file or script not selected.")
@@ -57,14 +61,17 @@ model_descriptions = {
 }
 
 # Variables to store selected file paths for each model
-selected_files = {
-    "CDROM": {
-        "OrthoFinder Output Directory": tk.StringVar(),
-        "Expression Data": tk.StringVar()
-    },
-    "Model 2": {"file": tk.StringVar()},
-    "Model 3": {"file": tk.StringVar()}
-}
+#selected_files = {
+#    "CDROM": {
+#        "OrthoFinder Output Directory": tk.StringVar(),
+#        "Expression Data": tk.StringVar()
+#    },
+#    "Model 2": {"file": tk.StringVar()},
+#    "Model 3": {"file": tk.StringVar()}
+#}
+
+input_file_var = tk.StringVar()
+ortho_dir_var = tk.StringVar()
 
 # Additional parameters for the CDROM model
 param1_var = tk.BooleanVar(value=False)
@@ -91,8 +98,8 @@ model_pages["CDROM"] = create_model_page(
     "CDROM",
     model_descriptions["CDROM"],
     {
-        "OrthoFinder Output Directory": ("directory", selected_files["CDROM"]["OrthoFinder Output Directory"]),
-        "Expression Data": ("file", selected_files["CDROM"]["Expression Data"]),
+        "OrthoFinder Output Directory": ("directory", ortho_dir_var),
+        "Expression Data": ("file", input_file_var),
         "add_pseudofunc": ("boolean", param1_var),
         "missing_expr_is_pseudo": ("boolean", param2_var),
         "rm_exp_lower_than": ("numeric", param3_var)
@@ -101,14 +108,14 @@ model_pages["CDROM"] = create_model_page(
 )
 
 # Pages for other models
-for model_name in ["Model 2", "Model 3"]:
-    model_pages[model_name] = create_model_page(
-        content_frame,
-        model_name,
-        model_descriptions[model_name],
-        {"file": ("file", selected_files[model_name]["file"])},
-        lambda name=model_name: run_model(name)
-    )
+#for model_name in ["Model 2", "Model 3"]:
+#    model_pages[model_name] = create_model_page(
+#        content_frame,
+#        model_name,
+#        model_descriptions[model_name],
+    #    {"file": ("file", selected_files[model_name]["file"])},
+#        lambda name=model_name: run_model(name)
+#    )
 
 # Start with the first model page visible
 show_model_page("CDROM")

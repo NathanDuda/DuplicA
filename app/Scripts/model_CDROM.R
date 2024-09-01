@@ -41,9 +41,9 @@ get_dups_from_OF <- function(OF_dir_path) {
 # ensure no genes repeat in either column 
 # no repeating gene pairs 
 
-clean_exp_and_pseudo <- function(exp_path, dups, add_pseudofunc, missing_expr_is_pseudo, set_exp_lower_than_X_to_0, PC) {
+clean_exp_and_pseudo <- function(exp_path, dups, add_pseudofunc, missing_expr_is_pseudo, rm_exp_lower_than, PC) {
   all_expression <- read.delim(exp_path, sep = ' ')
-  all_expression[all_expression < set_exp_lower_than_X_to_0] <- 0 
+  all_expression[all_expression < rm_exp_lower_than] <- 0 
   colnames(all_expression)[1] <- 'id'
   
   clean_expression <- all_expression
@@ -723,21 +723,23 @@ CreatePlot_FuncPie <- function(all_func){
 #exp_path <- 'C:/Users/17735/Downloads/Eight_Species/All_Expression_Data.tsv'
 #add_pseudofunc <- TRUE
 #missing_expr_is_pseudo <- FALSE # only when add_pseudofunc is TRUE 
-#set_exp_lower_than_X_to_0 <- 1 # set default to 1 - ensure numeric 
+#rm_exp_lower_than <- 1 # set default to 1 - ensure numeric 
 #PC <- T 
 # MAKE SURE first column is p (dup_1) then c then a 
 # ensure OGs dont repeat
 # rm unecessary objects throughout code 
 # make sure all necessary orthofinder files exist 
 
-main_CDROM <- function(OF_dir_path, exp_path, add_pseudofunc, missing_expr_is_pseudo, rm_exp_lower_than){
+main_CDROM <- function(exp_path, OF_dir_path, add_pseudofunc, missing_expr_is_pseudo, rm_exp_lower_than, PC){
+  
+  OF_dir_path <- paste0(OF_dir_path, '/')
   
   out1 <- get_dups_from_OF(OF_dir_path)
   dups <- out1$dups
   dup_pair_orthologs <- out1$dup_pair_orthologs
 
   
-  out2 <- clean_exp_and_pseudo(exp_path, dups, add_pseudofunc, missing_expr_is_pseudo, set_exp_lower_than_X_to_0, PC)
+  out2 <- clean_exp_and_pseudo(exp_path, dups, add_pseudofunc, missing_expr_is_pseudo, rm_exp_lower_than, PC)
   clean_expression <- out2$clean_expression
   
   dups_anc <- get_anc_copy(OF_dir_path, dups, dup_pair_orthologs, clean_expression)
@@ -800,7 +802,7 @@ main_CDROM <- function(OF_dir_path, exp_path, add_pseudofunc, missing_expr_is_ps
 
 
 args <- commandArgs(trailingOnly = TRUE)
-main_CDROM(args[1], args[2], args[3], args[4], args[5])
+main_CDROM(args[1], args[2], args[3], args[4], args[5], args[6])
 
 
 
