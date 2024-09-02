@@ -1,124 +1,116 @@
-
-import tkinter as tk
+import customtkinter as ctk
 from tkinter import messagebox
 from backend import run_r_script
-from frontend import create_model_page, create_model_listbox
+from frontend import create_CDROM_page
 
-def run_CDROM():
+def run_CDROM(run_type):
     script_name = "model_CDROM.R"
     
-    input_file = input_file_var.get()
+    # OrthoFinder run_type 
+    expression_file = expression_file_var.get()
     ortho_dir = ortho_dir_var.get()
     
-    param1 = param1_var.get()
-    param2 = param2_var.get()
-    param3 = param3_var.get()
+    # custom run_type
+    dups_file = dups_file_var.get()
+    exp_dir = exp_dir_var.get()
+    PC = PC_var.get()
     
-    if script_name and input_file and ortho_dir:
-        result = run_r_script(script_name, input_file, ortho_dir, param1, param2, param3)
+    # other parameters 
+    add_pseudofunc = add_pseudofunc_var.get()
+    missing_expr_is_pseudo = missing_expr_is_pseudo_var.get()
+    rm_exp_lower_than = rm_exp_lower_than_var.get()
+    min_dups_per_species_pair = min_dups_per_species_pair_var.get()
+    
+    result = run_r_script(run_type, script_name, expression_file, ortho_dir, dups_file, exp_dir, add_pseudofunc, missing_expr_is_pseudo, rm_exp_lower_than, PC, min_dups_per_species_pair)
+
+    
+    messagebox.showinfo("Result", result)
+  
+def run_model2():
+    script_name = "model2.R"
+    
+    expression_file = expression_file_var.get()
+    
+    if expression_file:
+        result = run_r_script(script_name, expression_file)
         messagebox.showinfo("Result", result)
     else:
-        messagebox.showerror("Error", "Input file or parameters not selected.")
+        messagebox.showerror("Error", "Expression file not selected.")
 
-
-
-def run_model(model_name):
-    script_name = model_scripts.get(model_name)
-#    input_file = selected_files[model_name].get("file")
-
-    if script_name and input_file_var:
-        result = run_r_script(script_name, input_file_var)
+def run_model3():
+    script_name = "model3.R"
+    
+    expression_file = expression_file_var.get()
+    
+    if expression_file:
+        result = run_r_script(script_name, expression_file)
         messagebox.showinfo("Result", result)
     else:
-        messagebox.showerror("Error", "Input file or script not selected.")
+        messagebox.showerror("Error", "Expression file not selected.")
 
+# Initialize the main window
+root = ctk.CTk()
+root.title("DuplicA")
+
+# Variables for model CDROM
+expression_file_var = ctk.StringVar()
+ortho_dir_var = ctk.StringVar()
+dups_file_var = ctk.StringVar()
+exp_dir_var = ctk.StringVar()
+add_pseudofunc_var = ctk.BooleanVar(value=False)
+missing_expr_is_pseudo_var = ctk.BooleanVar(value=False)
+rm_exp_lower_than_var = ctk.StringVar(value=1)
+PC_var = ctk.BooleanVar(value=False)
+min_dups_per_species_pair_var = ctk.StringVar(value=10)
+
+# Side pane with model selection
+side_pane = ctk.CTkFrame(root)
+side_pane.pack(side=ctk.LEFT, fill=ctk.Y, padx=10, pady=10)
+
+ctk.CTkLabel(side_pane, text="Select Model:").pack(anchor="w")
+
+ctk.CTkButton(side_pane, text="CDROM", command=lambda: show_model_page("CDROM")).pack(fill=ctk.BOTH, expand=True)
+ctk.CTkButton(side_pane, text="Model 2", command=lambda: show_model_page("Model 2")).pack(fill=ctk.BOTH, expand=True)
+ctk.CTkButton(side_pane, text="Model 3", command=lambda: show_model_page("Model 3")).pack(fill=ctk.BOTH, expand=True)
+
+# Content frame for displaying model pages
+content_frame = ctk.CTkFrame(root)
+content_frame.pack(side=ctk.RIGHT, fill=ctk.BOTH, expand=True, padx=10, pady=10)
+
+# Model pages
 def show_model_page(model_name):
     for page in model_pages.values():
         page.pack_forget()
-    model_pages[model_name].pack(fill=tk.BOTH, expand=True)
+    model_pages[model_name].pack(fill=ctk.BOTH, expand=True)
 
-def on_model_select(event):
-    selected_model = model_listbox.get(model_listbox.curselection())
-    show_model_page(selected_model)
-
-# Initialize the main window
-root = tk.Tk()
-root.geometry('800x500')
-root.title("DuplicA")
-
-# Model script paths
-model_scripts = {
-    "CDROM": "model_CDROM.R",
-    "Model 2": "model2.R",
-    "Model 3": "model3.R"
+model_pages = {
+    "CDROM": create_CDROM_page(
+        content_frame,
+        "Description: Inferring mechanisms of duplicate gene preservation using asymmetry of gene expression divergence.",
+        {
+            "expression_file_var": expression_file_var,
+            "ortho_dir_var": ortho_dir_var,
+            "dups_file_var": dups_file_var,
+            "exp_dir_var": exp_dir_var,
+            "add_pseudofunc_var": add_pseudofunc_var,
+            "missing_expr_is_pseudo_var": missing_expr_is_pseudo_var,
+            "rm_exp_lower_than_var": rm_exp_lower_than_var,
+            "PC_var": PC_var,
+            "min_dups_per_species_pair_var": min_dups_per_species_pair_var
+        },
+        run_CDROM
+    )
 }
 
-# Model descriptions
-model_descriptions = {
-    "CDROM": "Description for running CDROM. stuff stuff stuff and stuff.",
-    "Model 2": "Description for Model 2: This model focuses on ABC processing for better insights.",
-    "Model 3": "Description for Model 3: This model handles DEF operations for data refinement."
-}
-
-# Variables to store selected file paths for each model
-#selected_files = {
-#    "CDROM": {
-#        "OrthoFinder Output Directory": tk.StringVar(),
-#        "Expression Data": tk.StringVar()
-#    },
-#    "Model 2": {"file": tk.StringVar()},
-#    "Model 3": {"file": tk.StringVar()}
-#}
-
-input_file_var = tk.StringVar()
-ortho_dir_var = tk.StringVar()
-
-# Additional parameters for the CDROM model
-param1_var = tk.BooleanVar(value=False)
-param2_var = tk.BooleanVar(value=False)
-param3_var = tk.StringVar()
-
-# Create the side pane and model listbox
-side_pane = tk.Frame(root)
-side_pane.pack(side=tk.LEFT, fill=tk.Y, padx=10, pady=10)
-
-# Create the listbox with model names
-model_listbox = create_model_listbox(side_pane, model_scripts.keys(), on_model_select)
-
-# Create the container frame for model pages
-content_frame = tk.Frame(root)
-content_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=10, pady=10)
-
-# Create pages for models
-model_pages = {}
-
-# Page for CDROM model with additional input options
-model_pages["CDROM"] = create_model_page(
-    content_frame,
-    "CDROM",
-    model_descriptions["CDROM"],
-    {
-        "OrthoFinder Output Directory": ("directory", ortho_dir_var),
-        "Expression Data": ("file", input_file_var),
-        "add_pseudofunc": ("boolean", param1_var),
-        "missing_expr_is_pseudo": ("boolean", param2_var),
-        "rm_exp_lower_than": ("numeric", param3_var)
-    },
-    run_CDROM
-)
-
-# Pages for other models
-#for model_name in ["Model 2", "Model 3"]:
-#    model_pages[model_name] = create_model_page(
-#        content_frame,
-#        model_name,
-#        model_descriptions[model_name],
-    #    {"file": ("file", selected_files[model_name]["file"])},
-#        lambda name=model_name: run_model(name)
-#    )
-
-# Start with the first model page visible
+# Show the first model page by default
 show_model_page("CDROM")
 
-# Run the main loop
 root.mainloop()
+
+
+
+
+
+
+
+

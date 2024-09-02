@@ -313,20 +313,20 @@ CDROM <- function(dupFile, singleFile, exprFile1, exprFile2, out = "out", Ediv,
   
   ## General checks are made
   
-  if (missing(exprFile1)) 
-    stop("'exprFile1' is missing")
-  if (missing(exprFile2)) 
-    stop("'exprFile2' is missing")
-  if (missing(dupFile)) 
-    stop("'dupFile' is missing")
-  if (missing(singleFile)) 
-    stop("'singleFile' is missing")
-  if (missing(Ediv)) 
-    cat("Note: 'SIQR' will be used as Ediv\n")
-  if(! any(legend == c("topleft", "topright"))) {
-    legend <- "topleft"
-    cat("Legend will be set to default position (topleft)\n")
-  }
+  #if (missing(exprFile1)) 
+  #  stop("'exprFile1' is missing")
+  #if (missing(exprFile2)) 
+  #  stop("'exprFile2' is missing")
+  #if (missing(dupFile)) 
+  #  stop("'dupFile' is missing")
+  #if (missing(singleFile)) 
+  #  stop("'singleFile' is missing")
+  #if (missing(Ediv)) 
+  #  cat("Note: 'SIQR' will be used as Ediv\n")
+  #if(! any(legend == c("topleft", "topright"))) {
+  #  legend <- "topleft"
+  #  cat("Legend will be set to default position (topleft)\n")
+  #}
   
   
   ## Input files are read
@@ -798,24 +798,23 @@ main_CDROM <- function(exp_path, OF_dir_path, add_pseudofunc, missing_expr_is_ps
   FuncPie <- CreatePlot_FuncPie(all_func)
   
   
-  print('DONE :)')
+  print('Finished successfully!')
   
   
-  return()
 }
 
 
 
 
-args <- c('C:/Users/17735/Downloads/EXAMPLE_Expression.tsv', 'C:/Users/17735/Downloads/EXAMPLE_OF_dir', 'True', 'False', '2', 'False', '10')
+#args <- c('C:/Users/17735/Downloads/EXAMPLE_Expression.tsv', 'C:/Users/17735/Downloads/EXAMPLE_OF_dir', 'True', 'False', '2', 'False', '10')
 
-exp_path <- args[1]
-OF_dir_path <- args[2]
-add_pseudofunc <- as.logical(args[3])
-missing_expr_is_pseudo <- as.logical(args[4])
-rm_exp_lower_than <- as.numeric(args[5])
-PC <- as.logical(args[6])
-min_dups_per_species_pair <- as.numeric(args[7])
+#exp_path <- args[1]
+#OF_dir_path <- args[2]
+#add_pseudofunc <- as.logical(args[3])
+#missing_expr_is_pseudo <- as.logical(args[4])
+#rm_exp_lower_than <- as.numeric(args[5])
+#PC <- as.logical(args[6])
+#min_dups_per_species_pair <- as.numeric(args[7])
 
 
 args <- commandArgs(trailingOnly = TRUE)
