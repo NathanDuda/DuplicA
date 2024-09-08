@@ -3,8 +3,10 @@ from tkinter import messagebox
 from backend import run_r_script
 from frontend import create_CDROM_page
 
-def run_CDROM(run_type):
+def run_CDROM():
     script_name = "model_CDROM.R"
+    
+    run_type = run_type_var.get()
     
     # OrthoFinder run_type 
     expression_file = expression_file_var.get()
@@ -20,8 +22,9 @@ def run_CDROM(run_type):
     missing_expr_is_pseudo = missing_expr_is_pseudo_var.get()
     rm_exp_lower_than = rm_exp_lower_than_var.get()
     min_dups_per_species_pair = min_dups_per_species_pair_var.get()
+    use_absolute_exp = use_absolute_exp_var.get()
     
-    result = run_r_script(run_type, script_name, expression_file, ortho_dir, dups_file, exp_dir, add_pseudofunc, missing_expr_is_pseudo, rm_exp_lower_than, PC, min_dups_per_species_pair)
+    result = run_r_script(run_type, script_name, expression_file, ortho_dir, dups_file, exp_dir, add_pseudofunc, missing_expr_is_pseudo, rm_exp_lower_than, PC, min_dups_per_species_pair, use_absolute_exp)
 
     
     messagebox.showinfo("Result", result)
@@ -53,6 +56,7 @@ root = ctk.CTk()
 root.title("DuplicA")
 
 # Variables for model CDROM
+run_type_var =  ctk.StringVar()
 expression_file_var = ctk.StringVar()
 ortho_dir_var = ctk.StringVar()
 dups_file_var = ctk.StringVar()
@@ -62,6 +66,7 @@ missing_expr_is_pseudo_var = ctk.BooleanVar(value=False)
 rm_exp_lower_than_var = ctk.StringVar(value=1)
 PC_var = ctk.BooleanVar(value=False)
 min_dups_per_species_pair_var = ctk.StringVar(value=10)
+use_absolute_exp_var = ctk.BooleanVar(value=False)
 
 # Side pane with model selection
 side_pane = ctk.CTkFrame(root)
@@ -88,6 +93,7 @@ model_pages = {
         content_frame,
         "Description: Inferring mechanisms of duplicate gene preservation using asymmetry of gene expression divergence.",
         {
+            "run_type_var": run_type_var, 
             "expression_file_var": expression_file_var,
             "ortho_dir_var": ortho_dir_var,
             "dups_file_var": dups_file_var,
@@ -96,7 +102,8 @@ model_pages = {
             "missing_expr_is_pseudo_var": missing_expr_is_pseudo_var,
             "rm_exp_lower_than_var": rm_exp_lower_than_var,
             "PC_var": PC_var,
-            "min_dups_per_species_pair_var": min_dups_per_species_pair_var
+            "min_dups_per_species_pair_var": min_dups_per_species_pair_var,
+            "use_absolute_exp_var": use_absolute_exp_var
         },
         run_CDROM
     )
@@ -106,10 +113,6 @@ model_pages = {
 show_model_page("CDROM")
 
 root.mainloop()
-
-
-
-
 
 
 

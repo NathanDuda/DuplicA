@@ -734,7 +734,7 @@ CreatePlot_FuncPie <- function(all_func){
 # rm unecessary objects throughout code 
 # make sure all necessary orthofinder files exist 
 
-main_CDROM <- function(exp_path, OF_dir_path, add_pseudofunc, missing_expr_is_pseudo, rm_exp_lower_than, PC, min_dups_per_species_pair){
+main_CDROM <- function(exp_path, OF_dir_path, add_pseudofunc, missing_expr_is_pseudo, rm_exp_lower_than, PC, min_dups_per_species_pair, useAbsExpr){
   
   OF_dir_path <- paste0(OF_dir_path, '/')
   
@@ -767,7 +767,8 @@ main_CDROM <- function(exp_path, OF_dir_path, add_pseudofunc, missing_expr_is_ps
                   singleFile = out3$sc_input,
                   exprFile1 = out3$exp_1_input,
                   exprFile2 = out3$exp_2_input,
-                  PC = PC)
+                  PC = PC,
+                  useAbsExpr = useAbsExpr)
     
     
     out4$EDiv_values
@@ -815,10 +816,16 @@ main_CDROM <- function(exp_path, OF_dir_path, add_pseudofunc, missing_expr_is_ps
 #rm_exp_lower_than <- as.numeric(args[5])
 #PC <- as.logical(args[6])
 #min_dups_per_species_pair <- as.numeric(args[7])
-
+#useAbsExpr <- as.logical(args[8])
 
 args <- commandArgs(trailingOnly = TRUE)
-main_CDROM(args[1], args[2], as.logical(args[3]), as.logical(args[4]), as.numeric(args[5]), as.logical(args[6]), as.numeric(args[7]))
+main_CDROM(args[1], args[2], as.logical(args[3]), as.logical(args[4]), as.numeric(args[5]), as.logical(args[6]), as.numeric(args[7]), as.logical(args[8]))
+
+
+
+
+
+
 
 # min_dups_per_species_pair must be above 2 (maybe 3) 
 

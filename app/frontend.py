@@ -1,5 +1,6 @@
 import customtkinter as ctk
 from tkinter import filedialog
+
 def create_CDROM_page(parent_frame, description, param_vars, run_command):
     page_frame = ctk.CTkFrame(parent_frame)
     
@@ -11,15 +12,15 @@ def create_CDROM_page(parent_frame, description, param_vars, run_command):
     ctk.CTkButton(OF_input_frame, text="Use custom input", command=lambda: show_page('custom_input_page')).grid(row=0, column=0, columnspan=2, pady=20)
     
     # title and description
-    ctk.CTkLabel(OF_input_frame, text="CDROM", font=('', 20)).grid(row=0, column=1, columnspan=3, pady=5)
-    ctk.CTkLabel(OF_input_frame, text=description).grid(row=1, column=1, columnspan=3, pady=10)
+    ctk.CTkLabel(OF_input_frame, text="CDROM", font=('', 20)).grid(row=0, column=1, columnspan=3, pady=5, padx=5)
+    ctk.CTkLabel(OF_input_frame, text=description).grid(row=1, column=1, columnspan=3, pady=10, padx=5)
     
     # input file and folder
     ctk.CTkButton(OF_input_frame, text="Browse: Expression File", command=lambda: param_vars['expression_file_var'].set(select_file('Expression Data'))).grid(row=2, column=1, pady=5, padx=10, sticky="w")
     ctk.CTkButton(OF_input_frame, text="Browse: OrthoFinder Folder", command=lambda: param_vars['ortho_dir_var'].set(select_directory('OrthoFinder Output Directory'))).grid(row=3, column=1, pady=5, padx=10, sticky="w")
     
     # run button
-    ctk.CTkButton(OF_input_frame, text="Run Model", font = ('', 18), width = 130, height = 50, fg_color = ('green'), hover_color=('darkgreen'), command=run_command(run_type = 'OF')).grid(row=4, column=1, columnspan=2, pady=20)
+    ctk.CTkButton(OF_input_frame, text="Run Model", font=('', 18), width=130, height=50, fg_color='green', hover_color='darkgreen', command=lambda: run_command_OF(param_vars['run_type_var'], run_command)).grid(row=4, column=1, columnspan=2, pady=20)
 
     # Additional parameters:
     ctk.CTkLabel(OF_input_frame, text='').grid(row=5, column=1, columnspan=3, pady=30)
@@ -40,6 +41,8 @@ def create_CDROM_page(parent_frame, description, param_vars, run_command):
     ctk.CTkLabel(OF_input_frame, text="Should genes with missing expression data be considered pseudofunctionalized?").grid(row=10, column=0, pady=5, padx=10, sticky="w")
     ctk.CTkCheckBox(OF_input_frame, text='', variable=param_vars['missing_expr_is_pseudo_var'], onvalue="True", offvalue="False").grid(row=10, column=1, pady=5, padx=10, sticky="w")
     
+    ctk.CTkLabel(OF_input_frame, text="Use absolute expression?").grid(row=11, column=0, pady=5, padx=10, sticky="w")
+    ctk.CTkCheckBox(OF_input_frame, text='', variable=param_vars['use_absolute_exp_var'], onvalue="True", offvalue="False").grid(row=11, column=1, pady=5, padx=10, sticky="w")
     
     
 
@@ -60,7 +63,7 @@ def create_CDROM_page(parent_frame, description, param_vars, run_command):
     ctk.CTkButton(custom_input_frame, text="Browse: Expression Folder", command=lambda: param_vars['exp_dir_var'].set(select_directory('OrthoFinder Output Directory'))).grid(row=3, column=1, pady=5, padx=10, sticky="w")
     
     # run button
-    ctk.CTkButton(custom_input_frame, text="Run Model", font = ('', 18), width = 130, height = 50, fg_color = ('green'), hover_color=('darkgreen'), command=run_command(run_type = 'custom')).grid(row=4, column=1, columnspan=2, pady=20)
+    ctk.CTkButton(custom_input_frame, text="Run Model", font=('', 18), width=130, height=50, fg_color='green', hover_color='darkgreen', command=lambda: run_command_custom(param_vars['run_type_var'], run_command)).grid(row=4, column=1, columnspan=2, pady=20)
     
     # Additional parameters:
     ctk.CTkLabel(custom_input_frame, text='').grid(row=5, column=1, columnspan=3, pady=30)
@@ -82,6 +85,9 @@ def create_CDROM_page(parent_frame, description, param_vars, run_command):
     
     ctk.CTkLabel(custom_input_frame, text="Should genes with missing expression data be considered pseudofunctionalized?").grid(row=11, column=0, pady=5, padx=10, sticky="w")
     ctk.CTkCheckBox(custom_input_frame, text='', variable=param_vars['missing_expr_is_pseudo_var'], onvalue="True", offvalue="False").grid(row=11, column=1, pady=5, padx=10, sticky="w")
+    
+    ctk.CTkLabel(custom_input_frame, text="Use absolute expression?").grid(row=12, column=0, pady=5, padx=10, sticky="w")
+    ctk.CTkCheckBox(custom_input_frame, text='', variable=param_vars['use_absolute_exp_var'], onvalue="True", offvalue="False").grid(row=12, column=1, pady=5, padx=10, sticky="w")
     
     
     # Page toggling function
@@ -105,3 +111,11 @@ def select_file(param_name):
 def select_directory(param_name):
     directory_path = filedialog.askdirectory(title=f"Select {param_name}")
     return directory_path
+
+def run_command_OF(run_type_var, run_command):
+    run_type_var.set('OF')
+    run_command()
+
+def run_command_custom(run_type_var, run_command):
+    run_type_var.set('custom')
+    run_command()
