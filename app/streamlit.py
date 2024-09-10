@@ -7,20 +7,26 @@ def get_script_path(script_name):
     script_path = os.path.join(app_dir, "Scripts", script_name)
     return script_path
 
-def run_r_script(run_type, script_name, expression_file, directory_path=None, dups_file=None, exp_dir=None, add_pseudofunc=False, missing_expr_is_pseudo=False, rm_exp_lower_than=None, PC=False, min_dups_per_species_pair=None, use_absolute_exp=False):
+def run_r_script(run_type, script_name, expression_file=None, directory_path=None, dups_file=None, exp_dir=None, add_pseudofunc=False, missing_expr_is_pseudo=False, rm_exp_lower_than=None, PC=False, min_dups_per_species_pair=None, use_absolute_exp=False):
+    st.write(f"Running script: {script_name}")
+    st.write(f"Expression file: {expression_file}")
+    st.write(f"Directory path: {directory_path}")
+    st.write(f"Dups file: {dups_file}")
+    st.write(f"Exp dir: {exp_dir}")
     print(f"Running script: {script_name}")
     print(f"Expression file: {expression_file}")
     print(f"Directory path: {directory_path}")
     print(f"Dups file: {dups_file}")
     print(f"Exp dir: {exp_dir}")
+    return()
 
     R_path = "C:\\Program Files\\R\\R-4.4.1\\bin\\Rscript.exe"
     try:
         script_path = get_script_path(script_name)
-        command = [R_path, script_path, expression_file]
+        command = [R_path, script_path]
 
         if run_type == 'OF':
-            command += [directory_path, str(add_pseudofunc), str(missing_expr_is_pseudo), rm_exp_lower_than, str(PC), str(min_dups_per_species_pair), str(use_absolute_exp)]
+            command += [expression_file, directory_path, str(add_pseudofunc), str(missing_expr_is_pseudo), rm_exp_lower_than, str(PC), str(min_dups_per_species_pair), str(use_absolute_exp)]
         elif run_type == 'custom':
             command += [dups_file, exp_dir, str(add_pseudofunc), str(missing_expr_is_pseudo), rm_exp_lower_than, str(PC), str(min_dups_per_species_pair), str(use_absolute_exp)]
 
@@ -58,7 +64,7 @@ def run_CDROM(run_type, script_name, expression_file, ortho_dir, dups_file, exp_
     result = run_r_script(
         run_type,
         script_name,
-        expression_file,
+        expression_file if run_type == 'OF' else None,
         directory_path=ortho_dir if run_type == 'OF' else None,
         dups_file=dups_file if run_type == 'custom' else None,
         exp_dir=exp_dir if run_type == 'custom' else None,
@@ -117,7 +123,7 @@ if model == "CDROM":
     use_absolute_exp = st.checkbox("Use absolute expression?")
     
     if run_type == "Custom":
-        PC = st.checkbox("Differentiate parent/child copies?")
+        PC = st.checkbox("Differentiate parent/child copies?") 
 
     # Run button
     if st.button("Run CDROM Model"):
@@ -153,3 +159,17 @@ elif model == "Model 3":
     # Run button
     if st.button("Run Model 3"):
         run_model3()
+
+
+
+
+
+
+# doesn't allow directory upload
+# and doesn't allow getting path from a file upload 
+
+
+
+
+
+
