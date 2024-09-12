@@ -21,7 +21,6 @@ run_r_script <- function(run_type, script_name, expression_file, ortho_dir, dups
 
 
 # allow input of directories 
-
 dirInput <- function(inputId, label, width = NULL, buttonLabel = "Browse...", 
                      placeholder = "No directory selected", directory = TRUE) {
   

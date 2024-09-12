@@ -141,10 +141,13 @@ dnds_page <- function() {
            titlePanel("Dn/Ds"),
            p("Get a Dn/Ds ratio for every duplicate pair.")
            
-           
-           
            )
-           
+}
+
+segregating_duplicates_page <- function() {
+  
+  h3('seg')
+  
 }
 
 

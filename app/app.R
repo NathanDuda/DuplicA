@@ -8,6 +8,7 @@ source('./app_functions.R')
 source('./app_pages.R')
 
 source('./Scripts/model_OrthoFinder.R')
+#source('./Scripts/model_Segregating.R')
 
 # UI with dark mode theme and sidebar layout
 ui <- fluidPage(
@@ -37,10 +38,11 @@ ui <- fluidPage(
           actionButton("select_orthofinder", "OrthoFinder", class = "btn-primary"),
           h3("Models"),
           h5('Functional Divergence'),
-          actionButton("select_cdrom", "CDROM Model", class = "btn-primary"),
-          actionButton("select_cloud", "CLOUD Model", class = "btn-primary"),
+          actionButton("select_cdrom", "CDROM", class = "btn-primary"),
+          actionButton("select_cloud", "CLOUD", class = "btn-primary"),
           h5('Selective Pressure'),
           actionButton("select_dnds", "DnDs", class = "btn-primary"),
+          actionButton("select_segregating_duplicates", "Segregating Duplicates", class = "btn-primary"),
           br()
       )
     ),
@@ -66,6 +68,7 @@ server <- function(input, output, session) {
   observeEvent(input$select_orthofinder, {current_model("orthofinder")})
   observeEvent(input$select_HOME, {current_model("HOME")})
   observeEvent(input$select_dnds, {current_model("dnds")})
+  observeEvent(input$select_segregating_duplicates, {current_model("segregating_duplicates")})
   
   # Render UI dynamically based on the selected model
   output$model_ui <- renderUI({
@@ -90,18 +93,23 @@ server <- function(input, output, session) {
              "dnds" = tagList(
                dnds_page()
            ),
+           'segregating_duplicates' = tagList(
+             segregating_duplicates_page()
+           ),
            "HOME" = tagList(
              titlePanel("DuplicA"),
              tags$div(style = "margin-bottom: 50px;"), # empty space
              
              h4('Select Data Types:'),
              checkboxGroupInput("data_types", "", 
-                                choices = c("Expression Data", "OrthoFinder Data", "Duplicate Gene Data"),
+                                choices = c("Expression Data", 
+                                            "OrthoFinder Data", 
+                                            "Duplicate Gene Data",
+                                            'Nucleotide Sequences', 
+                                            'Protein Sequences'),
                                 selected = character(0)),
              tags$div(style = "margin-bottom: 40px;"), # empty space
              uiOutput("available_models")
-             
-             
            ),
            h3("Please select a model from the sidebar.")  # Default content when no model is selected
     )
@@ -111,6 +119,10 @@ server <- function(input, output, session) {
     data_types <- input$data_types
     models <- c()
     
+    if (("Nucleotide Sequences" %in% data_types) | ("Protein Sequences" %in% data_types)) {
+      models <- c(models, "OrthoFinder")
+      data_types <- c(data_types, 'OrthoFinder Data')
+    }
     
     if (("Expression Data" %in% data_types) & ("OrthoFinder Data" %in% data_types)) {
       models <- c(models, "CDROM Model - OrthoFinder Input")
