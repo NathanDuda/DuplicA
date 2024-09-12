@@ -2,18 +2,18 @@
 
 # Function to run R script
 run_r_script <- function(run_type, script_name, expression_file, ortho_dir, dups_file, exp_dir, add_pseudofunc, missing_expr_is_pseudo, exp_cutoff, PC, min_dups_per_species_pair, use_absolute_exp) {
-  R_path <- '"C:/Program Files/R/R-4.4.1/bin/Rscript.exe"'
-  script_path <- paste0("Scripts/", script_name)
+  source(paste0("C:/Users/17735/Downloads/DuplicA/app/Scripts/", script_name))
+  
+  print(paste('is:', expression_file, ortho_dir, as.logical(add_pseudofunc), as.logical(missing_expr_is_pseudo), as.numeric(exp_cutoff), as.logical(PC), as.numeric(min_dups_per_species_pair), as.logical(use_absolute_exp)))
+  print(paste('should be:', 'C:/Users/17735/Downloads/AAAAA___EXAMPLE_Expression.tsv', 'C:/Users/17735/Downloads/AAAAA_Results_Jan01', 'True', 'False', '1', 'False', '10', 'False'))
   
   tryCatch({
     if (run_type == 'OF') {
-      command <- c(R_path, script_path, expression_file, ortho_dir, as.character(add_pseudofunc), as.character(missing_expr_is_pseudo), exp_cutoff, as.character(PC), min_dups_per_species_pair, as.character(use_absolute_exp))
+      main_CDROM(expression_file, ortho_dir, as.logical(add_pseudofunc), as.logical(missing_expr_is_pseudo), as.numeric(exp_cutoff), as.logical(PC), as.numeric(min_dups_per_species_pair), as.logical(use_absolute_exp))
     } else if (run_type == 'custom') {
-      command <- c(R_path, script_path, dups_file, exp_dir, as.character(add_pseudofunc), as.character(missing_expr_is_pseudo), exp_cutoff, as.character(PC), min_dups_per_species_pair, as.character(use_absolute_exp))
+      # does not work with custom input 
+      #main_CDROM(dups_file, exp_dir, as.logical(add_pseudofunc), as.logical(missing_expr_is_pseudo), as.numeric(exp_cutoff), as.logical(PC), as.numeric(min_dups_per_species_pair), as.logical(use_absolute_exp))
     }
-    
-    print(paste("COMMAND:", command))
-    result <- system(paste(command, collapse = " "), intern = TRUE)
   }, error = function(e) {
     return(paste("An error occurred:\n", e$message))
   })

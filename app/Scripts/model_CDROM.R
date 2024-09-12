@@ -799,15 +799,14 @@ main_CDROM <- function(exp_path, OF_dir_path, add_pseudofunc, missing_expr_is_ps
   FuncPie <- CreatePlot_FuncPie(all_func)
   
   
-  #print('Finished successfully!')
+  print('CDROM finished successfully.')
   
   
 }
 
 
 
-
-#args <- c('C:/Users/17735/Downloads/EXAMPLE_Expression.tsv', 'C:/Users/17735/Downloads/EXAMPLE_OF_dir', 'True', 'False', '2', 'False', '10')
+#args <- c('C:/Users/17735/Downloads/AAAAA___EXAMPLE_Expression.tsv', 'C:/Users/17735/Downloads/AAAAA_Results_Jan01', 'True', 'False', '1', 'False', '10', 'False')
 
 #exp_path <- args[1]
 #OF_dir_path <- args[2]
@@ -818,8 +817,8 @@ main_CDROM <- function(exp_path, OF_dir_path, add_pseudofunc, missing_expr_is_ps
 #min_dups_per_species_pair <- as.numeric(args[7])
 #useAbsExpr <- as.logical(args[8])
 
-args <- commandArgs(trailingOnly = TRUE)
-main_CDROM(args[1], args[2], as.logical(args[3]), as.logical(args[4]), as.numeric(args[5]), as.logical(args[6]), as.numeric(args[7]), as.logical(args[8]))
+#args <- commandArgs(trailingOnly = TRUE)
+#main_CDROM(args[1], args[2], as.logical(args[3]), as.logical(args[4]), as.numeric(args[5]), as.logical(args[6]), as.numeric(args[7]), as.logical(args[8]))
 
 
 
