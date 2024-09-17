@@ -1,4 +1,7 @@
 
+library(tidyverse)
+library(Biostrings)
+
 #######################
 
 # format data
@@ -7,44 +10,124 @@
 simulated_pop_cnvs <- data.frame(Individual = c("ABC123", "DEF456", "GHI789",
                                                 "ABC123", "DEF456", "GHI789",
                                                 "ABC123", "XXXXXX"), 
-                                 gene = c(paste0('ID', sprintf("%05d", 1:3)), 
-                                          paste0('ID', sprintf("%05d", 1:3)),
-                                          'ID00999','ID00001'))
+                                 gene = c(paste0('ID', sprintf("%05d", 1:8))),
+                                 group = c('A', 'B', 2, 'A', 'B', 2, 3, 4))
+
+nuc_file <- 'C:/Users/17735/Downloads/Simulated_Data/nuc_sim.fasta'
+prot_file <- 'C:/Users/17735/Downloads/Simulated_Data/prot_sim.fasta'
 
 
 
+#####
+system(paste0('wsl ', 'mkdir ', here_linux_temp, '/Connected_Eq_Protein_Sequences'), intern = T)
+system(paste0('wsl ', 'mkdir ', here_linux_temp, '/Connected_Eq_Protein_Alignments'), intern = T)
+system(paste0('wsl ', 'mkdir ', here_linux_temp, '/Connected_Eq_Nucleotide_Sequences'), intern = T)
+system(paste0('wsl ', 'mkdir ', here_linux_temp, '/Connected_Eq_Codon_Alignments'), intern = T)
+
+
+#####
+
+# get pair dups 
+# input fasta to pair fasta files 
+
+cnvs <- simulated_pop_cnvs
+
+colnames(cnvs) <- c('individual', 'gene', 'group')
+
+
+cnvs <- cnvs %>%
+  group_by(individual, group) %>%
+  mutate(n = n()) %>%
+  ungroup() %>%
+  filter(n == 2)
+
+
+
+
+# fasta
+
+nucs <- readDNAStringSet(nuc_file)
+nucs <- data.frame(gene = names(nucs), nuc = as.character(nucs))  
+
+cnvs <- left_join(cnvs, nucs, by = 'gene')
+rm(nucs)
+
+
+
+prots <- readAAStringSet(prot_file)
+prots <- data.frame(gene = names(prots), prot = as.character(prots))
+
+cnvs <- left_join(cnvs, prots, by = 'gene')
+rm(prots)
+
+
+# write 
+for (group_id in unique(cnvs$group)) {
+  group_rows <- cnvs %>% filter(group == group_id)
+
+  for (row_num in 1:nrow(group_rows)) {
+    row <- group_rows[row_num,]
+    group_indiv_id <- paste0(group_id, '_', row$individual)
+    
+    output_file <- paste0(here_temp, '/Connected_Eq_Nucleotide_Sequences/group_', group_indiv_id, '.fa')  # NOT LINUX 
+    cat(">", row$gene, '\n', row$nuc, "\n", file = output_file, append = T, sep = '')
+    
+    output_file <- paste0(here_temp, '/Connected_Eq_Protein_Sequences/group_', group_indiv_id, '.fa')  
+    cat(">", row$gene, '\n', row$prot, "\n", file = output_file, append = T, sep = '')
+    
+  }
+}
 
 
 ######################
 
 
-# Get codon alignments of duplicate pairs from prot and nuc fastas for CNVSelectR 
 
-muscle_path <- paste0(here_linux, 'DuplicA/app/Dependencies/', 'MUSCLE/muscle-windows-v5.2.exe')
+run_aligner <- function(aligner = 'muscle') {
+  if (aligner == 'muscle') {
+    
+    muscle_path <- paste0(here_linux_dep, '/MUSCLE/muscle-linux-x86.v5.2')
+    
+    # mkdirs if don't exist 
+    # align proteins of groups of pairs 
+    muscle_command <- paste0('
+      for file in ', here_linux_temp, '/Connected_Eq_Protein_Sequences/*; do
+        filename=$(basename "$file")',
+        muscle_path, ' -align "$file" -output "', here_linux_temp, '/Connected_Eq_Protein_Alignments/${filename}"
+      done
+    ')
+    
+    system(paste('wsl', muscle_command), intern = T)
 
-pal2nal_path <- paste0(here_linux, 'DuplicA/app/Dependencies/', 'pal2nal.v14/pal2nal/pl')
+  }
+}
 
 
+run_codon_aligner <- function() { # pal2nal
+  pal2nal_path <- paste0(here_linux_dep, '/pal2nal.v14/pal2nal.pl')
+  
+  pal2nal_command <- paste0('
+    for file in ', here_linux_dep, '/Connected_Eq_Protein_Sequences/*; do
+        filename=$(basename "$file")
+        pal2nal.pl "', here_linux_dep, '/Connected_Eq_Protein_Alignments/${filename}" "', 
+                       here_linux_dep, '/Connected_Eq_Nucleotide_Sequences/${filename}" -output fasta > "', 
+                       here_linux_dep, '/Connected_Eq_Codon_Alignments/${filename}"
+    done
+    ')
+  
+  system(paste('wsl', pal2nal_command), intern = T)
+  
+}
 
-
-# connected eq nucleotides:
-# align proteins of groups of pairs 
-for file in ./CNVSelectR/Connected_Eq_Protein_Sequences/*; do
-filename=$(basename "$file")
-muscle -in "$file" -out "./CNVSelectR/Connected_Eq_Protein_Alignments/${filename}"
-done
-
-# get codon alignment of orthogroups with pal2nal
-for file in ./CNVSelectR/Connected_Eq_Protein_Sequences/*; do
-filename=$(basename "$file")
-pal2nal.pl "./CNVSelectR/Connected_Eq_Protein_Alignments/${filename}" "./CNVSelectR/Connected_Eq_Nucleotide_Sequences/${filename}" -output fasta > "./CNVSelectR/Connected_Eq_Codon_Alignments/${filename}"
-done
 
 # combine pairs of codon alignments with codon alignments of groupmate pairs 
-for file in ./CNVSelectR/Connected_Eq_Codon_Alignments/*; do
-base_name=$(basename "$file" | sed 's/\(group_[0-9]\+\).*\(\..*\)/\1\2/')
-cat "$file" >> "./CNVSelectR/Connected_Eq_Combined_Codon_Alignments/${base_name}"
-done
+#c_command <- paste0('
+#for file in ', here_linux_dep,'/Connected_Eq_Codon_Alignments/*; do
+#    base_name=$(basename "$file" | sed "s/\(group_[0-9]\+\).*\(\..*\)/\1\2/")
+#    cat "$file" >> "./CNVSelectR/Connected_Eq_Combined_Codon_Alignments/${base_name}"
+#  done
+#')
+
 
 
 
