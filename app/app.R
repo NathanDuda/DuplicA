@@ -3,7 +3,9 @@ library(shinyFiles)
 library(bslib)
 library(htmltools)
 library(shinyalert)
+library(fs) # for file paths 
 
+source('./Scripts/setup.R')
 source('./app_functions.R')
 source('./app_pages.R')
 

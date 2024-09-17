@@ -1,5 +1,58 @@
 
+#######################
 
+# format data
+
+# simulate data
+simulated_pop_cnvs <- data.frame(Individual = c("ABC123", "DEF456", "GHI789",
+                                                "ABC123", "DEF456", "GHI789",
+                                                "ABC123", "XXXXXX"), 
+                                 gene = c(paste0('ID', sprintf("%05d", 1:3)), 
+                                          paste0('ID', sprintf("%05d", 1:3)),
+                                          'ID00999','ID00001'))
+
+
+
+
+
+######################
+
+
+# Get codon alignments of duplicate pairs from prot and nuc fastas for CNVSelectR 
+
+muscle_path <- paste0(here_linux, 'DuplicA/app/Dependencies/', 'MUSCLE/muscle-windows-v5.2.exe')
+
+pal2nal_path <- paste0(here_linux, 'DuplicA/app/Dependencies/', 'pal2nal.v14/pal2nal/pl')
+
+
+
+
+# connected eq nucleotides:
+# align proteins of groups of pairs 
+for file in ./CNVSelectR/Connected_Eq_Protein_Sequences/*; do
+filename=$(basename "$file")
+muscle -in "$file" -out "./CNVSelectR/Connected_Eq_Protein_Alignments/${filename}"
+done
+
+# get codon alignment of orthogroups with pal2nal
+for file in ./CNVSelectR/Connected_Eq_Protein_Sequences/*; do
+filename=$(basename "$file")
+pal2nal.pl "./CNVSelectR/Connected_Eq_Protein_Alignments/${filename}" "./CNVSelectR/Connected_Eq_Nucleotide_Sequences/${filename}" -output fasta > "./CNVSelectR/Connected_Eq_Codon_Alignments/${filename}"
+done
+
+# combine pairs of codon alignments with codon alignments of groupmate pairs 
+for file in ./CNVSelectR/Connected_Eq_Codon_Alignments/*; do
+base_name=$(basename "$file" | sed 's/\(group_[0-9]\+\).*\(\..*\)/\1\2/')
+cat "$file" >> "./CNVSelectR/Connected_Eq_Combined_Codon_Alignments/${base_name}"
+done
+
+
+
+
+
+
+
+#####################
 
 #install_github("peterbchi/CNVSelectR")
 library(CNVSelectR)
