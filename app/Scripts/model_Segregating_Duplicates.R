@@ -109,7 +109,7 @@ get_prot_alignments <- function(aligner) {
     muscle_command <- paste0(
       'for file in ', here_linux_temp, '/Connected_Eq_Protein_Sequences/*; do ',
       'filename=$(basename "$file"); ',
-      muscle_path, '-quiet -align "$file" -output "', here_linux_temp, '/Connected_Eq_Protein_Alignments/${filename}"; ',
+      muscle_path, ' -quiet -align "$file" -output "', here_linux_temp, '/Connected_Eq_Protein_Alignments/${filename}"; ',
       'done'
     )
     
@@ -135,6 +135,7 @@ get_codon_alignments <- function() { # pal2nal
 }
 
 
+# change this to paml or something in the cl 
 get_dnds <- function() {
   dnds_results <- data.frame()
 
@@ -150,52 +151,11 @@ get_dnds <- function() {
   return(dnds_results)
 }
 
+##################################################
+
+# CNVSelectR functions
 
 
-
-
-
-cnvs <- read.csv("C:/Users/17735/Downloads/Dmel_Duplicate_Genes/connected_dups_sep.tsv", sep="")
-
-
-main_pop_dnds <- function(nuc_file, prot_file, aligner = 'muscle', replace_dirs = T) {
-  replace_dirs <- F ############## remove 
-  make_temp_dirs(replace_dirs)
-  
-  #get_paired_fastas(pairs, nuc_file, prot_file)
-  get_prot_alignments(aligner)
-  get_codon_alignments()
-  dnds_results <- get_dnds()
-  return(dnds_results)
-}
-
-main_Segregating_Duplications <- function(cnvs, popgen_dnds_exists = F, freqs, dnds_results) {
-  
-  pairs <- get_pairs(cnvs)
-  freqs <- get_freqs(pairs)
-  
-  popgen_dnds_exists = T ################### remove 
-  if (popgen_dnds_exists == F){dnds_results <- main_pop_dnds()}
-  
-  output <- run_CNVSelectR(freqs, dnds_results)
-  
-}
-
-###########
-
-
-run_CNVSelectR <- function(freqs, dnds_results) {
-  
-  
-  
-  
-  
-}
-
-
-
-
-#####################
 
 
 
@@ -371,84 +331,37 @@ mexpv_dipneut_CUSTOM <- function(t, A, v,N,Pos, tol=1e-7, m=NULL){
 }
 
 
-
-CNVSelect_test_custom <- function(input_file, fasta_file){
+CNVSelect_test_custom <- function(neut_matrix, input_file_table, dnds_results){
   output <- list()
   
   ####
   ### inputs <- read_DAF(input_file)
-  DAF <- read.csv(input_file, sep='')
+  DAF <- input_file_table
   first.col <- dim(DAF)[1]
-  output <- list()
-  output$N <- as.numeric(DAF[1,2])   # N
-  output$ploidy <- as.numeric(DAF[2,2])   # ploidy
-  output$freqs <- as.numeric(DAF[5:first.col,1][1])  # frequencies
-  inputs <- output
-  ####
+  inputs <- list()
+  inputs$N <- as.numeric(DAF[1,2])   # N
+  inputs$ploidy <- as.numeric(DAF[2,2])   # ploidy
+  inputs$freqs <- as.numeric(DAF[5:first.col,1][1])  # frequencies
+
   
-  ####
-  ###dS <- get_dS(fasta_file)
-  x <- read.alignment(fasta_file,format="fasta")
-  n.seq <- length(x$seq)
-  
-  # Check if all sequences are of lengths that are multiples of 3
-  # and also for internal stop codons
-  for(i in 1:n.seq){
-    tmp <- unlist(strsplit(x$seq[[i]], ""))
-    if(length(tmp)/3 != round(length(tmp)/3, 0)){
-      stop(paste("All sequences must be of lengths that are a multiple of 3; Sequence", i, "has", length(tmp), "sites"))
-    }
-    codon.starts <- seq(1, length(tmp), by=3)
-    stop.codons <- c("taa", "tag", "tga", "TAA", "TAG", "TGA")
-    for(j in codon.starts){
-      codon <- paste(tmp[c(j, j+1, j+2)], collapse="")
-      if(is.element(codon, stop.codons)){
-        stop(paste("Sequences must not have internal stop codons; Sequence ", i, " has the following stop codon that starts at nucleotide position ", j, ": ", codon, sep=""))
-      }
-    }
-  }
-  
-  dS <- NULL
-  col_names <- NULL
-  if(n.seq >= 2){ ################################################### only n.seq > 2
-    seqs <- seq(1,n.seq, by=2)
-    for(i in seqs){
-      pair <- x
-      pair$seq <- pair$seq[c(i, (i+1))]
-      pair$nam <- pair$nam[c(i, (i+1))]
-      pair$nb <- 2
-      dS <- c(dS, kaks(pair)$ks)
-      col_names <- c(col_names, paste(pair$nam[1], pair$nam[2], sep = "/"))
-    }
-  }
-  dS <- matrix(dS, nrow=1)
-  colnames(dS) <- col_names
-  
-  ####
+  dS <- dnds_results$ks[dnds_results$group == group]
+
   
   
-  
-  
-  
-  ##############
-  
-  #if(length(inputs$freqs) != length(dS)){
-  #  stop("number of sequences provided must be twice the number of frequencies")
-  #}
   
   output$freqs <- rep(inputs$freqs, length(dS))
   output$dS <- dS
   
-  if(any(dS == 0)){return(NA)} 
   
-  for(i in 1:length(dS)){
+  #if(any(dS == 0)){return(NA)} 
+  
+  for(i in 1:length(dS)){ # will be 1:1 when only dup pairs 
     up <- 1e-3
     t <- (dS[i]*35)/up
-    #if(!is.na(t)){
-    out1 <- Genedupdip_neutralgenerator(inputs$N, up)
-    out2 <- mexpv_dipneut_CUSTOM(t=t, A=t(out1[[1]]), v=out1[[2]], N=inputs$N, Pos=out1[[3]])
+
+    out2 <- mexpv_dipneut_CUSTOM(t=t, A=t(neut_matrix[[1]]), v=neut_matrix[[2]], N=inputs$N, Pos=neut_matrix[[3]])
     
-    if (any(is.na(out2))){return(NA)}
+    #if (any(is.na(out2))){return(NA)}
     
     output$crit_lower[i] <- out2[[2]][length(out2[[2]])]
     output$crit_upper[i] <- out2[[3]][length(out2[[3]])]
@@ -464,47 +377,54 @@ CNVSelect_test_custom <- function(input_file, fasta_file){
 }
 
 
-
-group = 0 
-output_df <- data.frame()
-
-for (file_name in list.files('C:/Users/17735/Downloads/Dmel_Duplicate_Genes/CNVSelectR/Connected_Eq_Combined_Codon_Alignments/')) {
-  group = group + 1
+run_CNVSelectR <- function(freqs, dnds_results, neut_matrix, n_individuals, ploidy, full_or_approx) {
   
-  fasta_file <- paste0("C:/Users/17735/Downloads/Dmel_Duplicate_Genes/CNVSelectR/Connected_Eq_Combined_Codon_Alignments/",file_name)
-  freq <- sum(grepl("^>", readLines(fasta_file))) / 2
-  
-  nrep <- freq 
-  
-  add_frequencies <- rep(freq/47, nrep)
-  add_NAs <- rep(NA, nrep + 1)
-  
-  input_file_table <- data.frame(
-    A = c("Ne", "ploidy", "full/approximate", "frequency", add_frequencies),
-    B = c(47, 2, 'full', add_NAs))
-  write.table(input_file_table,file='C:/Users/17735/Downloads/Dmel_Duplicate_Genes/CNVSelectR/input_file.tsv')
-  input_file <- 'C:/Users/17735/Downloads/Dmel_Duplicate_Genes/CNVSelectR/input_file.tsv'
+  dnds_results <- dnds_results %>%
+    mutate(group = as.numeric(group)) %>%
+    left_join(freqs, ., by = 'group') %>%
+    mutate(freq = freq / n_individuals)
   
   
+  output_df <- data.frame()
   
-  tryCatch({# error whenever internal stop codons 
-    out <- CNVSelect_test_custom(input_file, fasta_file)
+  for (fasta_name in list.files('C:/Users/17735/Downloads/Dmel_Duplicate_Genes/CNVSelectR/Connected_Eq_Combined_Codon_Alignments/', full.names = T)) {
+    group <- str_extract(basename(fasta_name), "(?<=group_)[^\\.]+(?=\\.fa)")
     
-    if (!any(is.na(out))) {
+    freq <- dnds_results$freq[dnds_results$group == group][1]
+    add_frequencies <- rep(freq, nrep)
+    add_NAs <- rep(NA, nrep + 1)
+    
+    input_file_table <- data.frame(
+      A = c("Ne", "ploidy", "full/approximate", "frequency", add_frequencies),
+      B = c(n_individuals, ploidy, full_or_approx, add_NAs))
+    
+    
+    tryCatch({# error whenever internal stop codons 
+      out <- CNVSelect_test_custom(neut_matrix, input_file_table, dnds_results)
+      
+      
       for (i in 1:length(out[['dS']])) {
         ds <- out[['dS']][i]
-        name <- colnames(out[['dS']])[i]  
+        name <- group
         pval <- out[['p_val']][i]
         
         output_df <- rbind(output_df, data.frame(name, ds, pval, group))
       }
-    }
-  }, error = function(e) {
-    # If an error occurs, print a message and continue with the loop
-    print(paste("Error occurred for file:", file_name))
-  })
+      
+    }, error = function(e) {
+      # If an error occurs, print a message and continue with the loop
+      print(paste("Error occurred for file:", file_name))
+    })
+    
+    print(group)
+  }
   
-  print(group)
+  
+  
+  
+  
+  
+  
 }
 
 
@@ -513,22 +433,38 @@ for (file_name in list.files('C:/Users/17735/Downloads/Dmel_Duplicate_Genes/CNVS
 
 
 
+##########
+main_pop_dnds <- function(nuc_file, prot_file, aligner = 'muscle', replace_dirs = T) {
+  replace_dirs <- F ############## remove 
+  make_temp_dirs(replace_dirs)
+  
+  #get_paired_fastas(pairs, nuc_file, prot_file)
+  get_prot_alignments(aligner)
+  get_codon_alignments()
+  dnds_results <- get_dnds()
+  return(dnds_results)
+}
 
 
+cnvs <- read.csv("C:/Users/17735/Downloads/Dmel_Duplicate_Genes/connected_dups_sep.tsv", sep="")
+full_or_approx = 'full'
+n_individuals = 47
+ploidy = 2
 
+main_Segregating_Duplications <- function(cnvs, dnds_results, popgen_dnds_exists = F, n_individuals, ploidy, full_or_approx) {
+  
+  pairs <- get_pairs(cnvs)
+  freqs <- get_freqs(pairs)
+  
+  if (popgen_dnds_exists == F){dnds_results <- main_pop_dnds()}
+  
+  
+  neut_matrix <- CNVSelectR::Genedupdip_neutralgenerator(n_individuals, up = 1e-3)
+  output <- run_CNVSelectR(freqs, dnds_results, neut_matrix, n_individuals, ploidy, full_or_approx)
+  
 
-##################
+}
 
-
-
-
-# allow more than pairs then select pairs from pool?
-# combine pairs of codon alignments with codon alignments of groupmate pairs 
-#c_command <- paste0('
-#for file in ', here_linux_dep,'/Connected_Eq_Codon_Alignments/*; do
-#    base_name=$(basename "$file" | sed "s/\(group_[0-9]\+\).*\(\..*\)/\1\2/")
-#    cat "$file" >> "./CNVSelectR/Connected_Eq_Combined_Codon_Alignments/${base_name}"
-#  done
-#')
+###########
 
 
