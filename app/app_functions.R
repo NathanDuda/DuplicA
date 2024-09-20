@@ -75,3 +75,19 @@ dirInput <- function(inputId, label, width = NULL, buttonLabel = "Browse...",
   )
 }
 
+
+# add CSS to style buttons make the sidebar narrower
+add_css_style <- function() {
+  tags$style(HTML("
+    .sidebar-buttons .action-button {
+      display: block;
+      width: 100%;
+      margin-bottom: 15px;
+      background-color: #007BFF;  /* Blue buttons */
+      border-color: #007BFF;
+    }
+    .sidebar-buttons .action-button:hover {
+      background-color: #0056b3;
+    }
+  "))
+}

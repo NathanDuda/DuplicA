@@ -8,9 +8,9 @@ library(fs) # for file paths
 source('./Scripts/setup.R')
 source('./app_functions.R')
 source('./app_pages.R')
-
 source('./Scripts/model_OrthoFinder.R')
-#source('./Scripts/model_Segregating.R')
+source('./Scripts/model_DnDs.R')
+source('./Scripts/model_Segregating_Duplicates.R')
 
 # UI with dark mode theme and sidebar layout
 ui <- fluidPage(
@@ -18,18 +18,7 @@ ui <- fluidPage(
   
   
   # Add CSS to ensure buttons are styled and the sidebar is narrower
-  tags$style(HTML("
-    .sidebar-buttons .action-button {
-      display: block;
-      width: 100%;
-      margin-bottom: 15px;
-      background-color: #007BFF;  /* Blue buttons */
-      border-color: #007BFF;
-    }
-    .sidebar-buttons .action-button:hover {
-      background-color: #0056b3;
-    }
-  ")),
+  add_css_style(),
   
   sidebarLayout(
     sidebarPanel(
@@ -104,11 +93,15 @@ server <- function(input, output, session) {
              
              h4('Select Data Types:'),
              checkboxGroupInput("data_types", "", 
-                                choices = c("Expression Data", 
+                                choices = c(# comparative gen
+                                            "Expression Data", 
                                             "OrthoFinder Data", 
                                             "Duplicate Gene Data",
-                                            'Nucleotide Sequences', 
-                                            'Protein Sequences'),
+                                            'Nucleotide CDS Sequences', 
+                                            'Protein Sequences',
+                                            # pop gen 
+                                            'Population Duplicate Gene Data',
+                                            'Population Nucleotide CDS Sequences'),
                                 selected = character(0)),
              tags$div(style = "margin-bottom: 40px;"), # empty space
              uiOutput("available_models")
@@ -121,6 +114,7 @@ server <- function(input, output, session) {
     data_types <- input$data_types
     models <- c()
     
+    # comparative gen
     if (("Nucleotide Sequences" %in% data_types) | ("Protein Sequences" %in% data_types)) {
       models <- c(models, "OrthoFinder")
       data_types <- c(data_types, 'OrthoFinder Data')
@@ -132,6 +126,12 @@ server <- function(input, output, session) {
     
     if (("Expression Data" %in% data_types) & ("Duplicate Gene Data" %in% data_types)) {
       models <- c(models, "CDROM Model - Custom Input")  # Assuming "CDROM Model" also works with OrthoFinder Data
+    }
+    
+    # pop gen 
+    if (("Population Duplicate Gene Data" %in% data_types) & ("Population Nucleotide CDS Sequences" %in% data_types)) {
+      models <- c(models, "DnDs")  
+      models <- c(models, "Segregating Duplicates Selection Model") 
     }
     
     
@@ -146,12 +146,17 @@ server <- function(input, output, session) {
   })
       
       
-  # Function to handle directory selection
+  # Function to handle file selection
   shinyFileChoose(input, "expression_file", roots = roots, session = session)
   shinyFileChoose(input, "ortho_dir", roots = roots, session = session)
   shinyFileChoose(input, "dups_file", roots = roots, session = session)
   shinyFileChoose(input, "exp_dir", roots = roots, session = session)
   shinyFileChoose(input, "protein_folder", roots = roots, session = session)
+  
+  shinyFileChoose(input, "cnvs_path", roots = roots, session = session)
+  shinyFileChoose(input, "nuc_seqs_file", roots = roots, session = session)
+  shinyFileChoose(input, "prot_seqs_file", roots = roots, session = session)
+  
   
   # Reactive expression to get the selected file's absolute path
   expression_file <- reactive({
@@ -179,12 +184,31 @@ server <- function(input, output, session) {
     parseFilePaths(roots, input$protein_folder)$datapath
   })
   
+  
+  cnvs_path <- reactive({
+    req(input$cnvs_path)
+    parseFilePaths(roots, input$cnvs_path)$datapath
+  })
+  
+  nuc_seqs_file <- reactive({
+    req(input$nuc_seqs_file)
+    parseFilePaths(roots, input$nuc_seqs_file)$datapath
+  })
+  
+  prot_seqs_file <- reactive({
+    req(input$prot_seqs_file)
+    parseFilePaths(roots, input$prot_seqs_file)$datapath
+  })
+  
   # show file paths in UI when selected 
   output$expression_file_path <- renderText({expression_file()})
   output$ortho_dir_path <- renderText({ortho_dir()})
   output$dups_file_path <- renderText({dups_file()})
   output$exp_dir_path <- renderText({exp_dir()})
   output$protein_folder_path <- renderText({protein_folder()})
+  output$cnvs_path <- renderText({cnvs_path()})
+  output$nuc_seqs_file <- renderText({nuc_seqs_file()})
+  output$prot_seqs_file <- renderText({prot_seqs_file()})
   
   # Run model when "Run Model" button is clicked
   observeEvent(input$run_cdrom, {
@@ -256,6 +280,33 @@ server <- function(input, output, session) {
         split_hogs = input$split_hogs, 
         no_msa_trim = input$msa_trim) 
         
+      
+      shinyalert("Success!", '', type = "info")
+    })
+  })
+  
+  observeEvent(input$run_dnds_pop, {
+    
+    main_pop_dnds(cnvs_path = input$cnvs_path,
+                  input$nuc_seqs_file, 
+                  input$prot_seqs_file, 
+                  aligner = input$dnds_aligner, 
+                  replace_dirs = F) # CHANGE DEFAULT TO TRUE WHEN can input directory of nuc and prot files 
+      
+  })
+  
+  observeEvent(input$run_segregating_duplications, {
+    withProgress(message = 'Running Segregating Duplications', value = 0, {
+      incProgress(0.3, detail = "This may take a few minutes")
+      
+      main_Segregating_Duplications(
+        cnvs_path = input$cnvs_path, 
+        popgen_dnds_exists = F, # set to true always in model. fix when dnds workflow option works 
+        n_individuals = input$n_individuals, 
+        ploidy = input$ploidy, 
+        ks_oversaturation_cutoff = input$ks_cutoff,
+        filter_whole_group = input$filter_whole_group)
+
       
       shinyalert("Success!", '', type = "info")
     })

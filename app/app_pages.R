@@ -139,15 +139,99 @@ orthofinder_page <- function() {
 dnds_page <- function() {
   tabPanel("Dn/Ds", 
            titlePanel("Dn/Ds"),
-           p("Get a Dn/Ds ratio for every duplicate pair.")
+           p("Get a Dn/Ds ratio for every duplicate pair."),
            
+           # Input: Nucleotide Sequences
+           fluidRow(
+             column(6, shinyFilesButton("nuc_seqs_file", "Browse: Nucleotide Sequences", '', multiple = FALSE)),
+             column(6, textOutput("nuc_seqs_file_path"),
+                    shinyFilesButton("cnvs_path", "Browse: CNVs File", '', multiple = FALSE))
+           ),
+           
+           tags$div(style = "margin-bottom: 20px;"), # empty space
+           
+          
+           
+           # Run Button
+           actionButton("run_dnds_pop", "Run Dn/Ds", class = "btn-success"),
+           
+           tags$div(style = "margin-bottom: 40px;"), # empty space
+           
+           # Additional options (if needed)
+           actionButton("toggle_dnds_options", "Additional Options", class = "btn-secondary"),
+           
+           conditionalPanel(
+             condition = "input.toggle_dnds_options % 2 == 1",
+             tags$div(style = "margin-top: 20px;"),
+             fluidRow(
+               column(6, shinyFilesButton("prot_seqs_file", "Browse: Protein Sequences (Optional)", '', multiple = FALSE)),
+               column(6, textOutput("prot_seqs_file_path"),
+                         selectInput("dnds_aligner", tags$span("Protein Alignment Program", style = "font-size: 13px;"), choices = c("muscle")),
+               )
+             )
            )
+  )
 }
+
 
 segregating_duplicates_page <- function() {
   
-  h3('seg')
+  tabPanel("Segregating Duplications",
+           titlePanel("Segregating Duplications"),
+           p("Run the Segregating Duplications model."),
+           
+           
+           
+           # Input: dN/dS Results
+           fluidRow(
+             column(6, shinyFilesButton("cnvs_path", "Browse: CNVs File", '', multiple = FALSE),
+                       column(6, textOutput("cnvs_path"))),
+             column(6, 
+                    numericInput("n_individuals", "Number of Individuals", value = NA, step = 1, min = 2), 
+                    # SHOULD MIN BE 1?????????????^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                    numericInput("ploidy", "Ploidy", value = 2, min = 1, max = 2, step = 1))
+           ),
+           
+           tags$div(style = "margin-bottom: 20px;"), # empty space
+           
+           # Run Button
+           actionButton("run_segregating_duplications", "Run Model", class = "btn-success"),
+           
+           tags$div(style = "margin-bottom: 40px;"), # empty space
+           
+           # Additional options
+           actionButton("toggle_segregating_options", "Additional Options", class = "btn-secondary"),
+           
+           conditionalPanel(
+             condition = "input.toggle_segregating_options % 2 == 1",
+             tags$div(style = "margin-top: 20px;"),
+             fluidRow(
+               column(6,
+                      selectInput("full_or_approx", "Full or Approximate Model", choices = c("full", "approximate"))
+               ),
+               column(6,
+                      numericInput("ks_cutoff", "KS Oversaturation Cutoff", value = 0.8, step = 0.1, min = 0, max = 1),
+                      checkboxInput("filter_whole_group", "Filter Whole Group", value = TRUE)
+               )
+             )
+           )
+  )
+
   
+  
+  
+  
+  
+  # ks_highest_cutoff default is 0.8, mention that: with a high n_individuals, this value needs to be lower
+  # when error, suggest lowering ks_highest cutoff bc of high n_individuals??????? test with diff values 
+  
+  
+  # option to only look at duplicates in specific individuals or a duplicates present in range number of individuals 
 }
 
 
+
+
+# if fasta doesnt include all individuals, suggest use_all_fastas_in_dir
+# use_all_fastas_in_dir, default F
+# 
