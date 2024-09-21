@@ -1,10 +1,10 @@
 
 
 
-
 get_pairs <- function(cnvs_path) {
   
   cnvs <- read.csv(cnvs_path, sep="")
+  
   colnames(cnvs) <- c('individual', 'gene', 'group')
   
   pairs <- cnvs %>%
@@ -16,7 +16,6 @@ get_pairs <- function(cnvs_path) {
   
   return(pairs)
 }
-
 
 
 make_temp_dirs <- function(replace_dirs) {

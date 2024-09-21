@@ -24,11 +24,12 @@ get_freqs <- function(pairs) {
 ##################################################
 
 
-run_CNVSelectR <- function(freqs, dnds_results, neut_matrix, n_individuals, ploidy, ks_oversaturation_cutoff, filter_whole_group) {
+run_CNVSelectR <- function(freqs, dnds_results_path, neut_matrix, n_individuals, ploidy, ks_oversaturation_cutoff, filter_whole_group) {
   
   freqs <- freqs %>%
     mutate(group = as.character(group))
   
+  dnds_results <- read.csv(dnds_results_path, sep = '')
   dnds <- dnds_results %>%
     mutate(group = as.character(group)) %>%
     left_join(freqs, ., by = 'group') %>%
@@ -69,6 +70,9 @@ run_CNVSelectR <- function(freqs, dnds_results, neut_matrix, n_individuals, ploi
     group_result <- CNVSelect_test_altered(neut_matrix, input_file_table, dS, names)
       
     total_result <- rbind(total_result, group_result)
+    
+    
+    print(group)
 
   }
   return(total_result)
@@ -79,21 +83,13 @@ run_CNVSelectR <- function(freqs, dnds_results, neut_matrix, n_individuals, ploi
 
 ##########
 
-main_Segregating_Duplications <- function(cnvs_path, popgen_dnds_exists = F, n_individuals, ploidy, ks_oversaturation_cutoff, filter_whole_group) {
+main_Segregating_Duplications <- function(cnvs_path, dnds_results_path, n_individuals, ploidy, ks_oversaturation_cutoff, filter_whole_group) {
   
   pairs <- get_pairs(cnvs_path)
   freqs <- get_freqs(pairs)
   
-  popgen_dnds_exists <- T # REMOVEEEEEEEEEEEEEEEEEEEEEE
-  if (popgen_dnds_exists == F){source('C:/Users/17735/Downloads/DuplicA/app/Scripts/model_DnDs.R') ######## CHANGE
-                               main_pop_dnds()
-                               popgen_dnds_exists <- T}
-  
-  if (popgen_dnds_exists == T){dnds_results <- read.csv('C:/Users/17735/Downloads/DuplicA/TRASH_dnds_results.tsv', sep = '')} # makes group numeric when all numbers 
-  
-  
   neut_matrix <- CNVSelectR::Genedupdip_neutralgenerator(n_individuals, up = 1e-3)
-  output <- run_CNVSelectR(freqs, dnds_results, neut_matrix, n_individuals, ploidy, ks_oversaturation_cutoff, filter_whole_group)
+  output <- run_CNVSelectR(freqs, dnds_results_path, neut_matrix, n_individuals, ploidy, ks_oversaturation_cutoff, filter_whole_group)
   
 
 }
@@ -104,10 +100,9 @@ main_Segregating_Duplications <- function(cnvs_path, popgen_dnds_exists = F, n_i
 
 
 #main_Segregating_Duplications(cnvs_path = "C:/Users/17735/Downloads/Dmel_Duplicate_Genes/connected_dups_sep.tsv", 
- #                             popgen_dnds_exists = T, 
-  #                            n_individuals = 47, 
-   #                           ploidy = 2, 
-    #                          ks_oversaturation_cutoff = 0.8,
-     #                         filter_whole_group = T)
+ #                             n_individuals = 47, 
+  #                            ploidy = 2, 
+   #                           ks_oversaturation_cutoff = 0.8,
+    #                          filter_whole_group = T)
 
 

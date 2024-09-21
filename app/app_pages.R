@@ -143,9 +143,10 @@ dnds_page <- function() {
            
            # Input: Nucleotide Sequences
            fluidRow(
-             column(6, shinyFilesButton("nuc_seqs_file", "Browse: Nucleotide Sequences", '', multiple = FALSE)),
-             column(6, textOutput("nuc_seqs_file_path"),
-                    shinyFilesButton("cnvs_path", "Browse: CNVs File", '', multiple = FALSE))
+             column(6, shinyFilesButton("nuc_seqs_file", "Browse: Nucleotide Sequences", '', multiple = FALSE),
+                       textOutput("nuc_seqs_file")),
+             column(6, shinyFilesButton("cnvs_path", "Browse: CNVs File", '', multiple = FALSE),
+                       textOutput("cnvs_path"))
            ),
            
            tags$div(style = "margin-bottom: 20px;"), # empty space
@@ -164,9 +165,8 @@ dnds_page <- function() {
              condition = "input.toggle_dnds_options % 2 == 1",
              tags$div(style = "margin-top: 20px;"),
              fluidRow(
-               column(6, shinyFilesButton("prot_seqs_file", "Browse: Protein Sequences (Optional)", '', multiple = FALSE)),
-               column(6, textOutput("prot_seqs_file_path"),
-                         selectInput("dnds_aligner", tags$span("Protein Alignment Program", style = "font-size: 13px;"), choices = c("muscle")),
+               column(6, checkboxInput("use_all_fastas_in_dir", tags$span("Combine all fasta files in the directory?", style = "font-size: 13px;"), value = FALSE)),
+               column(6, selectInput("dnds_aligner", tags$span("Protein Alignment Program", style = "font-size: 13px;"), choices = c("muscle")),
                )
              )
            )
@@ -185,7 +185,9 @@ segregating_duplicates_page <- function() {
            # Input: dN/dS Results
            fluidRow(
              column(6, shinyFilesButton("cnvs_path", "Browse: CNVs File", '', multiple = FALSE),
-                       column(6, textOutput("cnvs_path"))),
+                       column(6, textOutput("cnvs_path")),
+                       shinyFilesButton("dnds_results_path", "Browse: DnDs Results File", '', multiple = FALSE),
+                       column(6, textOutput("dnds_results_path"))),
              column(6, 
                     numericInput("n_individuals", "Number of Individuals", value = NA, step = 1, min = 2), 
                     # SHOULD MIN BE 1?????????????^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

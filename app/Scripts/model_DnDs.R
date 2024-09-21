@@ -3,59 +3,66 @@
 source('C:/Users/17735/Downloads/DuplicA/app/Scripts/pop_functions.R') ######## CHANGE
 
 
-combine_raw_fastas <- function() {
+combine_raw_fastas <- function(file_path, type) {
   
-  nuc_file_extension <- file_ext(nuc_file)
-  prot_file_extension <- file_ext(prot_file)
-  
-  nuc_dir_path <- dirname(nuc_file)
-  prot_dir_path <- dirname(prot_file)
-  
-  nuc_output_file_path <- paste0(nuc_dir_path, '/combined_nuc_fasta.fa')
-  prot_output_file_path <- paste0(prot_dir_path, '/combined_prot_fasta.fa')
-  
-  cat_nuc_command <- paste('wsl', "cat", file.path(nuc_dir_path, '.', nuc_file_extension), ">", nuc_output_file_path)
-  system(cat_nuc_command)
-  cat_prot_command <- paste('wsl', "cat", file.path(prot_dir_path, '.', prot_file_extension), ">", prot_output_file_path)
-  system(cat_prot_command)
-  
-  
-  fasta_files <- list(nuc_file = nuc_output_file_path, prot_file = prot_output_file_path)
-  
-  return(fasta_files)
+  file_extension <- file_ext(file_path)
+  dir_path <- dirname(file_path)
+  output_file_path <- paste0(dir_path, '/combined_', type, '_fasta.fa')
+
+  cat_command <- paste0('wsl cat ', dir_path, '/*.', file_extension, " > ", output_file_path)
+  system(cat_command)
+  #system(paste0('wsl unix2dos ', output_file_path))
+
+  return(output_file_path)
 }
 
-translate_nucs_to_prots <- function() {
-  
-  
+
+translate_nucs_to_prots <- function(nuc_file_path) {
+    nuc_seqs <- readDNAStringSet(nuc_file_path, format = "fasta")
+    prot_seqs <- Biostrings::translate(nuc_seqs)
+    prot_file_path <- paste0(dirname(nuc_file_path), '/combined_prot_fasta.fa')
+    
+    writeXStringSet(prot_seqs, prot_file_path, format = "fasta")
 }
 
-get_paired_fastas <- function(cnvs, nuc_file, prot_file, use_all_fastas_in_dir) {
+
+get_paired_fastas <- function(pairs, nuc_file_path, prot_file_path, use_all_fastas_in_dir) {
   
+
   if(use_all_fastas_in_dir == T){
-    fasta_files <- combine_raw_fastas()
-    nuc_file <- fasta_files$nuc_file
-    prot_file <- fasta_files$prot_file
+    nuc_file_path <- gsub(here, here_linux, nuc_file_path)
+    nuc_file_path <- combine_raw_fastas(nuc_file_path, type = 'nuc')
+    nuc_file_path <- gsub(here_linux, here, nuc_file_path)
+    if (!is.na(prot_file_path)) {
+      prot_file_path <- gsub(here, here_linux, prot_file_path)
+      prot_file_path <- combine_raw_fastas(prot_file_path, type = 'prot')
+      prot_file_path <- gsub(here_linux, here, prot_file_path)
+      }
+  }
+  
+
+  if (is.na(prot_file_path)) {
+    prot_file_path <- translate_nucs_to_prots(nuc_file_path)
   }
   
   
-  nucs <- readDNAStringSet(nuc_file)
+  nucs <- readDNAStringSet(nuc_file_path)
   nucs <- data.frame(gene = names(nucs), nuc = as.character(nucs))  
   
-  cnvs <- left_join(cnvs, nucs, by = 'gene')
+  pairs <- left_join(pairs, nucs, by = 'gene')
   rm(nucs)
   
   
-  prots <- readAAStringSet(prot_file)
+  prots <- readAAStringSet(prot_file_path)
   prots <- data.frame(gene = names(prots), prot = as.character(prots))
   
-  cnvs <- left_join(cnvs, prots, by = 'gene')
+  pairs <- left_join(pairs, prots, by = 'gene')
   rm(prots)
   
   
   # write pairs to fasta files 
-  for (group_id in unique(cnvs$group)) {
-    group_rows <- cnvs %>% filter(group == group_id)
+  for (group_id in unique(pairs$group)) {
+    group_rows <- pairs %>% filter(group == group_id)
     
     for (row_num in 1:nrow(group_rows)) {
       row <- group_rows[row_num,]
@@ -125,14 +132,16 @@ get_dnds <- function() {
   return(dnds_results)
 }
 
-main_pop_dnds <- function(cnvs_path, nuc_file, prot_file = NA, aligner = 'muscle', replace_dirs) {
+
+#####
+# prot_file_path IS NOT ALLOWED TO BE PROVIDED BY THE USER (because cant make the file optional)
+main_pop_dnds <- function(cnvs_path, nuc_file_path, prot_file_path = NA, aligner = 'muscle', replace_dirs, use_all_fastas_in_dir) {
   replace_dirs <- F ############## remove 
   make_temp_dirs(replace_dirs)
   
   pairs <- get_pairs(cnvs_path)
   
-  
-  get_paired_fastas(pairs, nuc_file, prot_file)
+  get_paired_fastas(pairs, nuc_file_path, prot_file_path, use_all_fastas_in_dir)
   get_prot_alignments(aligner)
   get_codon_alignments()
   dnds_results <- get_dnds()
@@ -143,7 +152,12 @@ main_pop_dnds <- function(cnvs_path, nuc_file, prot_file = NA, aligner = 'muscle
 
 
 
-
+#main_pop_dnds(cnvs_path = 'C:/Users/17735/Downloads/AAAAA_Seg_Dups_Input_Example/connected_dups_sep.tsv',
+ #             nuc_file_path = "C:/Users/17735/Downloads/DuplicA/app/Temp/Connected_Eq_Nucleotide_Sequences/group_24_TOM_008.fa",
+  #            prot_file_path = NA, # "C:/Users/17735/Downloads/DuplicA/app/Temp/Connected_Eq_Protein_Sequences/group_24_TOM_008.fa"
+   #           aligner = 'muscle', 
+    #          replace_dirs = F, 
+     #         use_all_fastas_in_dir = T)
 
 
 

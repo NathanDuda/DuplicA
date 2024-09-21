@@ -4,6 +4,8 @@ library(bslib)
 library(htmltools)
 library(shinyalert)
 library(fs) # for file paths 
+library(Biostrings) # translate() in translate_nucs_to_prots() in model_OrthoFinder.R
+library(tools) # file_ext() in combine_raw_fastas() in model_OrthoFinder.R
 
 source('./Scripts/setup.R')
 source('./app_functions.R')
@@ -32,7 +34,7 @@ ui <- fluidPage(
           actionButton("select_cdrom", "CDROM", class = "btn-primary"),
           actionButton("select_cloud", "CLOUD", class = "btn-primary"),
           h5('Selective Pressure'),
-          actionButton("select_dnds", "DnDs", class = "btn-primary"),
+          actionButton("select_dnds", "Dn/Ds", class = "btn-primary"),
           actionButton("select_segregating_duplicates", "Segregating Duplicates", class = "btn-primary"),
           br()
       )
@@ -155,8 +157,7 @@ server <- function(input, output, session) {
   
   shinyFileChoose(input, "cnvs_path", roots = roots, session = session)
   shinyFileChoose(input, "nuc_seqs_file", roots = roots, session = session)
-  shinyFileChoose(input, "prot_seqs_file", roots = roots, session = session)
-  
+  shinyFileChoose(input, "dnds_results_path", roots = roots, session = session)
   
   # Reactive expression to get the selected file's absolute path
   expression_file <- reactive({
@@ -194,11 +195,11 @@ server <- function(input, output, session) {
     req(input$nuc_seqs_file)
     parseFilePaths(roots, input$nuc_seqs_file)$datapath
   })
-  
-  prot_seqs_file <- reactive({
-    req(input$prot_seqs_file)
-    parseFilePaths(roots, input$prot_seqs_file)$datapath
-  })
+
+  dnds_results_path <- reactive({
+    req(input$dnds_results_path)
+    parseFilePaths(roots, input$dnds_results_path)$datapath
+  }) 
   
   # show file paths in UI when selected 
   output$expression_file_path <- renderText({expression_file()})
@@ -208,7 +209,7 @@ server <- function(input, output, session) {
   output$protein_folder_path <- renderText({protein_folder()})
   output$cnvs_path <- renderText({cnvs_path()})
   output$nuc_seqs_file <- renderText({nuc_seqs_file()})
-  output$prot_seqs_file <- renderText({prot_seqs_file()})
+  output$dnds_results_path <- renderText({dnds_results_path()})
   
   # Run model when "Run Model" button is clicked
   observeEvent(input$run_cdrom, {
@@ -286,22 +287,27 @@ server <- function(input, output, session) {
   })
   
   observeEvent(input$run_dnds_pop, {
-    
-    main_pop_dnds(cnvs_path = input$cnvs_path,
-                  input$nuc_seqs_file, 
-                  input$prot_seqs_file, 
-                  aligner = input$dnds_aligner, 
-                  replace_dirs = F) # CHANGE DEFAULT TO TRUE WHEN can input directory of nuc and prot files 
+    withProgress(message = 'Calculating Dn/Ds', value = 0, {
+      incProgress(0.3, detail = "This may take a few minutes")
+
+      main_pop_dnds(cnvs_path = cnvs_path(),
+                      nuc_file_path = nuc_seqs_file(), 
+                      aligner = input$dnds_aligner, 
+                      replace_dirs = F,# CHANGE DEFAULT TO TRUE WHEN can input directory of nuc and prot files 
+                      use_all_fastas_in_dir = input$use_all_fastas_in_dir)
       
+      
+      shinyalert("Success!", '', type = "info")
+    })
   })
   
   observeEvent(input$run_segregating_duplications, {
     withProgress(message = 'Running Segregating Duplications', value = 0, {
       incProgress(0.3, detail = "This may take a few minutes")
-      
+
       main_Segregating_Duplications(
-        cnvs_path = input$cnvs_path, 
-        popgen_dnds_exists = F, # set to true always in model. fix when dnds workflow option works 
+        cnvs_path = cnvs_path(), 
+        dnds_results_path = dnds_results_path(),
         n_individuals = input$n_individuals, 
         ploidy = input$ploidy, 
         ks_oversaturation_cutoff = input$ks_cutoff,
