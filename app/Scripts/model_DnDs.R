@@ -7,12 +7,14 @@ combine_raw_fastas <- function(file_path, type) {
   
   file_extension <- file_ext(file_path)
   dir_path <- dirname(file_path)
-  output_file_path <- paste0(dir_path, '/combined_', type, '_fasta.fa')
+  temp_output_file_path <- paste0(dir_path, '/temp_', type, '_fasta.fa')
+  output_file_path <- paste0(dirname(dir_path), '/combined_', type, '_fasta.fa')
 
-  cat_command <- paste0('wsl cat ', dir_path, '/*.', file_extension, " > ", output_file_path)
-  system(cat_command)
-  #system(paste0('wsl unix2dos ', output_file_path))
-
+  system(paste0('wsl cat ', dir_path, '/*.', file_extension, " > ", temp_output_file_path)) # concatenate all fasta files 
+  
+  system(paste0('wsl sed \'s/-/_/g\' ', temp_output_file_path, ' > ', output_file_path)) # replace '-' with '_' (illegal gene name character)
+  system(paste0('wsl rm ', temp_output_file_path)) 
+  
   return(output_file_path)
 }
 
@@ -23,6 +25,8 @@ translate_nucs_to_prots <- function(nuc_file_path) {
     prot_file_path <- paste0(dirname(nuc_file_path), '/combined_prot_fasta.fa')
     
     writeXStringSet(prot_seqs, prot_file_path, format = "fasta")
+    
+    return(prot_file_path)
 }
 
 
@@ -32,10 +36,12 @@ get_paired_fastas <- function(pairs, nuc_file_path, prot_file_path, use_all_fast
   if(use_all_fastas_in_dir == T){
     nuc_file_path <- gsub(here, here_linux, nuc_file_path)
     nuc_file_path <- combine_raw_fastas(nuc_file_path, type = 'nuc')
+    system(paste0('wsl unix2dos ', nuc_file_path))
     nuc_file_path <- gsub(here_linux, here, nuc_file_path)
     if (!is.na(prot_file_path)) {
       prot_file_path <- gsub(here, here_linux, prot_file_path)
       prot_file_path <- combine_raw_fastas(prot_file_path, type = 'prot')
+      system(paste0('wsl unix2dos ', prot_file_path))
       prot_file_path <- gsub(here_linux, here, prot_file_path)
       }
   }
@@ -46,14 +52,22 @@ get_paired_fastas <- function(pairs, nuc_file_path, prot_file_path, use_all_fast
   }
   
   
-  nucs <- readDNAStringSet(nuc_file_path)
+  
+  
+  nucs <- readDNAStringSet(nuc_file_path, format = "fasta")
   nucs <- data.frame(gene = names(nucs), nuc = as.character(nucs))  
+  
+  #nucs$gene <- sub(".*_", "", nucs$gene) # REMOVE - SPECIFIC TO MY DATASET (unit test, names match)
+  
+  # split gene name and individual name from fasta names, req fasta names to be this (req individual files per indiv and implement this)
+  #
+  #
   
   pairs <- left_join(pairs, nucs, by = 'gene')
   rm(nucs)
   
   
-  prots <- readAAStringSet(prot_file_path)
+  prots <- readAAStringSet(prot_file_path, format = 'fasta')
   prots <- data.frame(gene = names(prots), prot = as.character(prots))
   
   pairs <- left_join(pairs, prots, by = 'gene')
@@ -152,12 +166,18 @@ main_pop_dnds <- function(cnvs_path, nuc_file_path, prot_file_path = NA, aligner
 
 
 
-#main_pop_dnds(cnvs_path = 'C:/Users/17735/Downloads/AAAAA_Seg_Dups_Input_Example/connected_dups_sep.tsv',
- #             nuc_file_path = "C:/Users/17735/Downloads/DuplicA/app/Temp/Connected_Eq_Nucleotide_Sequences/group_24_TOM_008.fa",
-  #            prot_file_path = NA, # "C:/Users/17735/Downloads/DuplicA/app/Temp/Connected_Eq_Protein_Sequences/group_24_TOM_008.fa"
-   #           aligner = 'muscle', 
-    #          replace_dirs = F, 
-     #         use_all_fastas_in_dir = T)
+main_pop_dnds(cnvs_path = 'C:/Users/17735/Downloads/AAAAA_Seg_Dups_Input_Example/connected_dups_sep.tsv',
+              nuc_file_path = "C:/Users/17735/Downloads/DuplicA/app/Temp/Connected_Eq_Nucleotide_Sequences/group_24_TOM_008.fa",
+              prot_file_path = NA, # "C:/Users/17735/Downloads/DuplicA/app/Temp/Connected_Eq_Protein_Sequences/group_24_TOM_008.fa"
+              aligner = 'muscle', 
+              replace_dirs = F, 
+              use_all_fastas_in_dir = T)
 
+#cnvs_path = 'C:/Users/17735/Downloads/AAAAA_Seg_Dups_Input_Example/connected_dups_sep.tsv'
+#nuc_file_path = "C:/Users/17735/Downloads/DuplicA/app/Temp/Connected_Eq_Nucleotide_Sequences/group_24_TOM_008.fa"
+#prot_file_path = NA # "C:/Users/17735/Downloads/DuplicA/app/Temp/Connected_Eq_Protein_Sequences/group_24_TOM_008.fa"
+#aligner = 'muscle' 
+#replace_dirs = F
+#use_all_fastas_in_dir = T
 
 

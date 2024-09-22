@@ -95,7 +95,7 @@ server <- function(input, output, session) {
              
              h4('Select Data Types:'),
              checkboxGroupInput("data_types", "", 
-                                choices = c(# comparative gen
+                                choices = c(# multi species
                                             "Expression Data", 
                                             "OrthoFinder Data", 
                                             "Duplicate Gene Data",
@@ -116,7 +116,7 @@ server <- function(input, output, session) {
     data_types <- input$data_types
     models <- c()
     
-    # comparative gen
+    # multi species
     if (("Nucleotide Sequences" %in% data_types) | ("Protein Sequences" %in% data_types)) {
       models <- c(models, "OrthoFinder")
       data_types <- c(data_types, 'OrthoFinder Data')
