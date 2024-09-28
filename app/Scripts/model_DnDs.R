@@ -10,10 +10,45 @@ combine_raw_fastas <- function(file_path, type) {
   temp_output_file_path <- paste0(dir_path, '/temp_', type, '_fasta.fa')
   output_file_path <- paste0(dirname(dir_path), '/combined_', type, '_fasta.fa')
 
-  system(paste0('wsl cat ', dir_path, '/*.', file_extension, " > ", temp_output_file_path)) # concatenate all fasta files 
+ 
+  fasta_files <- list.files(paste0(dir_path, "*.", file_extension), full.names = TRUE)
   
-  system(paste0('wsl sed \'s/-/_/g\' ', temp_output_file_path, ' > ', output_file_path)) # replace '-' with '_' (illegal gene name character)
-  system(paste0('wsl rm ', temp_output_file_path)) 
+  
+  
+  system(paste0("
+  wsl for file in ", dir_path, "/*.", file_extension, "; do
+    individual_name=$(basename $file)
+    individual_name=$(echo ${individual_name} | sed 's/-/_/g')
+    individual_name=$(echo ${individual_name} | sed 's/_/./g')
+    sed -i 's/>/>$individual_name_/' $file #########################################################
+  done
+  
+  cat ", dir_path, "/*.", file_extension, " > ", output_file_path))
+  
+  # Replace illegal characters ('-' with '_') that were in the gene naem in the concatenated file
+  #sed 's/-/_/g' #, temp_output_file_path, " > ", output_file_path, 
+                
+  
+  # Remove the temporary file
+  #rm , temp_output_file_path, 
+  #))
+  
+  
+  # get individual name into each gene name 
+  ##individual_name <- sub(paste0("\\.", file_extension, "$"), "", basename(file_path)) # get file name (individual name) without extension
+  ##individual_name <- gsub("-", "_", individual_name) # replace any - with _
+  ##individual_name <- gsub("_", ".", individual_name) # replace any _ with .
+  # unit test: gene names cannot have '>' in their names 
+  ##system(paste0("wsl sed -i 's/>/>", individual_name, "_/g' ", dir_path, '/', basename(file_path))) # add individual name to the start of each gene name in the fasta files >gn_name to >indiv_name_gn_name
+  
+  
+  
+  
+  
+  ##system(paste0('wsl cat ', dir_path, '/*.', file_extension, " > ", temp_output_file_path)) # concatenate all fasta files 
+  
+  ##system(paste0('wsl sed \'s/-/_/g\' ', temp_output_file_path, ' > ', output_file_path)) # replace '-' with '_' (illegal gene name character)
+  ##system(paste0('wsl rm ', temp_output_file_path)) 
   
   return(output_file_path)
 }
@@ -32,7 +67,7 @@ translate_nucs_to_prots <- function(nuc_file_path) {
 
 get_paired_fastas <- function(pairs, nuc_file_path, prot_file_path, use_all_fastas_in_dir) {
   
-
+  use_all_fastas_in_dir <- T
   if(use_all_fastas_in_dir == T){
     nuc_file_path <- gsub(here, here_linux, nuc_file_path)
     nuc_file_path <- combine_raw_fastas(nuc_file_path, type = 'nuc')
@@ -57,11 +92,17 @@ get_paired_fastas <- function(pairs, nuc_file_path, prot_file_path, use_all_fast
   nucs <- readDNAStringSet(nuc_file_path, format = "fasta")
   nucs <- data.frame(gene = names(nucs), nuc = as.character(nucs))  
   
+  
+  # individual name is characters before first _ (individual name cannot have _ (replaced with .))
+  # gene name is characters after first _ (gene name can have _)
+  
+  
   #nucs$gene <- sub(".*_", "", nucs$gene) # REMOVE - SPECIFIC TO MY DATASET (unit test, names match)
   
   # split gene name and individual name from fasta names, req fasta names to be this (req individual files per indiv and implement this)
   #
   #
+  ##############FIXIXIXIIXIXIOWDHIUHWEON
   
   pairs <- left_join(pairs, nucs, by = 'gene')
   rm(nucs)
@@ -166,12 +207,12 @@ main_pop_dnds <- function(cnvs_path, nuc_file_path, prot_file_path = NA, aligner
 
 
 
-main_pop_dnds(cnvs_path = 'C:/Users/17735/Downloads/AAAAA_Seg_Dups_Input_Example/connected_dups_sep.tsv',
-              nuc_file_path = "C:/Users/17735/Downloads/DuplicA/app/Temp/Connected_Eq_Nucleotide_Sequences/group_24_TOM_008.fa",
-              prot_file_path = NA, # "C:/Users/17735/Downloads/DuplicA/app/Temp/Connected_Eq_Protein_Sequences/group_24_TOM_008.fa"
-              aligner = 'muscle', 
-              replace_dirs = F, 
-              use_all_fastas_in_dir = T)
+#main_pop_dnds(cnvs_path = 'C:/Users/17735/Downloads/AAAAA_Seg_Dups_Input_Example/connected_dups_sep.tsv',
+ #             nuc_file_path = "C:/Users/17735/Downloads/DuplicA/app/Temp/Connected_Eq_Nucleotide_Sequences/group_24_TOM_008.fa",
+  #            prot_file_path = NA, # "C:/Users/17735/Downloads/DuplicA/app/Temp/Connected_Eq_Protein_Sequences/group_24_TOM_008.fa"
+   #           aligner = 'muscle', 
+    #          replace_dirs = F, 
+     #         use_all_fastas_in_dir = T)
 
 #cnvs_path = 'C:/Users/17735/Downloads/AAAAA_Seg_Dups_Input_Example/connected_dups_sep.tsv'
 #nuc_file_path = "C:/Users/17735/Downloads/DuplicA/app/Temp/Connected_Eq_Nucleotide_Sequences/group_24_TOM_008.fa"
