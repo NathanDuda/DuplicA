@@ -68,250 +68,6 @@ results <- cbind(results, species_1_test_LRT)
 
 
 
-exp_orig <- read.csv("C:/Users/17735/Downloads/Eight_Species/Expressed_Expression_Data.tsv", sep="")
-dups_orig <- read.csv("C:/Users/17735/Downloads/Eight_Species/Dup_Pairs_Ancestral.tsv", sep="")
-newick <- read.tree(text = '((dmoj:0.169203,dvir:0.151256)0.890019:0.076246,(dwil:0.266137,((dana:0.183164,(dyak:0.0732827,dmel:0.0732855)0.894349:0.121418)0.684997:0.0691683,(dpse:0.0284468,dper:0.0570781)0.94934:0.208308)0.61247:0.0587724)0.890019:0.076246);')
-funcs_orig <- read.csv("C:/Users/17735/Downloads/Eight_Species/Dup_Functionalizations.tsv", sep="")
-
-
-
-dups_orig <- dups_orig %>%
-  mutate(dup_species = case_when(str_detect(dup_1, "AN") ~ 'dana',
-                                 str_detect(dup_1, "ME") ~ 'dmel',
-                                 str_detect(dup_1, "MO") ~ 'dmoj',
-                                 str_detect(dup_1, "PE") ~ 'dper',
-                                 str_detect(dup_1, "PS") ~ 'dpse',
-                                 str_detect(dup_1, "VI") ~ 'dvir',
-                                 str_detect(dup_1, "WI") ~ 'dwil',
-                                 str_detect(dup_1, "YA")~ 'dyak'),
-         ancestral_species = case_when(str_detect(ancestral_copy, "AN") ~ 'dana',
-                                       str_detect(ancestral_copy, "ME") ~ 'dmel',
-                                       str_detect(ancestral_copy, "MO") ~ 'dmoj',
-                                       str_detect(ancestral_copy, "PE") ~ 'dper',
-                                       str_detect(ancestral_copy, "PS") ~ 'dpse',
-                                       str_detect(ancestral_copy, "VI") ~ 'dvir',
-                                       str_detect(ancestral_copy, "WI") ~ 'dwil',
-                                       str_detect(ancestral_copy, "YA")~ 'dyak')) %>%
-  select(dup_1, dup_2, anc = ancestral_copy, dup_species, ancestral_species) %>%
-  mutate(species_pair = paste0(dup_species, ancestral_species)) %>%
-  group_by(species_pair) %>%
-  mutate(n = n()) %>%
-  filter(n >= 294)
-
-
-
-
-tissue_list <- colnames(exp_orig)[-1]
-
-tissue_list <- 'f_wb'
-
-all_results <- data.frame()
-for (tissue in tissue_list) {
-  
-  exp <- exp_orig %>% select(YOgnID, all_of(tissue))
-  
-  
-  
-  
-  # merge with exp
-  colnames(exp) <- c('dup_1', 'dup_1_exp')
-  dups <- dups_orig %>% merge(exp, by = 'dup_1')
-  
-  colnames(exp) <- c('dup_2', 'dup_2_exp')
-  dups <- dups %>% merge(exp, by = 'dup_2')
-  
-  colnames(exp) <- c('anc', 'anc_exp')
-  dups <- dups %>% merge(exp, by = 'anc')
-  
-  
-  # add funcs
-  funcs <- funcs_orig %>%
-    select(dup_1 = Dup1, dup_2 = Dup2, anc = Ancestor, func = func_actual) %>%
-    merge(dups, ., by = c('dup_1','dup_2','anc')) %>%
-    select(func, dup_1_exp, dup_2_exp, anc_exp)
-  
-  
-  exp <- dups %>%
-    select(dup_1_exp, dup_2_exp, anc_exp) %>%
-    filter(rowSums(.) != 0)
-  colnames(exp) <- c('dyak', 'dyak', 'dmel')
-  
-  
-  
-  # run
-  
-  tt <- betaSharedTest(tree = newick,
-                       gene.data = exp,
-                       colSpecies = colnames(exp))
-  
-  tt$LRT
-  
-  
-  
-  ################################
-  
-  isTheta2edge = c(F,F,F,F,F,
-                   F,F,F,F,T,
-                   F,F,F,F)
-  shiftSpecies = newick$tip.label[newick$edge[isTheta2edge & newick$edge[,2] <= Ntip(newick),2]]
-  shiftSpecies
-  
-  
-  t <- twoThetaTest(tree = newick,
-                    gene.data = exp, 
-                    isTheta2edge = c(F,F,F,F,F,
-                                     F,F,F,F,T,
-                                     F,F,F,F), ###########################?
-                    colSpecies = colnames(exp))
-  
-  t$LRT
-  
-  
-  #############
-  
-  
-  results <- exp
-  
-  
-  # format LRTs
-  inc_dec_ratio_test_LRT <- data.frame(inc_dec_ratio_test_LRT = tt$LRT)
-  species_1_test_LRT <- data.frame(species_1_test_LRT = t$LRT)
-  
-  # format beta values
-  x <- as.data.frame(tt$indivBetaRes$par)
-  beta_values <- data.frame(beta_values = x$beta)
-  
-  # add to results 
-  results <- cbind(results, inc_dec_ratio_test_LRT)
-  results <- cbind(results, species_1_test_LRT)
-  results <- cbind(results, beta_values)
-  
-  results$tissue <- tissue
-  
-  all_results <- rbind(all_results, results)
-  
-  
-  print('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
-  print(tissue)
-}
-
-
-
-
-#write.table(all_results, 'C:/Users/17735/Downloads/DuplicA/eve_model_all_tissues_result.tsv')
-
-all_results_orig <- all_results
-results <- all_results
-
-# merge with ids
-colnames(results)[1:3] <- c('dup_1_exp', 'dup_2_exp', 'anc_exp')
-
-# filter results with non expressed dups or anc
-results <- results %>%
-  filter(anc_exp != 0) %>%
-  filter(dup_1_exp != 0 & dup_2_exp != 0)
-
-
-#
-#exp <- exp_orig %>%
- # pivot_longer(cols = c(2:ncol(.))) %>%
-  #filter(value != 0)
-
-results <- exp %>%
-  #select(dup_1 = YOgnID, tissue = name, dup_1_exp = value) %>%
-  select(dup_1 = YOgnID, tissue, dup_1_exp = value) %>%
-  filter(dup_1 %in% dups$dup_1) %>%
-  merge(results, by = c('tissue', 'dup_1_exp'))
-
-results <- exp %>%
-  select(dup_2 = YOgnID, tissue = name, dup_2_exp = value) %>%
-  filter(dup_2 %in% dups$dup_2) %>%
-  merge(results, by = c('tissue', 'dup_2_exp'))
-
-results <- exp %>%
-  select(anc = YOgnID, tissue = name, anc_exp = value) %>%
-  filter(anc %in% dups$anc) %>%
-  merge(results, by = c('tissue', 'anc_exp'))
-
-
-
-
-# merge with funcs
-orig_results <- results %>%
-  merge(funcs, by = c('dup_1_exp', 'dup_2_exp', 'anc_exp'))
-
-
-
-##### plot results
-
-results <- orig_results %>%
-  #select(inc_dec_ratio_test_LRT, species_1_test_LRT, beta_values, func) %>%
-  mutate(beta_log = log(beta_values)) %>%
-  na.omit() %>%
-  filter(func != 'sub')
-  
-
-results %>%
-  ggplot(aes(x = beta_log, y = inc_dec_ratio_test_LRT, color = func)) + 
-    geom_jitter(width = 1, height = 2)
-
-results %>%
-  ggplot(aes(x = species_1_test_LRT, y = inc_dec_ratio_test_LRT, color = func)) + 
-  geom_jitter(width = 10, height = 3)
-
-results %>%
-  ggplot(aes(x = func, y = beta_log)) +
-    geom_boxplot() +
-    geom_point()
-
-
-results %>%
-  ggplot(aes(x = func, y = inc_dec_ratio_test_LRT)) +
-  geom_boxplot() +
-  geom_point()
-
-
-results %>%
-  ggplot(aes(x = func, y = species_1_test_LRT)) +
-  geom_boxplot() +
-  geom_point()
-
-
-###############
-
-
-
-results %>%
-  ggplot(aes(x = species_1_test_LRT, y = beta_values)) + 
-    geom_jitter(width = 10, height = 3) +
-    scale_y_log10()
-
-
-results %>%
-  mutate(dup1_anc_diff = abs(dup_1_exp - anc_exp),
-         dup2_anc_diff = abs(dup_2_exp - anc_exp)) %>%
-  pivot_longer(cols = c('dup1_anc_diff', 'dup2_anc_diff'),
-               names_to = 'type',
-               values_to = 'diff') %>%
-  ggplot(aes(x = species_1_test_LRT, y = diff)) + 
-    geom_point() +
-    scale_y_log10() +
-    facet_wrap(.~type)
-
-results %>%
-  mutate(diff = anc_exp - abs(dup_2_exp - dup_1_exp)) %>%
-  ggplot(aes(x = species_1_test_LRT, y = diff)) + 
-  geom_point() 
-
-
-#  pchisq(LRT, df = 1, lower.tail = F). However, in practice, with relatively small phylogenies, we recommend obtaining empirical significance thresholds using simulations.
-
-###########################################################################################
-###########################################################################################
-
-
-
-
 
 
 exp_path <- 'C:/Users/17735/Downloads/AAAAA___EXAMPLE_Expression.tsv'
@@ -322,7 +78,7 @@ rm_exp_lower_than <- 1
 nondup_species_need_onecopy = F
 copy_amount = 2
 use_gene_trees = T
-missing_exp_is_zero = T
+missing_exp_is_zero = T # F default
 
 get_orthogroups <- function(OF_dir_path, dup_species_list, copy_amount, nondup_species_need_onecopy) {
   
@@ -379,7 +135,7 @@ get_tissueexp <- function(all_exp, tissue) {
   return(all_tissue_exp)
 }
 
-add_tissueexp_to_orthogroups <- function(tissue, all_orthogroups, all_tissueexp, rm_exp_lower_than, missing_exp_is_zero) {
+add_tissueexp_to_orthogroups <- function(tissue, all_orthogroups, all_tissueexp, rm_exp_lower_than, missing_exp_is_zero, copy_amount, dup_species_list) {
   
   # merge expression data with all_orthogroups
   orthogroups_cols <- colnames(all_orthogroups)
@@ -406,24 +162,86 @@ add_tissueexp_to_orthogroups <- function(tissue, all_orthogroups, all_tissueexp,
   all_orthogroups_exp <- all_orthogroups_exp %>% na.omit()
   
   
-  return(all_orthogroups_exp)
+  # format column names 
+  colnames(all_orthogroups_exp) <- gsub(paste0("^", tissue, '_'), "", colnames(all_orthogroups_exp))
+  
+  # generate the colnames of the duplicate species 
+  old_dup_species_colnames <- unlist(lapply(dup_species_list, function(x) paste0(x, "_", 1:copy_amount)))
+  new_dup_species_colnames <- gsub("_[0-9]+$", "", old_dup_species_colnames)
+  
+  # replace the old column names with the new column names (same column name for same species)
+  colnames(all_orthogroups_exp)[colnames(all_orthogroups_exp) %in% old_dup_species_colnames] <- new_dup_species_colnames
+  
+  res <- all_orthogroups_exp %>%
+    t() %>%
+    as.data.frame() %>%
+    rownames_to_column(var = 'group')
+  
+  original_groups <- res$group
+  res$group <- colnames(all_orthogroups_exp)
+  
+  
+  ################ fix
+  t <- res %>%
+    group_by(group) %>%
+    filter(if (n() > 1) !all(across(everything(), ~ . == 0)) else TRUE) %>%  # remove non expressed dup species
+    ungroup() 
+  
+  t$group <- original_groups
+  
+  t <- t %>%
+    column_to_rownames(var = 'group') %>%
+    t() %>%
+    as.data.frame()
+  
+  
+  return(res)
 }
 
-get_orthogroup_tree <- function(orthogroup, OF_dir_path) {
+get_orthogroup_tree <- function(orthogroup, OF_dir_path, species_gn_key) {
   orthogroup_tree <- read.tree(file = paste0(OF_dir_path, "Gene_Trees/", orthogroup, "_tree.txt"))
+  
+  # add arbitrary node labels to the tree
+  orthogroup_tree$node.label <- paste0("N", 0:(orthogroup_tree$Nnode -1)) 
+  
+  # replace current tip labels (which are gene ids) with the species names (so they can match dup_species_list)
+  current_labels <- orthogroup_tree$tip.label
+  orthogroup_tree$tip.label <- species_gn_key[current_labels]
+  
   return(orthogroup_tree)
 }
 
 get_is_theta2_edge <- function(tree, dup_species_list) {
   
-  is_theta2_edge <- tree$tip.label %in% dup_species_list
+  # remove root from node labels
+  node_labels <- tree$node.label
+  node_labels <- node_labels[!node_labels %in% c("N0")]
+  # combine tip labels with node labels
+  tree_labels <- c(tree$tip.label, node_labels)
   
-  # make it all nodes 
-  ###
+  # indicate nodes of duplicates species 
+  is_theta2_edge <- tree_labels %in% dup_species_list
   
   
   
   return(is_theta2_edge)
+}
+
+get_species_gn_key <- function(all_orthogroups, all_orthogroups_tissueexp, dup_species_list) {
+  
+  # format the colnames of all_orthogroups
+  species_gn_key <- all_orthogroups %>% column_to_rownames('Orthogroup')
+  colnames(species_gn_key) <- colnames(all_orthogroups_tissueexp)
+  
+  # make into key
+  species_gn_key <- pivot_longer(species_gn_key, cols = (1:(ncol(species_gn_key) - length(dup_species_list))),
+                                 values_to = 'gene_id',
+                                 names_to = 'species')
+  
+  # make the key into a named vector
+  species_gn_key <- setNames(species_gn_key$species, species_gn_key$gene_id)
+  
+  return(species_gn_key)
 }
 
 
@@ -435,7 +253,7 @@ main_Expression_Shift <- function(OF_dir_path, exp_path, dup_species_list, copy_
   tissue <- 'f_wb'
   all_tissueexp <- get_tissueexp(all_exp, tissue)
   
-  all_orthogroups_tissueexp <- add_tissueexp_to_orthogroups(tissue, all_orthogroups, all_tissueexp, rm_exp_lower_than, missing_exp_is_zero)
+  all_orthogroups_tissueexp <- add_tissueexp_to_orthogroups(tissue, all_orthogroups, all_tissueexp, rm_exp_lower_than, missing_exp_is_zero, copy_amount, dup_species_list)
   
   
   
@@ -445,7 +263,7 @@ main_Expression_Shift <- function(OF_dir_path, exp_path, dup_species_list, copy_
   if(use_gene_trees == F) {
     species_tree <- read.tree(file = paste0(OF_dir_path, "Species_Tree/SpeciesTree_rooted_node_labels.txt"))
     
-    is_theta2_edge <- get_is_theta2_edge(species_tree, dup_species_list)
+    is_theta2_edge <- get_is_theta2_edge(species_tree, dup_species_list, type = 'species')
     
     t <- twoThetaTest(tree = species_tree,
                       gene.data = all_orthogroups_tissueexp, 
@@ -456,19 +274,21 @@ main_Expression_Shift <- function(OF_dir_path, exp_path, dup_species_list, copy_
   
   # REQUIRE ENOUGH SPECIES and copies CHOSEN SO GENE TREE WAS MADE 
   if (use_gene_trees == T) {
+    species_gn_key <- get_species_gn_key(all_orthogroups, all_orthogroups_tissueexp, dup_species_list)
     for (row in 1:nrow(all_orthogroups_tissueexp)){
-      orthogroup <- rownames(all_orthogroups_exp)[row]
+      orthogroup <- rownames(all_orthogroups_tissueexp)[row]
       
-      orthogroup_tree <- get_orthogroup_tree(orthogroup, OF_dir_path)
+      orthogroup_tree <- get_orthogroup_tree(orthogroup, OF_dir_path, species_gn_key)
       
       is_theta2_edge <- get_is_theta2_edge(orthogroup_tree, dup_species_list) 
       
-      
-      
       t <- twoThetaTest(tree = orthogroup_tree,
-                        gene.data = orthogroup_expression, 
+                        gene.data = all_orthogroups_tissueexp, 
                         isTheta2edge = is_theta2_edge,
-                        colSpecies = colnames(orthogroup_expression))
+                        colSpecies = colnames(all_orthogroups_tissueexp))
+      
+      print(t$LRT)
+      
     }
     
     
@@ -481,6 +301,6 @@ main_Expression_Shift <- function(OF_dir_path, exp_path, dup_species_list, copy_
 }
 
 
-
+# per tissue
 
 
