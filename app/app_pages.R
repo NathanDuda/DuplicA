@@ -30,7 +30,7 @@ cdrom_orthofinder_tab <- function() {
              fluidRow(
                column(6,  # left column 
                       numericInput("min_dups_per_species_pair", tags$span("Min dups per species pair", style = "font-size: 13px;"), value = 10, min = 1),
-                      numericInput("exp_cutoff", tags$span("Expression cutoff", style = "font-size: 13px;"), value = 1)
+                      numericInput("exp_cutoff", tags$span("Expression cutoff", style = "font-size: 13px;"), value = 1, min = 0)
                ),
                column(6,  # right column
                       tags$div(style = "margin-bottom: 20px;"), # empty space
@@ -173,7 +173,6 @@ dnds_page <- function() {
   )
 }
 
-
 segregating_duplicates_page <- function() {
   
   tabPanel("Segregating Duplications",
@@ -190,7 +189,7 @@ segregating_duplicates_page <- function() {
                        column(6, textOutput("dnds_results_path"))),
              column(6, 
                     numericInput("n_individuals", "Number of Individuals", value = NA, step = 1, min = 2), 
-                    # SHOULD MIN BE 1?????????????^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                    # CHANGE: SHOULD MIN BE 1?????????????^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
                     numericInput("ploidy", "Ploidy", value = 2, min = 1, max = 2, step = 1))
            ),
            
@@ -231,8 +230,141 @@ segregating_duplicates_page <- function() {
   # option to only look at duplicates in specific individuals or a duplicates present in range number of individuals 
 }
 
+expression_shift_page <- function() {
+  
+  tabPanel("Expression Shift",
+           titlePanel("Expression Shift"),
+           p("Run the Expression Shift model."),
+           
+           # input required files and parameters
+           fluidRow(
+             column(6, 
+                    shinyFilesButton("ortho_dir", "Browse: OrthoFinder Folder", '', multiple = FALSE),
+                    textOutput("ortho_dir_path"),
+                    
+                    shinyFilesButton("expression_file", "Browse: Expression File", '', multiple = FALSE),
+                    textOutput("expression_file_path")
+             ),
+             column(6, 
+                    selectInput("dup_species_list", "Test for shifted expression in:", 
+                                choices = NA, multiple = TRUE)
+             )
+           ),
+           
+           tags$div(style = "margin-bottom: 20px;"), # empty space
+           
+           # Run Button
+           actionButton("run_expression_shift", "Run Model", class = "btn-success"),
+           
+           tags$div(style = "margin-bottom: 40px;"), # empty space
+           
+           # Additional options
+           actionButton("toggle_expression_shift_options", "Additional Options", class = "btn-secondary"),
+           
+           conditionalPanel(
+             condition = "input.toggle_expression_shift_options % 2 == 1",
+             tags$div(style = "margin-top: 20px;"),
+             
+             fluidRow(
+               column(6,
+                      checkboxInput("use_gene_trees", 
+                                    tags$span("Use gene trees for branch lengths", style = "font-size: 13px;"), 
+                                    value = TRUE),
+                      selectInput("tissue_list", "Tissues to use:", 
+                                  choices = c('All Tissues'), selected = 'All Tissues', multiple = TRUE)
+               ),
+               column(6,
+                      numericInput("copy_amount", 
+                                   tags$span("How many duplicate copies in duplicate species", 
+                                             style = "font-size: 13px;"), 
+                                   value = 2, min = 2),
+                      
+                      checkboxInput("nondup_species_need_onecopy", 
+                                    tags$span("Other species need one copy", style = "font-size: 13px;"), 
+                                    value = TRUE),
+                      
+                      numericInput("exp_cutoff", 
+                                   tags$span("Expression cutoff", style = "font-size: 13px;"), 
+                                   value = 1, min = 0),
+                      
+                      checkboxInput("missing_exp_is_zero", 
+                                    tags$span("Genes with missing expression data are 0", 
+                                              style = "font-size: 13px;"), 
+                                    value = FALSE)
+               )
+             )
+           )
+  )
+}
 
+diversity_divergence_page <- function() {
 
+  tabPanel("Diversity / Divergence Model",
+           titlePanel("Diversity / Divergence Model"),
+           p("Run the Diversity / Divergence model."),
+           
+           # input required files and parameters
+           fluidRow(
+             column(6, 
+                    shinyFilesButton("ortho_dir", "Browse: OrthoFinder Folder", '', multiple = FALSE),
+                    textOutput("ortho_dir_path"),
+                    
+                    shinyFilesButton("expression_file", "Browse: Expression File", '', multiple = FALSE),
+                    textOutput("expression_file_path")
+             ),
+             column(6, 
+                    selectInput("dup_species_list", "Test for shifts in beta when duplicates are in:", 
+                                choices = NA, multiple = TRUE)
+             )
+           ),
+           
+           tags$div(style = "margin-bottom: 20px;"), # empty space
+           
+           # Run Button
+           actionButton("run_expression_shift", "Run Model", class = "btn-success"),
+           
+           tags$div(style = "margin-bottom: 40px;"), # empty space
+           
+           # Additional options
+           actionButton("toggle_expression_shift_options", "Additional Options", class = "btn-secondary"),
+           
+           conditionalPanel(
+             condition = "input.toggle_expression_shift_options % 2 == 1",
+             tags$div(style = "margin-top: 20px;"),
+             
+             fluidRow(
+               column(6,
+                      checkboxInput("use_gene_trees", 
+                                    tags$span("Use gene trees for branch lengths", style = "font-size: 13px;"), 
+                                    value = TRUE),
+                      selectInput("tissue_list", "Tissues to use:", 
+                                  choices = c('All Tissues'), selected = 'All Tissues', multiple = TRUE)
+               ),
+               column(6,
+                      numericInput("copy_amount", 
+                                   tags$span("How many duplicate copies in duplicate species", 
+                                             style = "font-size: 13px;"), 
+                                   value = 2, min = 2),
+                      
+                      checkboxInput("nondup_species_need_onecopy", 
+                                    tags$span("Other species need one copy", style = "font-size: 13px;"), 
+                                    value = TRUE),
+                      
+                      numericInput("exp_cutoff", 
+                                   tags$span("Expression cutoff", style = "font-size: 13px;"), 
+                                   value = 1, min = 0),
+                      
+                      checkboxInput("missing_exp_is_zero", 
+                                    tags$span("Genes with missing expression data are 0", 
+                                              style = "font-size: 13px;"), 
+                                    value = FALSE)
+               )
+             )
+           )
+  )
+  
+}
+# (OF_dir_path, exp_path, dup_species_list, copy_amount, nondup_species_need_onecopy, rm_exp_lower_than, use_gene_trees, missing_exp_is_zero, lower_beta_lim, upper_beta_lim)
 
 # if fasta doesnt include all individuals, suggest use_all_fastas_in_dir
 # use_all_fastas_in_dir, default F

@@ -13,6 +13,7 @@ source('./app_pages.R')
 source('./Scripts/model_OrthoFinder.R')
 source('./Scripts/model_DnDs.R')
 source('./Scripts/model_Segregating_Duplicates.R')
+source('./Scripts/model_EVE.R')
 
 # UI with dark mode theme and sidebar layout
 ui <- fluidPage(
@@ -32,9 +33,10 @@ ui <- fluidPage(
           h3("Models"),
           h5('Functional Divergence'),
           actionButton("select_cdrom", "CDROM", class = "btn-primary"),
-          actionButton("select_cloud", "CLOUD", class = "btn-primary"),
+          actionButton("select_expression_shift", "Expression Shift", class = "btn-primary"), # EVE
           h5('Selective Pressure'),
           actionButton("select_dnds", "Dn/Ds", class = "btn-primary"),
+          actionButton("select_diversity_divergence", "Diversity/Divergence", class = "btn-primary"), # EVE
           actionButton("select_segregating_duplicates", "Segregating Duplicates", class = "btn-primary"),
           br()
       )
@@ -62,6 +64,9 @@ server <- function(input, output, session) {
   observeEvent(input$select_HOME, {current_model("HOME")})
   observeEvent(input$select_dnds, {current_model("dnds")})
   observeEvent(input$select_segregating_duplicates, {current_model("segregating_duplicates")})
+  observeEvent(input$select_expression_shift, {current_model("expression_shift")}) 
+  observeEvent(input$select_diversity_divergence, {current_model("diversity_divergence")})
+  
   
   # Render UI dynamically based on the selected model
   output$model_ui <- renderUI({
@@ -74,11 +79,7 @@ server <- function(input, output, session) {
     switch(model,
            "cdrom" = tabsetPanel(
              cdrom_orthofinder_tab(),
-             cdrom_custom_tab()),
-           "cloud" = tagList(
-             titlePanel("CLOUD"),
-             p("This page will allow you to run CLOUD."),
-             actionButton("run_cloud", "Run Model", class = "btn-success")
+             cdrom_custom_tab()
            ),
            "orthofinder" = tagList(
              orthofinder_page()
@@ -88,6 +89,12 @@ server <- function(input, output, session) {
            ),
            'segregating_duplicates' = tagList(
              segregating_duplicates_page()
+           ), 
+           'expression_shift' = tagList(
+             expression_shift_page()
+           ),
+           'diversity_divergence' = tagList(
+             diversity_divergence_page()
            ),
            "HOME" = tagList(
              titlePanel("DuplicA"),
@@ -211,6 +218,40 @@ server <- function(input, output, session) {
   output$nuc_seqs_file <- renderText({nuc_seqs_file()})
   output$dnds_results_path <- renderText({dnds_results_path()})
   
+  
+  
+  ##########
+  # for expression shift model, 
+  # Ensure nondup_species_need_onecopy is TRUE when use_gene_trees is TRUE
+  observeEvent(input$use_gene_trees, {if (input$use_gene_trees) {updateCheckboxInput(session, "nondup_species_need_onecopy", value = TRUE)}})
+  
+  # Read the expression file and update choices in tissue_list
+  observeEvent(expression_file(), {
+    req(expression_file())
+    file_path <- expression_file() 
+    if (file.exists(file_path)) {
+      expression_data <- read.delim(file_path, sep = ' ')
+      tissues <- colnames(expression_data)[2:ncol(expression_data)]
+      tissues <- c('All Tissues', tissues)
+      updateSelectInput(session, "tissue_list", choices = tissues, selected = 'All Tissues')
+    }
+  })
+  
+  # Read the orthofinder input and update choices in dup_species_list
+  observeEvent(ortho_dir(), {
+    req(ortho_dir())
+    file_path <- ortho_dir() 
+    if (file.exists(file_path)) {
+      OF_dir_path <- paste0(OF_dir_path, '/')
+      species <- read.delim(paste0(OF_dir_path, "Comparative_Genomics_Statistics/Statistics_PerSpecies.tsv"))
+      species <- colnames(species)[2:ncol(species)]
+      updateSelectInput(session, "dup_species_list", choices = species)
+    }
+  })
+  ###########
+  
+  
+  
   # Run model when "Run Model" button is clicked
   observeEvent(input$run_cdrom, {
     withProgress(message = 'Running CDROM model...', value = 0, {
@@ -261,8 +302,24 @@ server <- function(input, output, session) {
     })
   })
   
-  observeEvent(input$run_cloud, {
-    shinyalert("Result", "CLOUD execution logic is not implemented yet.", type = "info")
+  observeEvent(input$run_expression_shift, {
+    withProgress(message = 'Running Expression Shift model...', value = 0, {
+      incProgress(0.3, detail = "This may take a few minutes")
+      
+      result <- main_Expression_Shift(
+        OF_dir_path = dirname(dirname(ortho_dir())), 
+        exp_path = expression_file(), 
+        dup_species_list = input$dup_species_list, 
+        tissue_list = input$tissue_list,
+        copy_amount = input$copy_amount, 
+        nondup_species_need_onecopy = input$nondup_species_need_onecopy, 
+        rm_exp_lower_than = input$exp_cutoff, 
+        use_gene_trees = input$use_gene_trees, 
+        missing_exp_is_zero = input$missing_exp_is_zero
+      )
+      
+      shinyalert("Success!", result, type = "info")
+    })
   })
   
   observeEvent(input$run_orthofinder, {
@@ -318,7 +375,28 @@ server <- function(input, output, session) {
     })
   })
   
-
+  observeEvent(input$run_diversity_divergence, {
+    withProgress(message = 'Running Diversity / Divergence model...', value = 0, {
+      incProgress(0.3, detail = "This may take a few minutes")
+      
+      # OF_dir_path, exp_path, dup_species_list, copy_amount, nondup_species_need_onecopy, rm_exp_lower_than, use_gene_trees, missing_exp_is_zero, lower_beta_lim, upper_beta_lim) {
+      
+      result <- main_DiversityDivergence(
+        OF_dir_path = dirname(dirname(ortho_dir())), 
+        exp_path = expression_file(), 
+        dup_species_list = input$dup_species_list, 
+        tissue_list = input$tissue_list,
+        copy_amount = input$copy_amount, 
+        nondup_species_need_onecopy = input$nondup_species_need_onecopy, 
+        rm_exp_lower_than = input$exp_cutoff, 
+        use_gene_trees = input$use_gene_trees, 
+        missing_exp_is_zero = input$missing_exp_is_zero
+      )
+      
+      shinyalert("Success!", result, type = "info")
+    })
+  })
+  
 }
 
 shinyApp(ui, server)

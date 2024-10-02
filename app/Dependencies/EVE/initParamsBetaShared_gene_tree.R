@@ -8,16 +8,15 @@
 # species tree
 #species_tree <- read.tree(file = paste0(OF_dir_path, "Species_Tree/SpeciesTree_rooted_node_labels.txt"))
 #tree = species_tree
-#isTheta2edge = get_is_theta2_edge(species_tree, dup_species_list)
 #gene.data = all_orthogroups_tissueexp
 #colSpecies = colnames(all_orthogroups_tissueexp)
 
 # og
-#row <- 3
+#row <- 2
 #gene.data = all_orthogroups_tissueexp[row,] 
 #tree = orthogroup_tree
-#isTheta2edge = get_is_theta2_edge(orthogroup_tree, dup_species_list) 
 #colSpecies = colnames(all_orthogroups_tissueexp)
+#sharedBetaInterval = c(0.0001,100)
 
 initParamsOneTheta_gene_tree <- function(gene.data, colSpecies) 
 {
@@ -224,7 +223,7 @@ fitSharedBeta_gene_tree <- function( sharedBeta, tree, gene.data, colSpecies = c
 
 betaSharedTest_gene_tree <- function(tree, gene.data, colSpecies = colnames(gene.data), sharedBetaInterval = c(0.0001,100), ...){
   cat("fit with individual betas...\n")
-  indivBetaRes <- fitOneTheta_gene_tree(tree,gene.data,colSpecies, ...)
+  indivBetaRes <- fitOneTheta_gene_tree(tree,gene.data,colSpecies)
   
   LLSharedBeta <- function(betaShared, ...)
   {
@@ -248,11 +247,11 @@ betaSharedTest_gene_tree <- function(tree, gene.data, colSpecies = colnames(gene
   
   cat("Estimate shared beta...\n")
   sharedBetaFit <- stats::optimize(f = LLSharedBeta,interval=sharedBetaInterval,
-                                   tree=tree, gene.data=gene.data, colSpecies=colSpecies, ...)
+                                   tree=tree, gene.data=gene.data, colSpecies=colSpecies)
   sharedBeta <- sharedBetaFit$minimum
   
   cat("fit with shared beta =",sharedBeta,"...\n")
-  sharedBetaRes <- fitSharedBeta(sharedBeta, tree, gene.data, colSpecies, ...)
+  sharedBetaRes <- fitSharedBeta_gene_tree(sharedBeta, tree, gene.data, colSpecies)
   
   # calculate likelihood ratio test statistic
   LRT <- 2 * (indivBetaRes$ll - sharedBetaRes$ll)

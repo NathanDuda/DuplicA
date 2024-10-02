@@ -9,17 +9,6 @@ source('C:/Users/17735/Downloads/DuplicA/app/Dependencies/EVE/initParamsBetaShar
 
 
 
-
-exp_path <- 'C:/Users/17735/Downloads/AAAAA___EXAMPLE_Expression.tsv'
-OF_dir_path <- 'C:/Users/17735/Downloads/Eight_Species/OrthoFinder_Output/Results_Jan01/'
-#OF_dir_path <- paste0(OF_dir_path, '/')
-dup_species_list <- c('dmel_prot', 'dyak_prot')
-rm_exp_lower_than <- 1
-nondup_species_need_onecopy = T
-copy_amount = 2
-use_gene_trees = T
-missing_exp_is_zero = T # F default
-
 get_orthogroups <- function(OF_dir_path, dup_species_list, copy_amount, nondup_species_need_onecopy) {
   
   orthogroup_gene_count <- read.delim(paste0(OF_dir_path, "Orthogroups/Orthogroups.GeneCount.tsv"))
@@ -184,12 +173,18 @@ get_species_gn_key <- function(all_orthogroups, all_orthogroups_tissueexp, dup_s
 
 
 # TwoTheta
-main_Expression_Shift <- function(OF_dir_path, exp_path, dup_species_list, copy_amount, nondup_species_need_onecopy, rm_exp_lower_than, use_gene_trees, missing_exp_is_zero) {
+main_Expression_Shift <- function(OF_dir_path, exp_path, dup_species_list, tissue_list, copy_amount, nondup_species_need_onecopy, rm_exp_lower_than, use_gene_trees, missing_exp_is_zero) {
+  
+  OF_dir_path <- paste0(OF_dir_path, '/')
+  
+  all_exp <- get_exp(exp_path)
+  if ('All Tissues' %in% tissue_list) {tissue_list <- colnames(all_exp)[2:ncol(all_exp)]}
+  
   
   all_orthogroups <- get_orthogroups(OF_dir_path, dup_species_list, copy_amount, nondup_species_need_onecopy)
-  all_exp <- get_exp(exp_path)
+  if(nrow(all_orthogroups) == 0) {return(paste0('No orthogroups exist with ', copy_amount, 'copies in ', dup_species_list))}
   
-  tissue_list <- colnames(all_exp)[2:ncol(all_exp)]
+  
   
   alltissue_tt_results <- data.frame()
   for (tissue in tissue_list) {
@@ -233,8 +228,8 @@ main_Expression_Shift <- function(OF_dir_path, exp_path, dup_species_list, copy_
                                             colSpecies = colnames(all_orthogroups_tissueexp))
         
         
-        all_orthogroups_tissueexp[row, 'orthogroup'] <- orthogroup
-        all_orthogroups_tissueexp[row, 'LRT'] <- tt_result$LRT
+        onetissue_res[row, 'orthogroup'] <- orthogroup
+        onetissue_res[row, 'LRT'] <- tt_result$LRT
         
       }
     
@@ -243,16 +238,35 @@ main_Expression_Shift <- function(OF_dir_path, exp_path, dup_species_list, copy_
     onetissue_res$tissue <- tissue
     alltissue_tt_results <- rbind(alltissue_tt_results, onetissue_res)
   }
+  
+  write.table(alltissue_tt_results, file = './ExpressionShift_Results.tsv')
+  
 }
 
 
+
+OF_dir_path <- "C:/Users/17735/Downloads/AAAAA_Results_Jan01"
+exp_path <- "C:/Users/17735/Downloads/AAAAA___EXAMPLE_Expression.tsv"
+dup_species_list <- c('dyak_prot', 'dmel_prot')
+rm_exp_lower_than <- 1
+nondup_species_need_onecopy = T
+copy_amount = 2
+use_gene_trees = T
+missing_exp_is_zero = F
+tissue_list <- 'All Tissues'
+
+
 # BetaShared
-main_DiversityDivergence <- function(OF_dir_path, exp_path, dup_species_list, copy_amount, nondup_species_need_onecopy, rm_exp_lower_than, use_gene_trees, missing_exp_is_zero) {
+main_DiversityDivergence <- function(OF_dir_path, exp_path, dup_species_list, tissue_list, copy_amount, nondup_species_need_onecopy, rm_exp_lower_than, use_gene_trees, missing_exp_is_zero, lower_beta_lim, upper_beta_lim) {
+  
+  OF_dir_path <- paste0(OF_dir_path, '/')
+  
+  all_exp <- get_exp(exp_path)
+  if ('All Tissues' %in% tissue_list) {tissue_list <- colnames(all_exp)[2:ncol(all_exp)]}
   
   all_orthogroups <- get_orthogroups(OF_dir_path, dup_species_list, copy_amount, nondup_species_need_onecopy)
-  all_exp <- get_exp(exp_path)
+  if(nrow(all_orthogroups) == 0) {return(paste0('No orthogroups exist with ', copy_amount, 'copies in ', dup_species_list))}
   
-  tissue_list <- colnames(all_exp)[2:ncol(all_exp)]
   
   alltissue_bt_results <- data.frame()
   for (tissue in tissue_list) {
@@ -269,7 +283,8 @@ main_DiversityDivergence <- function(OF_dir_path, exp_path, dup_species_list, co
 
       bt_result <- betaSharedTest(tree = species_tree,
                                   gene.data = all_orthogroups_tissueexp, 
-                                  colSpecies = colnames(all_orthogroups_tissueexp))
+                                  colSpecies = colnames(all_orthogroups_tissueexp),
+                                  sharedBetaInterval = c(lower_beta_lim, upper_beta_lim))
       
       onetissue_res$orthogroup <- rownames(all_orthogroups_tissueexp)
       onetissue_res$LRT <- bt_result$LRT
@@ -289,11 +304,11 @@ main_DiversityDivergence <- function(OF_dir_path, exp_path, dup_species_list, co
         
         bt_result <- betaSharedTest_gene_tree(tree = orthogroup_tree, 
                                               gene.data = all_orthogroups_tissueexp[row,], 
-                                              colSpecies = colnames(all_orthogroups_tissueexp))
+                                              colSpecies = colnames(all_orthogroups_tissueexp),
+                                              sharedBetaInterval = c(lower_beta_lim, upper_beta_lim))
         
-        
-        all_orthogroups_tissueexp[row, 'orthogroup'] <- orthogroup
-        all_orthogroups_tissueexp[row, 'LRT'] <- bt_result$LRT
+        onetissue_res[row, 'orthogroup'] <- orthogroup
+        onetissue_res[row, 'LRT'] <- bt_result$LRT
         
       }
       
@@ -303,7 +318,7 @@ main_DiversityDivergence <- function(OF_dir_path, exp_path, dup_species_list, co
     alltissue_bt_results <- rbind(alltissue_bt_results, onetissue_res)
   }
   
-  
+  write.table(alltissue_bt_results, file = './DiversityDivergence_Results.tsv')
 
 }
 
