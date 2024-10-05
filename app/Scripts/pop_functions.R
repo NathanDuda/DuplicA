@@ -95,3 +95,77 @@ translate_nucs_to_prots <- function(nuc_file_path) {
 }
 
 
+# import.psl and new.psl functions taken directly from https://github.com/drmjc/blat
+# function to import blat output
+import.psl <- function(x, score=TRUE, target2chromosome=FALSE) {
+  #
+  # if there's a psl header, read it, then skip over it
+  # when importing the psl data as a table.
+  #
+  colnames <- colnames( new.psl(score=FALSE) )
+  skip <- 0
+  
+  #
+  # check for the existence of a header, and skip it if it exists.
+  #
+  tmp <- readLines(x, 10)
+  if( any(grepl("-{2,}", tmp)) ) { # then there is a header
+    skip <- grep("-{2,}", tmp)
+    for(i in skip:length(tmp)) {
+      if( nchar(tmp[i]) == 0 )
+        skip <- skip + 1
+      else
+        break
+    }
+  }
+  
+  psl <- read.delim(x, as.is=TRUE, skip=skip, header=FALSE, comment.char='')
+  colnames(psl) <- colnames
+  
+  if( score ) {
+    cat("calculating psl scores\n")
+    psl$score <- pslScore(psl)
+    psl <- sort.psl(psl)
+  }
+  
+  if( target2chromosome ) {
+    tmp <- paste0("chr", accession2chr( psl$"T name" ))
+    if( any(tmp == "chrNA") )
+      tmp[tmp == "chrNA"] <- psl$"T name"[tmp == "chrNA"]
+    psl$"T name" <- tmp
+  }
+  
+  return( psl )
+}
+new.psl <- function(nrow=0, score=TRUE, alignment.length=10) {
+  res <- as.data.frame(matrix(NA, nrow=nrow, ncol=22))
+  #colClasses(res) <- c("integer", "integer", "integer", "integer", "integer", "integer", "integer", "integer", "character", "character", "integer", "integer", "integer", "character", "integer", "integer", "integer", "integer", "character", "character", "character", "numeric")
+  colnames(res) <- c("match", "mis-match", "rep-match", "N's", "Q gapcount", "Q gapbases", "T gapcount", "T gapbases", "strand", "Q name", "Q size", "Q start", "Q end", "T name", "T size", "T start", "T end", "blockcount", "blockSizes", "qStarts", "tStarts", "score")
+  
+  if( nrow > 0 ) {
+    alignment.length <- recycle(alignment.length, nrow)
+    
+    res$match <- alignment.length
+    for(col in c("mis-match", "rep-match", "N's", "Q gapcount", "Q gapbases", "T gapcount", "T gapbases"))
+      res[,col] <- 0
+    res$"strand" <- "+"
+    res$"Q size" <- alignment.length
+    res$"Q start" <- 0
+    res$"Q end" <- alignment.length
+    res$"T size" <- 1234567890
+    res$"T start" <- 0
+    res$"T end" <- alignment.length
+    res$"blockcount" <- 1
+    res$"blockSizes" <- paste(sep="", alignment.length, ",")
+    res$"qStarts" <- "0,"
+    res$"tStarts" <- "0,"
+    res$"score" <- alignment.length
+  }
+  
+  if( !score ) {
+    res <- res[, 1:21]
+  }
+  
+  return( res )
+}
+
