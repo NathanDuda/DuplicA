@@ -14,6 +14,7 @@ source('./Scripts/model_OrthoFinder.R')
 source('./Scripts/model_DnDs.R')
 source('./Scripts/model_Segregating_Duplicates.R')
 source('./Scripts/model_EVE.R')
+source('./Scripts/model_Blat_Blast.R')
 
 # UI with dark mode theme and sidebar layout
 ui <- fluidPage(
@@ -29,6 +30,8 @@ ui <- fluidPage(
 
           actionButton("select_HOME", "HOME", class = "btn-primary"),
           h5('Detect Duplications'),
+          actionButton("select_blat", "BLAT", class = "btn-primary"),
+          actionButton("select_blast", "BLAST", class = "btn-primary"),
           actionButton("select_orthofinder", "OrthoFinder", class = "btn-primary"),
           h3("Models"),
           h5('Functional Divergence'),
@@ -66,6 +69,8 @@ server <- function(input, output, session) {
   observeEvent(input$select_segregating_duplicates, {current_model("segregating_duplicates")})
   observeEvent(input$select_expression_shift, {current_model("expression_shift")}) 
   observeEvent(input$select_diversity_divergence, {current_model("diversity_divergence")})
+  observeEvent(input$select_blat, {current_model("blat")})
+  observeEvent(input$select_blast, {current_model("blast")})
   
   
   # Render UI dynamically based on the selected model
@@ -95,6 +100,12 @@ server <- function(input, output, session) {
            ),
            'diversity_divergence' = tagList(
              diversity_divergence_page()
+           ),
+           'blat' = tagList(
+             blat_page()
+           ),
+           'blast' = tagList(
+             blast_page()
            ),
            "HOME" = tagList(
              titlePanel("DuplicA"),
@@ -165,6 +176,7 @@ server <- function(input, output, session) {
   shinyFileChoose(input, "cnvs_path", roots = roots, session = session)
   shinyFileChoose(input, "nuc_seqs_file", roots = roots, session = session)
   shinyFileChoose(input, "dnds_results_path", roots = roots, session = session)
+  shinyFileChoose(input, 'seq_files', roots = roots, session = session)
   
   # Reactive expression to get the selected file's absolute path
   expression_file <- reactive({
@@ -208,6 +220,11 @@ server <- function(input, output, session) {
     parseFilePaths(roots, input$dnds_results_path)$datapath
   }) 
   
+  seq_files <- reactive({
+    req(input$seq_files)
+    parseFilePaths(roots, input$seq_files)$datapath
+  }) 
+  
   # show file paths in UI when selected 
   output$expression_file_path <- renderText({expression_file()})
   output$ortho_dir_path <- renderText({ortho_dir()})
@@ -217,7 +234,7 @@ server <- function(input, output, session) {
   output$cnvs_path <- renderText({cnvs_path()})
   output$nuc_seqs_file <- renderText({nuc_seqs_file()})
   output$dnds_results_path <- renderText({dnds_results_path()})
-  
+  output$seq_files <- renderText({seq_files()})
   
   
   ##########
@@ -396,6 +413,50 @@ server <- function(input, output, session) {
       shinyalert("Success!", result, type = "info")
     })
   })
+  
+  observeEvent(input$run_blat, {
+    withProgress(message = 'Running BLAT...', value = 0, {
+      incProgress(0.3, detail = "This may take a few minutes")
+      
+      result <- main_pop_dup_finder(
+        seq_files_path = dirname(seq_files()),
+        program = 'blat',
+        input_options = list(type = input$type,
+                             copy_number = input$copy_number,
+                             min_gn_length = input$min_gn_length, 
+                             min_align_length = input$min_align_length,
+                             min_align_length_percent = input$min_align_length_percent,
+                             min_perc_identity = input$min_perc_identity,
+                             min_score = input$min_score)
+      )
+      
+      shinyalert("Success!", result, type = "info")
+    })
+  })
+  
+  observeEvent(input$run_blast, {
+    withProgress(message = 'Running BLAST...', value = 0, {
+      incProgress(0.3, detail = "This may take a few minutes")
+      
+      result <- main_pop_dup_finder(
+        seq_files_path = dirname(seq_files()),
+        program = 'blast',
+        input_options = list(type = input$type,
+                             copy_number = input$copy_number,
+                             min_gn_length = input$min_gn_length, 
+                             min_align_length = input$min_align_length,
+                             min_align_length_percent = input$min_align_length_percent,
+                             min_perc_identity = input$min_perc_identity,
+                             min_score = input$min_score, 
+                             min_bitscore = input$min_score,
+                             e_value = input$evalue
+                          )
+      )
+      
+      shinyalert("Success!", result, type = "info")
+    })
+  })
+  
   
 }
 

@@ -368,4 +368,103 @@ diversity_divergence_page <- function() {
 
 # if fasta doesnt include all individuals, suggest use_all_fastas_in_dir
 # use_all_fastas_in_dir, default F
-# 
+
+
+
+blat_page <- function() {
+  tabPanel("BLAT", 
+           titlePanel("BLAT"),
+           p("Run BLAT to find duplicate genes."),
+           
+           fluidRow(
+             column(6, 
+                    shinyFilesButton("seq_files", "Browse: Sequences File", '', multiple = FALSE),
+                    textOutput("seq_files")),
+             column(6, 
+                    numericInput("copy_number", "Copy Number", value = 2, step = 1, min = 2),
+                    selectInput("type", "Type", choices = c('protein', 'nucleotide'), selected = "protein"))
+           ),
+           
+           tags$div(style = "margin-bottom: 20px;"), # empty space
+           
+           
+           # Run Button
+           actionButton("run_blat", "Run BLAT", class = "btn-success"),
+           
+           tags$div(style = "margin-bottom: 40px;"), # empty space
+           
+           # Additional options
+           actionButton("toggle_segregating_options", "Additional Options", class = "btn-secondary"),
+           
+           conditionalPanel(
+             condition = "input.toggle_segregating_options % 2 == 1",
+             tags$div(style = "margin-top: 20px;"),
+             fluidRow(
+               column(6,
+                      numericInput("min_align_length", "Minimum Alignment Length", value = 30, step = 1, min = 0),
+                      numericInput("min_percent_identity", "Minimum Percent Identity", value = 90, step = 1, min = 0),
+                      numericInput("min_score", "Minimum Score", value = 100, min = 0)
+               ),
+               column(6,
+                      numericInput("min_align_length_percent", "Minimum Alignment Length Percent", value = 90, step = 1, min = 0, max = 100),
+                      numericInput("min_gn_length", "Minimum Gene Length", value = 30, step = 1, min = 0)
+               )
+             )
+           )
+  )
+}
+
+
+
+blast_page <- function() {
+  tabPanel("BLAST", 
+           titlePanel("BLAST"),
+           p("Run the BLAST model."),
+           
+           fluidRow(
+             column(6, 
+                    shinyFilesButton("seq_files", "Browse: Sequences File", '', multiple = FALSE),
+                    textOutput("seq_files")),
+             column(6, 
+                    numericInput("copy_number", "Copy Number", value = 2, step = 1, min = 1),
+                    selectInput("type", "Type", choices = c('protein', 'nucleotide', 'nucleotide (translate to protein)'), selected = "protein"))
+           ),
+           
+           tags$div(style = "margin-bottom: 20px;"), # empty space
+           
+           # Run Button
+           actionButton("run_blast", "Run BLAST", class = "btn-success"),
+           
+           tags$div(style = "margin-bottom: 40px;"), # empty space
+           
+           
+           # Additional options
+           actionButton("toggle_segregating_options", "Additional Options", class = "btn-secondary"),
+           
+           conditionalPanel(
+             condition = "input.toggle_segregating_options % 2 == 1",
+             tags$div(style = "margin-top: 20px;"),
+             fluidRow(
+               column(6,
+                      numericInput("min_align_length", "Minimum Alignment Length", value = 30, step = 1, min = 0),
+                      numericInput("min_align_length_percent", "Minimum Alignment Length Percent", value = 90, step = 1, min = 0, max = 100),
+                      numericInput("min_percent_identity", "Minimum Percent Identity", value = 90, step = 1, min = 0),
+                      numericInput("min_gn_length", "Minimum Gene Length", value = 30, step = 1, min = 0)
+               ),
+               column(6,
+                      numericInput("min_score", "Minimum Score", value = 100, min = 0),
+                      numericInput("min_bitscore", "Minimum Bitscore", value = 100, min = 0),
+                      numericInput("e_value", "E-value", value = 1, min = 0, step = 0.01)
+               )
+             )
+           )
+  )
+}
+
+
+
+
+
+
+
+

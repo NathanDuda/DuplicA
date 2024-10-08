@@ -4,21 +4,29 @@ source('C:/Users/17735/Downloads/DuplicA/app/Scripts/pop_functions.R') ######## 
 library(igraph)
 
 
-prot_files_path <- "C:/Users/17735/Downloads/AAAAA_Pop_DupFind_Example_Input/Prot_Fastas/"
-input_options <- list(
-  type = 'prot', min_score = 30, min_perc_identity = 90, # blat
-  e_value = 0.001 # blast
-  )
-program = 'blastp'
+#seq_files_path <- "C:/Users/17735/Downloads/AAAAA_Pop_DupFind_Example_Input/Prot_Fastas/"
+#input_options <- list(
+#  type = 'prot', min_score = 30, min_perc_identity = 90, # blat
+#  e_value = 0.001 # blast
+#  )
 
-min_percent_identity <- 90
-min_score <- 100
-min_bitscore <- 100
-min_gn_length <- 30
-min_match_length <- 30
-min_match_length_percent <- 90
 
-copy_number <- 3
+#program <- 'blastp'
+
+# both blat and blast
+#type <- 'prot'
+#copy_number <- 3
+
+#min_align_length_percent <- 90
+#min_gn_length <- 30
+#min_align_lengthgth <- 30
+
+# blast
+#min_percent_identity <- 90
+#min_score <- 100
+#min_bitscore <- 100
+#e_value <- 1
+
 
 
 # allow limiting of n_copies (add 1 to rm the gns with more if they have more) 
@@ -34,16 +42,19 @@ build_command <- function(program, input_options) {
     command_base <- paste0(here_linux, '/DuplicA/app/Dependencies/BLAST/', program) # no 'wsl' needed bc runs immediately with makedb command
     
     # define default options (NOTE: these are not the same as the default BLAST options that BLAST defines)
-    default_options = list(e_value = 1)
+    ###default_options = list(e_value = 1)
     
     # change default options into input_options where provided
-    options <- modifyList(default_options, input_options)
+    ###options <- modifyList(default_options, input_options)
+    options <- input_options
     
     # make second half of the blat command
     command_options <- paste0('-max_hsps 1 -evalue ', options$e_value, ' -outfmt "6 qseqid sseqid qlen slen length pident score bitscore"')
     
-    if (options$type == 'nuc') {options$type <- 'nucl'}
+    if (options$type == 'nucleotide') {options$type <- 'nucl'}
   }
+  
+  
   
   if (program == 'blat') {
     
@@ -51,16 +62,18 @@ build_command <- function(program, input_options) {
     command_base <- paste0('wsl ', here_linux, '/DuplicA/app/Dependencies/BLAT/blat')
 
     # define default options (NOTE: these are not the same as the default BLAT options that BLAT defines)
-    if (input_options$type == 'prot'){default_options = list(allow_one_mismatch = 1, n_tile_matches = 1, min_score = 30, min_perc_identity = 25, out_format = 'blast8')}
-    if (input_options$type == 'nuc'){default_options = list(allow_one_mismatch = 1, n_tile_matches = 1, min_score = 30, min_perc_identity = 90, out_format = 'blast8')
-                                     input_options$type <- 'dna'}
+    #if (input_options$type == 'protein'){default_options = list(allow_one_mismatch = 1, n_tile_matches = 1, min_score = 30, min_perc_identity = 25)}
+    if (input_options$type == 'nucleotide'){#default_options = list(allow_one_mismatch = 1, n_tile_matches = 1, min_score = 30, min_perc_identity = 90)
+                                            input_options$type <- 'dna'}
     
     # change default options into input_options where provided
-    options <- modifyList(default_options, input_options)
-
+    #options <- modifyList(default_options, input_options)
+    options <- c(input_options, allow_one_mismatch = 1, n_tile_matches = 1)
+    
+    
     # make second half of the blat command
     command_options <- paste0(' -t=', options$type, ' -q=', options$type) # add type (prot or dna)
-    command_options <- paste0(command_options, ' -oneOff=1 -minMatch=1 -out=blast8 -minScore=', options$min_score, ' -minIdentity=', options$min_perc_identity)
+    command_options <- paste0(command_options, ' -oneOff=1 -minMatch=1 -minScore=', options$min_score, ' -minIdentity=', options$min_perc_identity)
   }
   
   
@@ -70,8 +83,8 @@ build_command <- function(program, input_options) {
 }
 
 
-run_dup_finder <- function(command_base, prot_files_path, command_options, program, type) {
-  for (indiv_file in list.files(prot_files_path, full.names = T)) {
+run_dup_finder <- function(command_base, seq_files_path, command_options, program, type) {
+  for (indiv_file in list.files(seq_files_path, pattern = "\\.fasta$", full.names = T)) { # CHANGE: only allows .fasta
     
     # windows to linux path
     indiv_file <- gsub(here, here_linux, indiv_file)
@@ -112,46 +125,36 @@ run_dup_finder <- function(command_base, prot_files_path, command_options, progr
 }
 
 
-
-get_cnvs_from_blastp <- function(program) {
+get_cnvs_from_blastp <- function(program, input_options) {
   
   # filter for length and score and bitscore and pident 
   
   all_dups <- data.frame()
   for (file in list.files(paste0(here_temp, '/', program, '_output'), full.names = T)) {
     
-    # windows to linux path
-    #file <- gsub(here, here_linux, file)
-    
-    
-    
-    
+    # filter and format results from blat
     if (program == 'blat') {
       
       # import blat output
-      skip <- 0
-      tmp <- readLines(x, 10)
-      if( any(grepl("-{2,}", tmp)) ) {
-        skip <- grep("-{2,}", tmp)
-        for(i in skip:length(tmp)) {
-          if( nchar(tmp[i]) == 0 ) {skip <- skip + 1} else break}
-      }
+      hits <- read.delim(file, as.is=TRUE, skip=5, header=FALSE, comment.char='') # CHANGE: make sure skipping 5 is always correct
+      colnames(hits) <- c("matches", "misMatches", "repMatches", "nCount", "qNumInsert", "qBaseInsert", "tNumInsert", "tBaseInsert", "strand", "qName", "qSize", "qStart", "qEnd", "tName", "tSize", "tStart", "tEnd", "blockCount", "blockSizes", "qStarts", "tStarts")
       
-      
-      colnames <- c("match", "mis-match", "rep-match", "N's", "Q gapcount", "Q gapbases", "T gapcount", "T gapbases", "strand", "Q name", "Q size", "Q start", "Q end", "T name", "T size", "T start", "T end", "blockcount", "blockSizes", "qStarts", "tStarts", "score")
-      
-      
-
-      
-      
-      
-      ####
-      
-      
-      hits
+      hits <- hits %>%
+        filter(qName != tName,
+               blockCount == 1,
+               qSize > input_options$min_gn_length,
+               tSize > input_options$min_gn_length,
+               matches > input_options$min_align_length,
+               matches > if_else(qSize >= tSize, (input_options$min_align_length_percent/100) * qSize,
+                                                 (input_options$min_align_length_percent/100) * tSize)) %>%
+        # remove reciprocal same hits
+        mutate(pair_ids = if_else(qName > tName, paste0(qName, tName), paste0(qName, tName))) %>%
+        distinct(pair_ids, .keep_all = T) %>%
+        select(qName, tName)
       
     }
     
+    # filter and format results from blast
     if (program %in% c('blastp', 'blastx', 'blastn')) {
       
       hits <- read.delim(file, header=FALSE)
@@ -160,21 +163,19 @@ get_cnvs_from_blastp <- function(program) {
       
       hits <- hits %>%
         filter(qseqid != sseqid,
-               pident > min_percent_identity,
-               score > min_score,
-               bitscore > min_bitscore,
-               qlen > min_gn_length,
-               slen > min_gn_length,
-               length > min_match_length,
-               length > if_else(qlen >= slen, (min_match_length_percent/100) * qlen,
-                                              (min_match_length_percent/100) * slen)) %>%
+               pident > input_options$min_percent_identity,
+               score > input_options$min_score,
+               bitscore > input_options$min_bitscore,
+               qlen > input_options$min_gn_length,
+               slen > input_options$min_gn_length,
+               length > input_options$min_align_length,
+               length > if_else(qlen >= slen, (input_options$min_align_length_percent/100) * qlen,
+                                              (input_options$min_align_length_percent/100) * slen)) %>%
         # remove reciprocal same hits
-        mutate(pair_ids = if_else(qseqid > sseqid, paste0(qseqid,sseqid), paste0(sseqid,qseqid))) %>%
+        mutate(pair_ids = if_else(qseqid > sseqid, paste0(qseqid, sseqid), paste0(sseqid, qseqid))) %>%
         distinct(pair_ids, .keep_all = T) %>%
         select(qseqid, sseqid)
     }
-    
-    
     
     
     # find each network of connected duplicate families
@@ -186,7 +187,7 @@ get_cnvs_from_blastp <- function(program) {
     indiv_name <- gsub(paste0('_', program, '_out.tsv'), '', basename(file))
     indiv_dups <- dup_fams %>%
       group_by(group_number) %>%
-      filter(n() == copy_number) %>%
+      filter(n() == input_options$copy_number) %>%
       mutate(indiv = indiv_name) %>%
       select(indiv, gn, group_number)
   
@@ -194,13 +195,18 @@ get_cnvs_from_blastp <- function(program) {
     all_dups <- rbind(all_dups, indiv_dups)  
   }
   
-  
-  all_dups
+  cnvs_path <- 'C:/Users/17735/Downloads/DuplicA/Dups_found_in_pop.tsv' # CHANGE
+  write.table(all_dups, file = cnvs_path)
   return(cnvs_path)
 }
 
 
-main_pop_dup_finder <- function(program, input_options) {
+
+main_pop_dup_finder <- function(seq_files_path, program, input_options) {
+  if (program == 'blast' & input_options$type == 'protein') {program <- 'blastp'}
+  if (program == 'blast' & input_options$type == 'nucelotide') {program <- 'blastn'}
+  if (program == 'blast' & input_options$type == 'nucleotide (translate to protein)') {program <- 'blastx'}
+  
   replace_dirs <- F ############## remove 
   temp_dir_list <- c('/blat_output', '/blastp_output', '/blastx_output', '/blastn_output',
                                      '/blastp_dbs', '/blastx_dbs', '/blastn_dbs')
@@ -208,13 +214,10 @@ main_pop_dup_finder <- function(program, input_options) {
   
   command <- build_command(program, input_options)
   
-  run_dup_finder(command$command_base, prot_files_path, command$command_options, program, command$type)
+  run_dup_finder(command$command_base, seq_files_path, command$command_options, program, command$type)
   
-  cnvs_path <- get_cnvs_from_blastp()
+  cnvs_path <- get_cnvs_from_blastp(program, input_options)
   
-  
-  # make sure resulting cnvs would be able to be read by get_pairs()
-  trash <- get_pairs(cnvs_path)
   
 }
 
