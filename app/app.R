@@ -6,6 +6,8 @@ library(shinyalert)
 library(fs) # for file paths 
 library(Biostrings) # translate() in translate_nucs_to_prots() in model_OrthoFinder.R
 library(tools) # file_ext() in combine_raw_fastas() in model_OrthoFinder.R and file_path_sans_ext() in blat
+library(testthat) # for unit tests
+library(tidyverse)
 
 source('./Scripts/setup.R')
 source('./app_functions.R')
@@ -449,7 +451,7 @@ server <- function(input, output, session) {
                              min_perc_identity = input$min_perc_identity,
                              min_score = input$min_score, 
                              min_bitscore = input$min_score,
-                             e_value = input$evalue
+                             e_value = input$e_value
                           )
       )
       

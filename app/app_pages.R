@@ -402,7 +402,7 @@ blat_page <- function() {
              fluidRow(
                column(6,
                       numericInput("min_align_length", "Minimum Alignment Length", value = 30, step = 1, min = 0),
-                      numericInput("min_percent_identity", "Minimum Percent Identity", value = 90, step = 1, min = 0),
+                      numericInput("min_perc_identity", "Minimum Percent Identity", value = 90, step = 1, min = 0),
                       numericInput("min_score", "Minimum Score", value = 100, min = 0)
                ),
                column(6,

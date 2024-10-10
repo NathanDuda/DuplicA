@@ -1,11 +1,27 @@
 
 
-library(tidyverse)
+library(readxl)
 
 
 
 
 get_dups_from_OF <- function(OF_dir_path) {
+  
+  ################################
+  # unit tests
+  ## OrthoFinder files exist 
+  test_that('ensure OrthoFinder files exist', {
+            expect_true(file.exists(paste0(OF_dir_path, "Orthogroups/Orthogroups.GeneCount.tsv")), 
+                        label = paste0('The file "', OF_dir_path, 'Orthogroups/Orthogroups.GeneCount.tsv" does not exist. Make sure all files are kept in the OrthoFinder output folder. File exists'))
+            expect_true(file.exists(paste0(OF_dir_path, "Orthogroups/Orthogroups.tsv")),
+                        label = paste0('The file "', OF_dir_path, 'Orthogroups/Orthogroups.tsv" does not exist. Make sure all files are kept in the OrthoFinder output folder. File exists'))
+            expect_true(file.exists(paste0(OF_dir_path, "Orthogroups/Orthogroups_SingleCopyOrthologues.txt")),
+                        label = paste0('The file "', OF_dir_path, 'Orthogroups/Orthogroups_SingleCopyOrthologues.txt" does not exist. Make sure all files are kept in the OrthoFinder output folder. File exists'))
+            expect_true(file.exists(paste0(OF_dir_path, "Species_Tree/SpeciesTree_rooted.txt")),
+                        label = paste0('The file "', OF_dir_path, 'Species_Tree/SpeciesTree_rooted.txt" does not exist. Make sure all files are kept in the OrthoFinder output folder. File exists'))
+            })
+  ################################
+  
   
   orthogroup_gene_count <- read.delim(paste0(OF_dir_path, "Orthogroups/Orthogroups.GeneCount.tsv"))
   n_species <- ncol(orthogroup_gene_count) - 2 
@@ -14,6 +30,17 @@ get_dups_from_OF <- function(OF_dir_path) {
   two_to_ones <- orthogroup_gene_count %>%
     filter(if_all(2:(n_species + 1), ~. <= 2)) %>%          # keep only pairs 
     filter(rowSums(select(., 2:(n_species + 1)) == 2) == 1) # make sure there is only one species with 2 copies 
+  
+  ################################
+  # unit tests
+  test_that('ensure there is at least one two to one found', 
+            expect_true(nrow(two_to_ones) > 0, 
+                        label = paste0('No duplicate gene pairs were found in any species. More than 0 duplicate pair orthogroups found')))
+  ## orthogroups dont repeat 
+  test_that('ensure orthogroups do not repeat',
+            expect_false(any(duplicated(two_to_ones$Orthogroup)), 
+                         label = paste0('There are repeating Orthogroups in "', OF_dir_path, 'Orthogroups/Orthogroups.GeneCount.tsv". Orthogroups repeat')))
+  ################################
   
   # add a column with the name of the species with the duplication
   two_to_ones$duplicate_pair_species <- 
@@ -36,17 +63,69 @@ get_dups_from_OF <- function(OF_dir_path) {
     select(Orthogroup, duplicate_pair, duplicate_pair_species) %>%
     separate(duplicate_pair, into = c("dup_1", "dup_2"), sep = ", ")
   
+  ################################
+  # unit tests
+  test_that('ensure genes are not part of more than one duplicate pair',
+            expect_false(any(duplicated(c(dups$dup_1, dups$dup_2))), 
+                         label = paste0('There are gene ids that participate in multiple duplicate pairs. Duplicate gene ids repeat'))
+            )
+  ## duplicate pairs do not repeat 
+  test_that('ensure duplicate pairs do not repeat',
+            expect_false(any(duplicated(dups %>% select(dup_1, dup_2))), 
+                         label = paste0('There are repeating duplicate gene ids. Duplicate gene pairs repeat'))
+            )
+  ################################
+  
   return(list(dups = dups, dup_pair_orthologs = two_to_ones))
 }
-# ensure no genes repeat in either column 
-# no repeating gene pairs 
+
 
 clean_exp_and_pseudo <- function(exp_path, dups, add_pseudofunc, missing_expr_is_pseudo, rm_exp_lower_than, PC) {
-  all_expression <- read.delim(exp_path, sep = ' ')
+  
+  ################################
+  # unit tests
+  test_that('expression file exists',
+            expect_true(file.exists(paste0(exp_path)),
+                        label = paste0('The file "', exp_path, '" does not exist. Expression file exists')))
+  ################################
+  
+  # read in expression file depending on extension
+  file_ext <- file_ext(exp_path)
+  
+  if (file_ext == "csv") {all_expression <- read.csv(exp_path)}
+  if (file_ext == "xlsx") {all_expression <- read_excel(exp_path)}  # reads the first sheet by default
+  if (file_ext == "tsv" | 
+      file_ext == 'txt') {all_expression <- read.delim(exp_path, sep = ' ')}
+
+  ################################
+  # unit tests
+  test_that('expression file is in accepted format (csv, tsv, txt, or xlsx)',
+            expect_true(file_ext %in% c('csv', 'tsv', 'txt', 'xlsx'),
+                        label = paste0('The file "', exp_path, '" is in a non-supported format. Expression file type is csv, tsv, txt, or xlsx')))
+  test_that('expression file has proper table format',
+            expect_true(ncol(all_expression) > 1,
+                        label = paste0('The file "', exp_path, '" seems to have only one column when imported. Expression file has more than 1 column')))
+  test_that('expression file has gene IDs in first column',
+            expect_false(any(is.numeric(all_expression$YOgnID)),
+                         label = paste0('The file "', exp_path, '" has numbers in the first column. The first column should only contain gene IDs. There are numeric values in the first column')))
+  test_that('expression file has numeric values in the second column',
+            expect_true(is.numeric(all_expression[,2]),
+                        label = paste0('The file "', exp_path, '" does not have numbers in the second column. The second column should contain numeric gene expression values. There are numeric values in the second column')))
+  test_that('expression file has no repeating gene IDs',
+            expect_false(any(duplicated(all_expression$YOgnID)),
+                         label = paste0('The file "', exp_path, '" has repeating genes. There are multiple rows with the same gene ID in the first column. There are no repeating gene IDs')))
+  test_that('expression file gene IDs match the gene IDs in OrthoFinder results',
+            expect_true(any(dups$dup_1 %in% all_expression[,1]),
+                        label = 'No genes given to OrthoFinder were found in the expression data file. Any duplicate genes in expression file'))
+  ################################
+  
+  
+  # format expression file 
   all_expression[all_expression < rm_exp_lower_than] <- 0 
   colnames(all_expression)[1] <- 'id'
   
   clean_expression <- all_expression
+  pseudo <- NA
   
   if (add_pseudofunc == TRUE) {
     
@@ -93,6 +172,14 @@ get_anc_copy <- function(OF_dir_path, dups, dup_pair_orthologs, clean_expression
   
   # create function to find the closest expressed ortholog to each duplicate pair
   newick_tree <- ape::read.tree(paste0(OF_dir_path, 'Species_Tree/SpeciesTree_rooted.txt'))
+  
+  ################################
+  # unit tests
+  test_that('species in species tree from OrthoFinder contains same species as duplicate genes file',
+            expect_true(all(orthologs$duplicate_pair_species %in% newick_tree[["tip.label"]]),
+                        label = 'The species in the newick tree do not match the duplicate gene species. Ensure there are no unaccepted special characters in the file names input into OrthoFinder. Species match'))
+  ################################
+  
   find_closest_ortholog <- function(row, species, newick_tree) {
     
     # calculate phylogenetic distances between the given species and each tip  
@@ -140,10 +227,42 @@ get_anc_copy <- function(OF_dir_path, dups, dup_pair_orthologs, clean_expression
     merge(., dups, by = 'Orthogroup') %>%
     filter(!is.na(ancestral_copy)) # remove duplicates without ancestral copies 
     
+  ################################
+  # unit tests
+  test_that('ancestral copy exists for at least one duplicate gene pair',
+            expect_true(nrow(dups) > 0,
+                        label = 'None of the duplicate genes have any single-copy orthologs. At least one duplicate pair has single-copy ortholog'))
+  test_that('duplicate pair species and ortholog species are not the same',
+            expect_false(any(dups$ancestral_species == dups$duplicate_pair_species),
+                         label = 'The duplicate pair species and ancestral species (single-copy ortholog) are the same. The species of the duplicate gene and the species of the ancestral gene are the same'))
+  test_that('different duplicate pairs do not have the same ancestral copy',
+            expect_false(any(duplicated(dups$ancestral_copy)),
+                         label = 'There are multiple duplicate pairs that have the same ancestral copy ortholog. Ancestral copy gene is unique per duplicate gene pair'))
+  ################################
+  
   return(dups)
   
 }
 
+get_all_sc_genes <- function(OF_dir_path) {
+  orthogroups <- read.delim(paste0(OF_dir_path, "Orthogroups/Orthogroups.tsv"))
+  sc_orthogroups <- read.table(paste0(OF_dir_path, "Orthogroups/Orthogroups_SingleCopyOrthologues.txt"), quote="\"", comment.char="")
+  colnames(sc_orthogroups)[1] <- 'sc_og'
+  
+  ################################
+  # unit tests
+  test_that('the orthogroups in "Orthogroups/Orthogroups_SingleCopyOrthologues.txt" match the orthogroups in Orthogroups/Orthogroups.tsv',
+            expect_true(any(orthogroups$Orthogroup %in% sc_orthogroups$sc_og),
+                        label = paste0('The orthogroups in the file "', OF_dir_path, 'Orthogroups/Orthogroups_SingleCopyOrthologues.txt" and ',
+                                       OF_dir_path, 'Orthogroups/Orthogroups.tsv do not match. Orthogroups overlap in the two files')))
+  ################################
+  
+  sc_orthogroups <- orthogroups %>% 
+    filter(Orthogroup %in% sc_orthogroups$sc_og) %>%
+    select(-Orthogroup)
+  
+  return(sc_orthogroups)
+}
 
 list_species_pairs <- function(dups_anc, min_dups_per_species_pair) {
   
@@ -160,19 +279,6 @@ list_species_pairs <- function(dups_anc, min_dups_per_species_pair) {
   
 }
 
-
-get_all_sc_genes <- function(OF_dir_path) {
-  orthogroups <- read.delim(paste0(OF_dir_path, "Orthogroups/Orthogroups.tsv"))
-  sc_orthogroups <- read.table("C:/Users/17735/Downloads/Eight_Species/OrthoFinder_Output/Results_Jan01/Orthogroups/Orthogroups_SingleCopyOrthologues.txt", quote="\"", comment.char="")
-  colnames(sc_orthogroups)[1] <- 'sc_og'
-  
-  sc_orthogroups <- orthogroups %>% 
-    filter(Orthogroup %in% sc_orthogroups$sc_og) %>%
-    select(-Orthogroup)
-  
-  return(sc_orthogroups)
-}
-
 get_CDROM_inputs <- function(spec_pair, dups_anc, all_sc_genes, clean_expression, PC) {
   
   
@@ -180,6 +286,15 @@ get_CDROM_inputs <- function(spec_pair, dups_anc, all_sc_genes, clean_expression
   dups_for_spec_pair <- dups_anc %>%
     mutate(species_pair = paste0(duplicate_pair_species, ancestral_species)) %>% 
     filter(species_pair == spec_pair) 
+  
+  ################################
+  # unit tests
+  test_that('duplicate genes exist for the species pair',
+            expect_true(nrow(dups_for_spec_pair) > 0,
+                        label = paste0('No duplicate genes exist with ', duplicate_pair_species, ' as the duplicate pair species, and ', ancestral_species,' as the ancestral species. Duplicate genes exist for the species pair')))
+
+  # HERE##
+  ################################
   
   duplicate_pair_species <- dups_for_spec_pair$duplicate_pair_species[1]
   ancestral_species <- dups_for_spec_pair$ancestral_species[1]

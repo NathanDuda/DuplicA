@@ -8,6 +8,18 @@ source('C:/Users/17735/Downloads/DuplicA/app/Dependencies/EVE/initParamsTwoTheta
 source('C:/Users/17735/Downloads/DuplicA/app/Dependencies/EVE/initParamsBetaShared_gene_tree.R')
 
 
+#OF_dir_path <- "C:/Users/17735/Downloads/AAAAA_Results_Jan01/"
+#exp_path <- "C:/Users/17735/Downloads/AAAAA___EXAMPLE_Expression.tsv"
+#dup_species_list <- c('dyak_prot', 'dmel_prot')
+#rm_exp_lower_than <- 1
+#nondup_species_need_onecopy = T
+#copy_amount = 2
+#use_gene_trees = T
+#missing_exp_is_zero = F
+#tissue_list <- 'All Tissues'
+
+
+
 
 get_orthogroups <- function(OF_dir_path, dup_species_list, copy_amount, nondup_species_need_onecopy) {
   
@@ -242,18 +254,6 @@ main_Expression_Shift <- function(OF_dir_path, exp_path, dup_species_list, tissu
   write.table(alltissue_tt_results, file = './ExpressionShift_Results.tsv')
   
 }
-
-
-
-OF_dir_path <- "C:/Users/17735/Downloads/AAAAA_Results_Jan01"
-exp_path <- "C:/Users/17735/Downloads/AAAAA___EXAMPLE_Expression.tsv"
-dup_species_list <- c('dyak_prot', 'dmel_prot')
-rm_exp_lower_than <- 1
-nondup_species_need_onecopy = T
-copy_amount = 2
-use_gene_trees = T
-missing_exp_is_zero = F
-tissue_list <- 'All Tissues'
 
 
 # BetaShared

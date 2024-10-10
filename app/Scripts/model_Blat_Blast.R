@@ -52,6 +52,7 @@ build_command <- function(program, input_options) {
     command_options <- paste0('-max_hsps 1 -evalue ', options$e_value, ' -outfmt "6 qseqid sseqid qlen slen length pident score bitscore"')
     
     if (options$type == 'nucleotide') {options$type <- 'nucl'}
+    if (options$type == 'protein') {options$type <- 'prot'}
   }
   
   

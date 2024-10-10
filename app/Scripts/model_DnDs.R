@@ -2,6 +2,37 @@
 
 source('C:/Users/17735/Downloads/DuplicA/app/Scripts/pop_functions.R') ######## CHANGE
 
+# this function allows two to two to twos
+get_pairs_from_OF <- function(OF_dir_path) {
+
+  
+  orthogroup_gene_count <- read.delim(paste0(OF_dir_path, "Orthogroups/Orthogroups.GeneCount.tsv"))
+  n_species <- ncol(orthogroup_gene_count) - 2 
+  
+  # get the two to one to ones to zeros 
+  two_to_two_to_ones <- orthogroup_gene_count %>%
+    filter(if_all(2:(n_species + 1), ~. <= 2)) %>%          # keep only pairs 
+    #filter(rowSums(select(., 2:(n_species + 1)) == 2) == 1) # make sure there is only one species with 2 copies 
+    select(Orthogroup)
+  
+  # merge back with the gene names 
+  orthogroups <- read.delim(paste0(OF_dir_path, "/Orthogroups/Orthogroups.tsv"))
+  two_to_two_to_ones <- merge(orthogroups, two_to_two_to_ones, by = 'Orthogroup')
+  
+  
+  # extract the duplicate pair genes
+  dups <- two_to_two_to_ones %>%
+    pivot_longer(cols = 2:(1+n_species), names_to = 'species', values_to = 'gn_pair') %>%
+    separate(col = 'gn_pair', sep = ', ', into = c('dup_1', 'dup_2')) %>%
+    na.omit() %>%
+    pivot_longer(cols = c('dup_1', 'dup_2'), names_to = NULL, values_to = 'gene') %>%
+    select(species, gene, Orthogroup) %>%
+    mutate(n = 2)
+    
+  return(dups)
+  
+}
+
 
 get_paired_fastas <- function(pairs, nuc_file_path, prot_file_path, use_all_fastas_in_dir) {
   
@@ -133,7 +164,10 @@ main_pop_dnds <- function(cnvs_path, nuc_file_path, prot_file_path = NA, aligner
   temp_dir_list <- c('/Connected_Eq_Protein_Sequences', '/Connected_Eq_Protein_Alignments', '/Connected_Eq_Nucleotide_Sequences', '/Connected_Eq_Codon_Alignments')
   make_temp_dirs(replace_dirs, temp_dir_list)
   
-  pairs <- get_pairs(cnvs_path)
+  
+  #   OF_dir_path <- paste0(OF_dir_path, '/')
+  # if compgen: pairs <- get_pairs_from_OF(OF_dir_path)
+  pairs <- get_pairs(cnvs_path) # if popgen
 
   get_paired_fastas(pairs, nuc_file_path, prot_file_path, use_all_fastas_in_dir)
   get_prot_alignments(aligner)
