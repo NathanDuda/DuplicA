@@ -318,7 +318,7 @@ main_DiversityDivergence <- function(OF_dir_path, exp_path, dup_species_list, ti
     alltissue_bt_results <- rbind(alltissue_bt_results, onetissue_res)
   }
   
-  write.table(alltissue_bt_results, file = './DiversityDivergence_Results.tsv')
+  write.table(alltissue_bt_results, file = './DiversityDivergence_Results.tsv') #CHANGE
 
 }
 
