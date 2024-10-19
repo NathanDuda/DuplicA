@@ -9,10 +9,12 @@ library(tools) # file_ext() in combine_raw_fastas() in model_OrthoFinder.R and f
 library(testthat) # for unit tests
 library(tidyverse)
 library(readxl)
+library(shinyjs)
 
 source('./Scripts/setup.R')
+source('./workflow.R')
 source('./app_functions.R')
-source('./app_pages.R')
+source('./app_page_layouts.R')
 source('./Scripts/model_OrthoFinder.R')
 source('./Scripts/model_DnDs.R')
 source('./Scripts/model_Segregating_Duplicates.R')
@@ -32,6 +34,8 @@ ui <- fluidPage(
       div(class = "sidebar-buttons",  # Apply a class to target buttons in the sidebar
 
           actionButton("select_HOME", "HOME", class = "btn-primary"),
+          h5("Workflow"),
+          actionButton("select_workflow", "Workflow", class = "btn-primary"),
           h5('Detect Duplications'),
           actionButton("select_blat", "BLAT", class = "btn-primary"),
           actionButton("select_blast", "BLAST", class = "btn-primary"),
@@ -74,6 +78,7 @@ server <- function(input, output, session) {
   observeEvent(input$select_diversity_divergence, {current_model("diversity_divergence")})
   observeEvent(input$select_blat, {current_model("blat")})
   observeEvent(input$select_blast, {current_model("blast")})
+  observeEvent(input$select_workflow, {current_model("workflow")})
   
   
   # Render UI dynamically based on the selected model
@@ -109,6 +114,9 @@ server <- function(input, output, session) {
            ),
            'blast' = tagList(
              blast_page()
+           ),
+           "workflow" = tagList(   # New workflow page
+             workflow_page()
            ),
            "HOME" = tagList(
              titlePanel("DuplicA"),
@@ -459,6 +467,17 @@ server <- function(input, output, session) {
       shinyalert("Success!", result, type = "info")
     })
   })
+  
+  
+  
+  
+  # workflow
+  
+  # Multi-species customization options
+  output$multi_species_customization <- get_multi_species_model_options(input)
+  
+  # One-species second model options
+  output$one_species_second_models <- get_single_species_model_options(input)
   
   
 }
