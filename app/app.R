@@ -60,7 +60,7 @@ ui <- fluidPage(
 
 server <- function(input, output, session) {
   
-  roots <- c(home = "C:/Users/17735/Downloads")
+  roots <- c(home = "C:/Users/17735/Downloads") # CHANGE
   
   options(shiny.maxRequestSize = 50 * 1024^2)
   
@@ -477,9 +477,59 @@ server <- function(input, output, session) {
   output$multi_species_customization <- get_multi_species_model_options(input)
   
   # One-species second model options
-  output$one_species_second_models <- get_single_species_model_options(input)
+  output$one_species_customization <- get_single_species_model_options(input)
+  
+  
+  
+  
+  
+  
+  selected_models <- add_wf_models_to_list(input)
+  
+  
+  
+  # run selected workflow 
+  observeEvent(input$run_workflow, {
+    print(reactiveValuesToList(selected_models)$models)
+    models <- reactiveValuesToList(selected_models)$models
+    
+    if (length(models) == 0) {return(h4("No models selected. Please select models from the sidebar."))}
+    
+    if ('orthofinder' %in% models) { 
+      
+      #msa_program <- if (input$gene_tree_inference_method == 'msa') input$msa_method else NULL
+      #tree_method <- if (input$gene_tree_inference_method == 'msa') input$tree_method else NULL
+      #no_msa_trim <- if (input$gene_tree_inference_method == 'msa') input$msa_trim else FALSE
+
+
+      main_OrthoFinder(protein_folder = dirname(protein_folder()),
+                       is_dna = input$nuc_not_prot,
+                       method = input$gene_tree_inference_method,
+                       sequence_search = input$sequence_search_method,
+                       msa_program = msa_program,
+                       tree_method = tree_method,
+                       mcl_inflation = input$mcl_inflation,
+                       split_hogs = input$split_hogs,
+                       no_msa_trim = no_msa_trim,
+                       result_dir = paste0(roots, '/DuplicA/app/Results'))
+      }
+    
+    
+    #if (selected_models$dnds) { run_dnds() }
+    #if (selected_models$cdrom) { run_cdrom() }
+    #if (selected_models$expression_shift) { run_expression_shift() }
+    #if (selected_models$diversity_divergence) { run_diversity_divergence() }
+    
+    #showModal(modalDialog(title = "Workflow Complete", "All selected models have been executed successfully.", easyClose = TRUE, footer = NULL))
+  
+    
+    })
   
   
 }
+  
+  
+  
+
 
 shinyApp(ui, server)

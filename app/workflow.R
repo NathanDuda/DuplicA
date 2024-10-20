@@ -37,14 +37,14 @@ workflow_page <- function() {
                  column(4,
                         h4("Step 2: Second Model"),
                         div(id = "multi_species_second_models", style = "display: none;",
-                            actionButton("btn_dnDs", "DnDs", class = "model-btn", 
+                            actionButton("btn_dnds", "DnDs", class = "model-btn", 
                                          style = "background-color: #007bff;"),
                             actionButton("btn_cdrom", "CDROM", class = "model-btn", 
                                          style = "background-color: #007bff;"),
-                            actionButton("btn_eve_expr", "EVE Expression Shift", 
+                            actionButton("btn_expression_shift", "EVE Expression Shift", 
                                          class = "model-btn", 
                                          style = "background-color: #007bff;"),
-                            actionButton("btn_eve_div", "EVE Diversity/Divergence", 
+                            actionButton("btn_diversity_divergence", "EVE Diversity/Divergence", 
                                          class = "model-btn", 
                                          style = "background-color: #007bff;"),
                             tags$script(HTML("
@@ -75,6 +75,10 @@ workflow_page <- function() {
                         uiOutput("multi_species_customization"),
                         style = "margin-top: 20px; border-top: 2px solid #ddd; padding-top: 10px;"
                  )
+               ),
+               conditionalPanel(
+                 condition = "input.btn_orthofinder % 2 == 1",
+                 actionButton("wf_additional_options", "Additional Options", class = "btn-secondary")
                )
              )
     ),
@@ -106,13 +110,13 @@ workflow_page <- function() {
                  column(3,
                         h4("Step 2: Second Model"),
                         div(id = "one_species_second_models", style = "display: none;",
-                            actionButton("btn_dnDs_one", "Dn/Ds", class = "model-btn", 
+                            actionButton("btn_dnds_one", "Dn/Ds", class = "model-btn", 
                                          style = "background-color: #007bff;"),
-                            actionButton("btn_seg_dup", "Segregating Duplicates", 
+                            actionButton("btn_segregating_duplicates", "Segregating Duplicates", 
                                          class = "model-btn", 
                                          style = "background-color: #007bff;"),
                             tags$script(HTML("
-              $('#btn_dnDs_one').click(function() {
+              $('#btn_dnds_one').click(function() {
                 var currentColor = $(this).css('background-color');
                 if (currentColor === 'rgb(0, 123, 255)') { // Blue
                   $(this).css('background-color', 'green');
@@ -129,11 +133,11 @@ workflow_page <- function() {
                  column(3,
                         h4("Step 3: Third Model"),
                         div(id = "one_species_third_model", style = "display: none;",
-                            actionButton("btn_seg_dup_third", "Segregating Duplicates", 
+                            actionButton("btn_segregating_duplicates_third", "Segregating Duplicates", 
                                          class = "model-btn", 
                                          style = "background-color: #007bff;"),
                             tags$script(HTML("
-              $('#btn_seg_dup_third').click(function() {
+              $('#btn_segregating_duplicates_third').click(function() {
                 var currentColor = $(this).css('background-color');
                 if (currentColor === 'rgb(0, 123, 255)') { // Blue
                   $(this).css('background-color', 'green');
@@ -162,44 +166,49 @@ workflow_page <- function() {
                  )
                )
              )
+    ),
+    div(style = "text-align: center; margin-top: 30px;",
+        actionButton("run_workflow", "Run Workflow", 
+                     class = "btn-success", 
+                     style = "width: 200px; height: 50px; font-size: 18px;")
     )
   )
 }
 
 
+multi_species_models <- c('orthofinder', 'cdrom', 'dnds', 'segregating_duplicates',
+                          'expression_shift', 'diversity_divergence', 'blat', 'blast')
+
+
+
 get_multi_species_model_options <- function(input) {
   renderUI({
-    ui_elements <- list()  # Initialize an empty list for UI elements
+    ui_elements <- list()
     
-    # Check if 'Orthofinder' is selected
-    if (input$btn_orthofinder %% 2 == 1) {
-      ui_elements <- c(ui_elements,
-                       orthofinder_options(),
-                       tags$div(style = "margin-bottom: 20px;")  # Space between models
-      )
+    # Main Options
+    for (model in multi_species_models) {
+      btn_model <- paste0('btn_', model)
+      model_options <- get(paste0(model, '_options'))
+      
+      # if model is selected, add its options to ui_elements
+      if (input[[btn_model]] %% 2 == 1) {ui_elements <- c(ui_elements, model_options())}
     }
     
-    # Check if 'CDROM' is selected
-    if (input$btn_cdrom %% 2 == 1) {
-      ui_elements <- c(ui_elements,
-                       cdrom_options(),
-                       tags$div(style = "margin-bottom: 20px;")  # Space between models
-      )
+    # Additional Options
+    # If the additional options button is toggled, add additional options
+    if (!is.null(input$wf_additional_options) && input$wf_additional_options %% 2 == 1) {
+      for (model in multi_species_models) {
+        btn_model <- paste0('btn_', model)
+        additional_options <- get(paste0(model, '_additional_options'))
+        
+        if (input[[btn_model]] %% 2 == 1) {
+          ui_elements <- c(ui_elements, additional_options())
+        }
+      }
     }
-    
-    # Additional Options Button
-    ui_elements <- c(ui_elements,
-                     actionButton("toggle_additional_options", "Additional Options", class = "btn-secondary"),
-                     conditionalPanel(
-                       condition = "input.toggle_additional_options % 2 == 1",
-                       tags$div(style = "margin-top: 20px;"),
-                       orthofinder_additional_options(),
-                       cdrom_additional_options()
-                     )
-    )
     
     # Return the combined UI elements as a fluid page
-    fluidPage(do.call(tagList, ui_elements))
+    tagList(ui_elements)
   })
 }
 
