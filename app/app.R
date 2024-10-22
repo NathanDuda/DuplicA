@@ -1,15 +1,3 @@
-library(shiny)
-library(shinyFiles)
-library(bslib)
-library(htmltools)
-library(shinyalert)
-library(fs) # for file paths 
-library(Biostrings) # translate() in translate_nucs_to_prots() in model_OrthoFinder.R
-library(tools) # file_ext() in combine_raw_fastas() in model_OrthoFinder.R and file_path_sans_ext() in blat
-library(testthat) # for unit tests
-library(tidyverse)
-library(readxl)
-library(shinyjs)
 
 source('./Scripts/setup.R')
 source('./workflow.R')
@@ -470,23 +458,21 @@ server <- function(input, output, session) {
   
   
   
-  
+  ###################################################
   # workflow
   
-  # Multi-species customization options
   output$multi_species_customization <- get_multi_species_model_options(input)
-  
-  # One-species second model options
   output$one_species_customization <- get_single_species_model_options(input)
   
-  
-  
-  
-  
-  
-  selected_models <- add_wf_models_to_list(input)
-  
-  
+  selected_models <- reactiveValues(models = list())
+  observeEvent(input$btn_orthofinder, {selected_models$models <- append(selected_models$models, "orthofinder")})
+  observeEvent(input$btn_dnds, {selected_models$models <- append(selected_models$models, "dnds")})
+  observeEvent(input$btn_cdrom, {selected_models$models <- append(selected_models$models, "cdrom")})
+  observeEvent(input$btn_expression_shift, {selected_models$models <- append(selected_models$models, "expression_shift")})
+  observeEvent(input$btn_diversity_divergence, {selected_models$models <- append(selected_models$models, "diversity_divergence")})
+  observeEvent(input$btn_blat, {selected_models$models <- append(selected_models$models, "blat")})
+  observeEvent(input$btn_blast, {selected_models$models <- append(selected_models$models, "blast")})
+  observeEvent(input$btn_segregating_duplicates, {selected_models$models <- append(selected_models$models, "segregating_duplicates")})
   
   # run selected workflow 
   observeEvent(input$run_workflow, {
@@ -496,35 +482,66 @@ server <- function(input, output, session) {
     if (length(models) == 0) {return(h4("No models selected. Please select models from the sidebar."))}
     
     if ('orthofinder' %in% models) { 
+
+      print(input$protein_folder)
+      print(paste("Protein folder:", protein_folder()))
+      print(paste("Is DNA:", input$nuc_not_prot))
+      print(paste("Method:", input$gene_tree_inference_method))
+      print(paste("Sequence Search:", input$sequence_search_method))
+      print(paste("Tree Method:", input$tree_method))
+      print(paste("MSA Method:", input$msa_method))
+      print(paste("MCL Inflation:", input$mcl_inflation))
+      print(paste("Split HOGs:", input$split_hogs))
+      print(paste("No MSA Trim:", input$msa_trim))
       
-      #msa_program <- if (input$gene_tree_inference_method == 'msa') input$msa_method else NULL
-      #tree_method <- if (input$gene_tree_inference_method == 'msa') input$tree_method else NULL
-      #no_msa_trim <- if (input$gene_tree_inference_method == 'msa') input$msa_trim else FALSE
-
-
-      main_OrthoFinder(protein_folder = dirname(protein_folder()),
+      
+      if (!dir.exists(paste0(roots, '/DuplicA/app/Results/OrthoFinder_Results'))){
+              dir.create(paste0(roots, '/DuplicA/app/Results/OrthoFinder_Results'))
+      }
+      
+      of_results_dir <- paste0(roots, '/DuplicA/app/Results/OrthoFinder_Results/')
+      main_OrthoFinder(protein_folder = protein_folder(),
                        is_dna = input$nuc_not_prot,
                        method = input$gene_tree_inference_method,
                        sequence_search = input$sequence_search_method,
-                       msa_program = msa_program,
-                       tree_method = tree_method,
+                       msa_program = input$msa_method,
+                       tree_method = input$tree_method,
                        mcl_inflation = input$mcl_inflation,
                        split_hogs = input$split_hogs,
-                       no_msa_trim = no_msa_trim,
-                       result_dir = paste0(roots, '/DuplicA/app/Results'))
+                       no_msa_trim = input$msa_trim,
+                       result_dir = of_results_dir)
       }
     
     
-    #if (selected_models$dnds) { run_dnds() }
-    #if (selected_models$cdrom) { run_cdrom() }
-    #if (selected_models$expression_shift) { run_expression_shift() }
-    #if (selected_models$diversity_divergence) { run_diversity_divergence() }
+    if ('cdrom' %in% models) {
+      
+      if (is.null(of_results_dir) {ortho_dir <- dirname(dirname(ortho_dir()))})
+      if (!is.null(of_results_dir) {ortho_dir <- of_results_dir})
+      result <- run_r_script(
+        run_type = "OF",
+        script_name = "model_CDROM.R",
+        expression_file = expression_file(),
+        ortho_dir = ortho_dir,
+        dups_file = NULL,
+        exp_dir = NULL,
+        add_pseudofunc = input$add_pseudofunc,
+        missing_expr_is_pseudo = input$missing_expr_is_pseudo,
+        exp_cutoff = input$exp_cutoff,
+        PC = FALSE,
+        min_dups_per_species_pair = input$min_dups_per_species_pair,
+        use_absolute_exp = input$use_absolute_exp
+      )
+      
+      
+      
+      
+    }
+    
     
     #showModal(modalDialog(title = "Workflow Complete", "All selected models have been executed successfully.", easyClose = TRUE, footer = NULL))
   
     
     })
-  
   
 }
   

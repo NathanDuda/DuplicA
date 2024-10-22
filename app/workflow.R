@@ -71,7 +71,7 @@ workflow_page <- function() {
                ),
                fluidRow(
                  column(12,
-                        h4("Model Customization and Input"),
+                        h4("Input and Customization Options"),
                         uiOutput("multi_species_customization"),
                         style = "margin-top: 20px; border-top: 2px solid #ddd; padding-top: 10px;"
                  )

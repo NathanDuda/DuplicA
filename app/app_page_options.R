@@ -22,7 +22,7 @@ orthofinder_additional_options <- function() {
            tags$div(style = "margin-bottom: 10px;"), # empty space
            
            selectInput("sequence_search_method", tags$span("Sequence Search Method", style = "font-size: 13px;"), choices = c("diamond", "blast", "mmseqs2")),
-           selectInput("gene_tree_inference_method", tags$span("Gene Tree Inference Method", style = "font-size: 13px;"), choices = c("dendroblast", "msa")),
+           selectInput("gene_tree_inference_method", tags$span("Gene Tree Inference Method", style = "font-size: 13px;"), choices = c("dendroblast", "msa"), selected = 'dendroblast'),
            numericInput("mcl_inflation", tags$span("MCL Inflation", style = "font-size: 13px;"), value = 1.5, step = 0.1),
            checkboxInput("split_hogs", tags$span("Split HOGs", style = "font-size: 13px;"), value = FALSE),
            checkboxInput("nuc_not_prot", tags$span("DNA Instead of Protein", style = "font-size: 13px;"), value = FALSE),
@@ -32,8 +32,8 @@ orthofinder_additional_options <- function() {
            conditionalPanel(
              condition = "input.gene_tree_inference_method == 'msa'",
              column(6,
-                    selectInput("msa_method", tags$span("MSA Method", style = "font-size: 13px;"), choices = c("mafft", "muscle")),
-                    selectInput("tree_method", tags$span("MSA Tree Inference Method", style = "font-size: 13px;"), choices = c("fasttree", "raxml")),
+                    selectInput("msa_method", tags$span("MSA Method", style = "font-size: 13px;"), choices = c("mafft", "muscle"), selected = 'mafft'),
+                    selectInput("tree_method", tags$span("MSA Tree Inference Method", style = "font-size: 13px;"), choices = c("fasttree", "raxml"), selected = 'fasttree'),
                     checkboxInput("msa_trim", tags$span("No MSA Trim", style = "font-size: 13px;"), value = FALSE)
              ))
     )

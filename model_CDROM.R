@@ -1,45 +1,7 @@
 
-
-library(tidyverse)
-
+source('./app/Scripts/multispecies_functions.R')
 
 
-
-get_dups_from_OF <- function(OF_dir_path) {
-  
-  orthogroup_gene_count <- read.delim(paste0(OF_dir_path, "Orthogroups/Orthogroups.GeneCount.tsv"))
-  n_species <- ncol(orthogroup_gene_count) - 2 
-  
-  # get the two to one to ones to zeros 
-  two_to_ones <- orthogroup_gene_count %>%
-    filter(if_all(2:(n_species + 1), ~. <= 2)) %>%          # keep only pairs 
-    filter(rowSums(select(., 2:(n_species + 1)) == 2) == 1) # make sure there is only one species with 2 copies 
-  
-  # add a column with the name of the species with the duplication
-  two_to_ones$duplicate_pair_species <- 
-    apply(two_to_ones[, 2:(n_species + 1)], 1, function(x) {
-      col_index <- which(x == 2)
-      return(colnames(two_to_ones[, 2:(n_species + 1)])[col_index])})
-  
-  two_to_ones <- two_to_ones %>%
-    select(Orthogroup, duplicate_pair_species)
-  
-  # merge back with the gene names 
-  orthogroups <- read.delim(paste0(OF_dir_path, "/Orthogroups/Orthogroups.tsv"))
-  two_to_ones <- merge(orthogroups, two_to_ones, by = 'Orthogroup')
-  
-  
-  # extract the duplicate pair genes
-  dups <- two_to_ones %>%
-    rowwise() %>%
-    mutate(duplicate_pair = toString(c_across(2:(n_species + 1))[grep(",", c_across(2:(n_species + 1)))])) %>%
-    select(Orthogroup, duplicate_pair, duplicate_pair_species) %>%
-    separate(duplicate_pair, into = c("dup_1", "dup_2"), sep = ", ")
-  
-  return(list(dups = dups, dup_pair_orthologs = two_to_ones))
-}
-# ensure no genes repeat in either column 
-# no repeating gene pairs 
 
 clean_exp_and_pseudo <- function(exp_path, dups, add_pseudofunc, missing_expr_is_pseudo, set_exp_lower_than_X_to_0, PC) {
   all_expression <- read.delim(exp_path, sep = ' ')
@@ -83,65 +45,6 @@ clean_exp_and_pseudo <- function(exp_path, dups, add_pseudofunc, missing_expr_is
   return(list(pseudo = pseudo, clean_expression = clean_expression))
   }
  return(list(clean_expression = clean_expression))
-}
-
-library(ape)
-get_anc_copy <- function(OF_dir_path, dups, dup_pair_orthologs, clean_expression){
-  
-  expression <- clean_expression
-  orthologs <- dup_pair_orthologs
-  
-  # create function to find the closest expressed ortholog to each duplicate pair
-  newick_tree <- ape::read.tree(paste0(OF_dir_path, 'Species_Tree/SpeciesTree_rooted.txt'))
-  find_closest_ortholog <- function(row, species, newick_tree) {
-    
-    # calculate phylogenetic distances between the given species and each tip  
-    species_node <- which(newick_tree$tip.label == species)
-    distances <- cophenetic(newick_tree)[species_node, ]
-    distances <- distances[distances > 0] # remove itself from distance calculation 
-    
-    # set non-expressed genes to NA 
-    row[!row %in% expression$id] <- NA
-    
-    # remove the duplicate pair species and missing species from the possible top choices 
-    exclude_species <- colnames(row)[apply(row, 2, function(x) all(is.na(x)))]
-    exclude_species <- c(exclude_species, species)
-    distances <- distances[setdiff(names(distances), exclude_species)]
-    
-    # pick the closest available tip to the species
-    closest_species <- names(which.min(distances)) # find the closest species by minimum distance
-    
-    
-    if (is.null(closest_species)) {return(list(closest_gene = NA, closest_species = NA))}
-    
-    # get the ortholog from that species 
-    closest_gene <- row[[closest_species]]
-    
-    if (exists("closest_gene")) {return(list(closest_gene = closest_gene, 
-                                             closest_species = as.character(closest_species)))}
-    return(list(closest_gene = NA, closest_species = NA))
-    
-  }
-  
-  # apply the function to each row of the ortholog table 
-  orthologs$ancestral_copy <- NA
-  orthologs$ancestral_species <- NA
-  for (row_num in 1:nrow(orthologs)) {
-    row <- orthologs[row_num,] 
-    out <- find_closest_ortholog(row, species = row$duplicate_pair_species, newick_tree)
-    orthologs[row_num, 'ancestral_copy'] <- out$closest_gene
-    orthologs[row_num, 'ancestral_species'] <- out$closest_species
-    
-    #if (exists("closest_gene")) {rm(closest_gene)}
-  }
-  
-  dups <- orthologs %>%
-    select(Orthogroup, ancestral_copy, ancestral_species) %>%
-    merge(., dups, by = 'Orthogroup') %>%
-    filter(!is.na(ancestral_copy)) # remove duplicates without ancestral copies 
-    
-  return(dups)
-  
 }
 
 
@@ -719,25 +622,25 @@ CreatePlot_FuncPie <- function(all_func){
 ########
 
 
-OF_dir_path <- 'C:/Users/17735/Downloads/Eight_Species/OrthoFinder_Output/Results_Jan01/'
-exp_path <- 'C:/Users/17735/Downloads/Eight_Species/All_Expression_Data.tsv'
-add_pseudofunc <- TRUE
-missing_expr_is_pseudo <- FALSE # only when add_pseudofunc is TRUE 
-set_exp_lower_than_X_to_0 <- 1 # set default to 1 - ensure numeric 
-PC <- T 
+#OF_dir_path <- 'C:/Users/17735/Downloads/Eight_Species/OrthoFinder_Output/Results_Jan01/'
+#exp_path <- 'C:/Users/17735/Downloads/Eight_Species/All_Expression_Data.tsv'
+#add_pseudofunc <- TRUE
+#missing_expr_is_pseudo <- FALSE # only when add_pseudofunc is TRUE 
+#set_exp_lower_than_X_to_0 <- 1 # set default to 1 - ensure numeric 
+#PC <- T 
 # MAKE SURE first column is p (dup_1) then c then a 
 # ensure OGs dont repeat
 # rm unecessary objects throughout code 
 # make sure all necessary orthofinder files exist 
 
-main_CDROM <- function(OF_dir_path, exp_path, add_pseudofunc, missing_expr_is_pseudo, rm_exp_lower_than){
+main_CDROM <- function(OF_dir_path, exp_path, add_pseudofunc, missing_expr_is_pseudo, exp_cutoff){
   
   out1 <- get_dups_from_OF(OF_dir_path)
   dups <- out1$dups
   dup_pair_orthologs <- out1$dup_pair_orthologs
 
   
-  out2 <- clean_exp_and_pseudo(exp_path, dups, add_pseudofunc, missing_expr_is_pseudo, set_exp_lower_than_X_to_0, PC)
+  out2 <- clean_exp_and_pseudo(exp_path, dups, add_pseudofunc, missing_expr_is_pseudo, exp_cutoff, PC)
   clean_expression <- out2$clean_expression
   
   dups_anc <- get_anc_copy(OF_dir_path, dups, dup_pair_orthologs, clean_expression)
@@ -801,7 +704,7 @@ main_CDROM <- function(OF_dir_path, exp_path, add_pseudofunc, missing_expr_is_ps
 
 
 args <- commandArgs(trailingOnly = TRUE)
-#main_CDROM(OF_dir_path, exp_path, add_pseudofunc, missing_expr_is_pseudo, rm_exp_lower_than)
+#main_CDROM(OF_dir_path, exp_path, add_pseudofunc, missing_expr_is_pseudo, exp_cutoff)
 main_CDROM(args[1], args[2], args[3], args[4], args[5])
 
 

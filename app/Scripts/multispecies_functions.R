@@ -77,7 +77,7 @@ get_dups_from_OF <- function(OF_dir_path) {
 }
 
 
-clean_exp_and_pseudo <- function(exp_path, dups, add_pseudofunc, missing_expr_is_pseudo, rm_exp_lower_than, PC) {
+clean_exp_and_pseudo <- function(exp_path, dups, add_pseudofunc, missing_expr_is_pseudo, exp_cutoff, PC) {
   
   ################################
   # unit tests
@@ -118,7 +118,7 @@ clean_exp_and_pseudo <- function(exp_path, dups, add_pseudofunc, missing_expr_is
   
   
   # format expression file 
-  all_expression[all_expression < rm_exp_lower_than] <- 0 
+  all_expression[all_expression < exp_cutoff] <- 0 
   colnames(all_expression)[1] <- 'id'
   
   clean_expression <- all_expression
@@ -161,7 +161,7 @@ clean_exp_and_pseudo <- function(exp_path, dups, add_pseudofunc, missing_expr_is
   return(list(clean_expression = clean_expression))
 }
 
-library(ape)
+
 get_anc_copy <- function(OF_dir_path, dups, dup_pair_orthologs, clean_expression){
   
   expression <- clean_expression
