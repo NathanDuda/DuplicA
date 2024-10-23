@@ -242,3 +242,13 @@ get_anc_copy <- function(OF_dir_path, dups, dup_pair_orthologs, clean_expression
 }
 
 
+get_exp_df_for_copy <- function(copy, dups_anc, clean_expression) {
+  
+  dups <- dups_anc %>% select(Orthogroup, all_of(copy))
+  
+  colnames(clean_expression)[1] <- copy
+  exp_df <- merge(dups, clean_expression, by = copy)
+  
+  return(exp_df)
+}
+

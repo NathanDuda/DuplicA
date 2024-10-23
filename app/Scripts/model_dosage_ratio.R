@@ -6,22 +6,10 @@ source('./app/Scripts/multispecies_functions.R')
 
 calc_dosage_ratio <- function(dups_anc, clean_expression) {
   
-  # make dataframe for each copy 
-  dups <- dups_anc %>% select(dup_1, dup_2, ancestral_copy)
-  
-  dup_1 <- dups[1]
-  dup_2 <- dups[2]
-  anc <- dups[3]
-  
-  # merge dups with their expression data 
-  colnames(clean_expression)[1] <- 'dup_1'
-  dup_1 <- merge(dup_1, clean_expression, by = 'dup_1')
-  
-  colnames(clean_expression)[1] <- 'dup_2'
-  dup_2 <- merge(dup_2, clean_expression, by = 'dup_2')
-  
-  colnames(clean_expression)[1] <- 'ancestral_copy'
-  anc <- merge(anc, clean_expression, by = 'ancestral_copy')
+  # get expression dataframe for each copy 
+  dup_1 <- get_exp_df_for_copy(copy = 'dup_1', dups_anc, clean_expression) %>% select(-Orthogroup)
+  dup_2 <- get_exp_df_for_copy(copy = 'dup_2', dups_anc, clean_expression) %>% select(-Orthogroup)
+  anc <- get_exp_df_for_copy(copy = 'ancestral_copy', dups_anc, clean_expression) %>% select(-Orthogroup)
   
   # add up the expression values across every tissue for all genes 
   dup_1 <- dup_1 %>%  mutate(sum_exp = rowSums(across(2:ncol(.)))) %>% select(sum_exp)

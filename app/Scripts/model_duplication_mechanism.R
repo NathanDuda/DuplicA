@@ -82,6 +82,7 @@ main_dup_mechanism <- function(OF_dir_path, exons_path, mech_type, exp_path, exp
   
   dups_anc <- get_anc_copy(OF_dir_path, dups, dup_pair_orthologs, clean_expression)
   
+  
   mech <- get_dup_mechanism(dups_anc, exons_path, mech_type)
   
   return(mech)

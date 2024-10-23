@@ -626,8 +626,8 @@ CreatePlot_FuncPie <- function(all_func){
 #exp_path <- 'C:/Users/17735/Downloads/Eight_Species/All_Expression_Data.tsv'
 #add_pseudofunc <- TRUE
 #missing_expr_is_pseudo <- FALSE # only when add_pseudofunc is TRUE 
-#set_exp_lower_than_X_to_0 <- 1 # set default to 1 - ensure numeric 
-#PC <- T 
+#exp_cutoff <- 1 # set default to 1 - ensure numeric 
+#PC <- F
 # MAKE SURE first column is p (dup_1) then c then a 
 # ensure OGs dont repeat
 # rm unecessary objects throughout code 
@@ -667,14 +667,10 @@ main_CDROM <- function(OF_dir_path, exp_path, add_pseudofunc, missing_expr_is_ps
                   PC = PC)
     
     
-    out4$EDiv_values
-    out4$EuclideanDistanceDensities
-    out4$ClassificationCross
-    
     if (PC == F) {
       func <- out4$classes %>%
       select(dup_1 = Dup1, dup_2 = Dup2, ancestral_copy = Ancestor, func = Classification) %>%
-      left_join(dups_spec_pair, ., by = c('parent', 'child', 'ancestral_copy'))
+      left_join(dups_spec_pair, ., by = c('dup_1', 'dup_2', 'ancestral_copy'))
     }
     if (PC == T) {
       func <- out4$classes %>%
@@ -703,9 +699,9 @@ main_CDROM <- function(OF_dir_path, exp_path, add_pseudofunc, missing_expr_is_ps
 
 
 
-args <- commandArgs(trailingOnly = TRUE)
+#args <- commandArgs(trailingOnly = TRUE)
 #main_CDROM(OF_dir_path, exp_path, add_pseudofunc, missing_expr_is_pseudo, exp_cutoff)
-main_CDROM(args[1], args[2], args[3], args[4], args[5])
+#main_CDROM(args[1], args[2], args[3], args[4], args[5])
 
 
 
