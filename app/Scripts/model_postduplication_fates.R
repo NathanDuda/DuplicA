@@ -2,108 +2,6 @@
 source('./app/Scripts/multispecies_functions.R')
 
 
-
-# general functions
-contrib <- function(g) {
-  return(sum(g))
-}
-
-contrib_intersection <- function(g, h) {
-  return(sum(pmin(g, h)))
-}
-
-i <- function(g, h) {
-  if (contrib(g) == 0) {return(1)}
-  return(contrib_intersection(g, h) / contrib(g))
-}
-
-delta <- function(x, t = v) {
-  first_term <- x - t
-  second_term <- 1 - t
-  
-  return(max(0, (first_term / second_term) ))
-}
-
-
-# pseudofunctionalization term function
-P_x <- function(a, x) {
-  return(i(a, x) * (1 - (i(x, a) / p)))
-}
-
-# neofunctionalization term function
-N <- function(a, b, g) {
-  first_term <- 1 - i(a, g)
-  second_term <- delta(i(b, g))
-  
-  return(first_term * second_term * i(g, b))
-}
-
-# all classification functions
-pseudo_prob <- function(a, b, g) {
-  P_a = P_x(a, g)
-  P_b = P_x(b, g) 
-  return(max(0, P_a, P_b))
-}
-
-neo_prob <- function(a, b, g) {
-  N_a <- N(a, b, g)
-  N_b <- N(b, a, g)
-  
-  first_term <- max(N_a, N_b)
-  second_term <- 1 - pseudo_prob(a, b, g)
-  
-  return(first_term * second_term)
-}
-
-double_neo_prob <- function(a, b, g) {
-  a_plus_b <- a + b
-  
-  first_term <- 1 - i(a, g)
-  second_term <- 1 - i(b, g)
-  third_term <- 1 - i(g, a_plus_b)
-  fourth_term <- 1 - pseudo_prob(a, b, g)
-  
-  return(first_term * second_term * third_term * fourth_term)
-}
-
-conserv_prob <- function(a, b, g) {
-  a_plus_b <- a + b
-  b_plus_g <- b + g
-  
-  first_term <- delta(i(a, g))
-  second_term <- delta(i(b, g))
-  third_term <- i(g, a_plus_b)
-  fourth_term <- delta(i(a, b_plus_g), t = 0.5)
-  fifth_term <- 1 - pseudo_prob(a, b, g)
-  
-  return(first_term * second_term * third_term * fourth_term * fifth_term)
-}
-
-subfun_prob <- function(a, b, g) {
-  a_plus_b <- a + b
-  
-  first_term <- delta(i(a, g))
-  second_term <- delta(i(b, g))
-  third_term <- i(g, a_plus_b)
-  fourth_term <- delta(i(a_plus_b, g), t = 0.5)
-  fifth_term <- 1 - pseudo_prob(a, b, g)
-  
-  return(first_term * second_term * third_term * fourth_term * fifth_term)
-}
-
-specializ_prob <- function(a, b, g) {
-  a_plus_b <- a + b
-  
-  first_term <- i(g, a_plus_b)
-  second_term <- 1 - delta(i(a, g))
-  third_term <- 1 - delta(i(b, g))
-  fourth_term <- 1 - pseudo_prob(a, b, g)
-  
-  return(first_term * second_term * third_term * fourth_term)
-}
-
-
-
 get_exp_df_for_all_copies <- function(dups_anc, clean_expression) {
   
   # get expression dataframe for each copy 
@@ -123,8 +21,113 @@ get_exp_df_for_all_copies <- function(dups_anc, clean_expression) {
   return(dups_anc_exp)
 }
 
+
+# general functions
+contrib <- function(g) {
+  return(sum(g))
+}
+
+contrib_intersection <- function(g, h) {
+  return(sum(pmin(g, h)))
+}
+
+i <- function(g, h) {
+  if (contrib(g) == 0) {return(1)}
+  return(contrib_intersection(g, h) / contrib(g))
+}
+
+delta <- function(x, v) {
+  first_term <- x - v
+  second_term <- 1 - v
+  
+  return(max(0, (first_term / second_term) ))
+}
+
+
+# pseudofunctionalization term function
+P_x <- function(a, x, p) {
+  return(i(a, x) * (1 - (i(x, a) / p)))
+}
+
+# neofunctionalization term function
+N <- function(a, b, g, v) {
+  first_term <- 1 - i(a, g)
+  second_term <- delta(i(b, g), v)
+  
+  return(first_term * second_term * i(g, b))
+}
+
+# all classification functions
+pseudo_prob <- function(a, b, g, p) {
+  P_a = P_x(a, g, p)
+  #P_b = P_x(b, g, p) 
+  
+  term <- max(0, P_a)
+  #term <- max(0, P_a, P_b)
+  return(term)
+}
+
+neo_prob <- function(a, b, g, v, p) {
+  N_a <- N(a, b, g, v)
+  #N_b <- N(b, a, g, v)
+  
+  first_term <- N_a
+  #first_term <- max(N_a, N_b)
+  second_term <- 1 - pseudo_prob(a, b, g, p)
+  
+  return(first_term * second_term)
+}
+
+double_neo_prob <- function(a, b, g, p) {
+  a_plus_b <- a + b
+  
+  first_term <- 1 - i(a, g)
+  second_term <- 1 - i(b, g)
+  third_term <- 1 - i(g, a_plus_b)
+  fourth_term <- 1 - pseudo_prob(a, b, g, p)
+  
+  return(first_term * second_term * third_term * fourth_term)
+}
+
+conserv_prob <- function(a, b, g, v, p) {
+  a_plus_b <- a + b
+  b_plus_g <- b + g
+  
+  first_term <- delta(i(a, g), v)
+  second_term <- delta(i(b, g), v)
+  third_term <- i(g, a_plus_b)
+  fourth_term <- delta(i(a, b_plus_g), v = 0.5)
+  fifth_term <- 1 - pseudo_prob(a, b, g, p)
+  
+  return(first_term * second_term * third_term * fourth_term * fifth_term)
+}
+
+subfun_prob <- function(a, b, g, v, p) {
+  a_plus_b <- a + b
+  
+  first_term <- delta(i(a, g), v)
+  second_term <- delta(i(b, g), v)
+  third_term <- i(g, a_plus_b)
+  fourth_term <- delta(i(a_plus_b, g), v = 0.5)
+  fifth_term <- 1 - pseudo_prob(a, b, g, p)
+  
+  return(first_term * second_term * third_term * fourth_term * fifth_term)
+}
+
+specializ_prob <- function(a, b, g, v, p) {
+  a_plus_b <- a + b
+  
+  first_term <- i(g, a_plus_b)
+  second_term <- 1 - delta(i(a, g), v)
+  third_term <- 1 - delta(i(b, g), v)
+  fourth_term <- 1 - pseudo_prob(a, b, g, p)
+  
+  return(first_term * second_term * third_term * fourth_term)
+}
+
+
 # calculate probabilities function
-get_func_probs <- function(dups_anc_exp) {
+get_func_probs <- function(dups_anc_exp, v, p) {
   
   func_probs <- dups_anc_exp %>%
     rowwise() %>%
@@ -133,22 +136,25 @@ get_func_probs <- function(dups_anc_exp) {
       b = list(c_across(starts_with('dup_2_'))),
       g = list(c_across(starts_with('anc'))),
       
-      PS = pseudo_prob(a, b, g),
-      N = neo_prob(a, b, g),
-      DN = double_neo_prob(a, b, g),
-      C = conserv_prob(a, b, g),
-      SB = subfun_prob(a, b, g),
-      SP = specializ_prob(a, b, g)
+      PS_dup_1 = pseudo_prob(a, b, g, p),
+      PS_dup_2 = pseudo_prob(b, a, g, p),
+      N_dup_1 = neo_prob(a, b, g, v, p),
+      N_dup_2 = neo_prob(b, a, g, v, p),
+      DN = double_neo_prob(a, b, g, p),
+      C = conserv_prob(a, b, g, v, p),
+      SB = subfun_prob(a, b, g, v, p),
+      SP = specializ_prob(a, b, g, v, p)
     ) %>%
     ungroup() %>%
-    select(Orthogroup, PS, N, DN, C, SB, SP)
+    select(Orthogroup, PS_dup_1, PS_dup_2, N_dup_1, N_dup_2, DN, C, SB, SP)
   
   return(func_probs)
 }
 
 
 
-main_postduplication_fates <- function(OF_dir_path, exp_path, exp_cutoff, PC) {
+
+main_postduplication_fates <- function(OF_dir_path, exp_path, exp_cutoff, PC, v, p) {
   
   out1 <- get_dups_from_OF(OF_dir_path)
   dups <- out1$dups
@@ -161,41 +167,19 @@ main_postduplication_fates <- function(OF_dir_path, exp_path, exp_cutoff, PC) {
   dups_anc <- get_anc_copy(OF_dir_path, dups, dup_pair_orthologs, clean_expression)
   dups_anc_exp <- get_exp_df_for_all_copies(dups_anc, clean_expression)
   
-  func_probs <- get_func_probs(dups_anc_exp)
+  func_probs <- get_func_probs(dups_anc_exp, v, p)
   
-  
-  
-  
+  return(func_probs)
 }
-
-
-
-
-
-cdrom_func <- read.csv("C:/Users/17735/Downloads/Eight_Species/Dup_Functionalizations.tsv", sep="")
-
-t <- cdrom_func %>%
-  select(Orthogroup, func_pseudo)
-
-
 
 
 #OF_dir_path <- 'C:/Users/17735/Downloads/Eight_Species/OrthoFinder_Output/Results_Jan01/'
 #exp_path <- 'C:/Users/17735/Downloads/Eight_Species/All_Expression_Data.tsv'
 #exp_cutoff <- 1
-#PC <- T
-
-
-
-
-
-# g is a vector of expression values (one per tissue) for the gene g
-g <- c(12, 436, 2, 24, 3, 34, 1, 7, 3)
-h <- c(57, 46, 4, 12, 7, 91, 23, 5, 3)
-a <- c(47, 16, 2, 162, 5, 1, 2, 21, 8)
-
-p = 0.25
-v = 0.25
-
-
+#PC <- F
+#v <- 0.2
+#p <- 0.05
+#main_postduplication_fates('C:/Users/17735/Downloads/Eight_Species/OrthoFinder_Output/Results_Jan01/',
+ #                          'C:/Users/17735/Downloads/Eight_Species/All_Expression_Data.tsv',
+  #                         1, F, 0.2, 0.05)
 
