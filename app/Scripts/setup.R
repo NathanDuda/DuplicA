@@ -16,6 +16,7 @@ library(ape)
 here <- paste0(fs::path_home(), '/Downloads')
 here_temp <- paste0(fs::path_home(), '/Downloads/DuplicA/app/Temp')
 here_results <- paste0(fs::path_home(), '/Downloads/DuplicA/app/Results')
+here_static_images <- paste0(fs::path_home(), '/Downloads/DuplicA/app/Static/Images')
 
 here_linux <- '/mnt/c/Users/17735/Downloads'
 here_linux_temp <- paste0(here_linux, '/DuplicA/app/Temp')

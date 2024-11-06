@@ -1,7 +1,7 @@
-
 source('./Scripts/setup.R')
 source('./workflow.R')
 source('./app_functions.R')
+source('./app_main_layout.R')
 source('./app_page_layouts.R')
 source('./Scripts/model_OrthoFinder.R')
 source('./Scripts/model_DnDs.R')
@@ -9,44 +9,138 @@ source('./Scripts/model_Segregating_Duplicates.R')
 source('./Scripts/model_EVE.R')
 source('./Scripts/model_Blat_Blast.R')
 
+
+old_div <- function() {
+  
+  div(class = "sidebar-buttons",  # Apply a class to target buttons in the sidebar
+      
+      actionButton("select_HOME", "HOME", class = "btn-primary"),
+      h5("Workflow"),
+      actionButton("select_workflow", "Workflow", class = "btn-primary"),
+      h5('Detect Duplications'),
+      actionButton("select_blat", "BLAT", class = "btn-primary"),
+      actionButton("select_blast", "BLAST", class = "btn-primary"),
+      actionButton("select_orthofinder", "OrthoFinder", class = "btn-primary"),
+      h3("Models"),
+      h5('Functional Divergence'),
+      actionButton("select_cdrom", "CDROM", class = "btn-primary"),
+      actionButton("select_expression_shift", "Expression Shift", class = "btn-primary"), # EVE
+      h5('Selective Pressure'),
+      actionButton("select_dnds", "Dn/Ds", class = "btn-primary"),
+      actionButton("select_diversity_divergence", "Diversity/Divergence", class = "btn-primary"), # EVE
+      actionButton("select_segregating_duplicates", "Segregating Duplicates", class = "btn-primary"),
+      br()
+  )
+}
 # UI with dark mode theme and sidebar layout
 ui <- fluidPage(
-  theme = bs_theme(bg = "#222", fg = "white", primary = '#555'),  # Dark mode
+  # Dark theme for the app
+  theme = bs_theme(bg = "#222", fg = "white", primary = '#555'),
   
-  
-  # Add CSS to ensure buttons are styled and the sidebar is narrower
-  add_css_style(),
-  
-  sidebarLayout(
-    sidebarPanel(
-      div(class = "sidebar-buttons",  # Apply a class to target buttons in the sidebar
-
-          actionButton("select_HOME", "HOME", class = "btn-primary"),
-          h5("Workflow"),
-          actionButton("select_workflow", "Workflow", class = "btn-primary"),
-          h5('Detect Duplications'),
-          actionButton("select_blat", "BLAT", class = "btn-primary"),
-          actionButton("select_blast", "BLAST", class = "btn-primary"),
-          actionButton("select_orthofinder", "OrthoFinder", class = "btn-primary"),
-          h3("Models"),
-          h5('Functional Divergence'),
-          actionButton("select_cdrom", "CDROM", class = "btn-primary"),
-          actionButton("select_expression_shift", "Expression Shift", class = "btn-primary"), # EVE
-          h5('Selective Pressure'),
-          actionButton("select_dnds", "Dn/Ds", class = "btn-primary"),
-          actionButton("select_diversity_divergence", "Diversity/Divergence", class = "btn-primary"), # EVE
-          actionButton("select_segregating_duplicates", "Segregating Duplicates", class = "btn-primary"),
-          br()
-      )
-    ),
+  # JavaScript for opening and closing the sidebar
+  tags$script(HTML("
+    function openNav() {
+      document.getElementById('mySidebar').style.width = '250px';
+      document.getElementById('main').style.marginLeft = '250px';
+    }
     
-    mainPanel(
-      uiOutput("model_ui")  # Dynamic UI output for the selected model
-    )
-  )
+    function closeNav() {
+      document.getElementById('mySidebar').style.width = '0';
+      document.getElementById('main').style.marginLeft = '0';
+    }
+  ")),
+  
+  # Sidebar HTML structure
+  tags$div(id = "mySidebar", class = "sidebar",
+           tags$a(href = "javascript:void(0)", class = "closebtn", onclick = "closeNav()", HTML("&times;")),
+           
+           actionButton("select_HOME", "HOME", class = "btn-primary sidebar-btn"),
+           tags$h5("Workflow"),
+           actionButton("select_workflow", "Workflow", class = "btn-primary sidebar-btn"),
+           
+           tags$h5("Detect Duplications"),
+           actionButton("select_blat", "BLAT", class = "btn-primary sidebar-btn"),
+           actionButton("select_blast", "BLAST", class = "btn-primary sidebar-btn"),
+           actionButton("select_orthofinder", "OrthoFinder", class = "btn-primary sidebar-btn"),
+           
+           tags$h3("Models"),
+           tags$h5("Functional Divergence"),
+           actionButton("select_cdrom", "CDROM", class = "btn-primary sidebar-btn"),
+           actionButton("select_expression_shift", "Expression Shift", class = "btn-primary sidebar-btn"),
+           
+           tags$h5("Selective Pressure"),
+           actionButton("select_dnds", "Dn/Ds", class = "btn-primary sidebar-btn"),
+           actionButton("select_diversity_divergence", "Diversity/Divergence", class = "btn-primary sidebar-btn"),
+           actionButton("select_segregating_duplicates", "Segregating Duplicates", class = "btn-primary sidebar-btn")
+  ),
+  
+  # Main content area with button to open the sidebar
+  tags$div(id = "main",
+           tags$button(class = "openbtn", onclick = "openNav()", HTML("&#9776; Open Sidebar")),
+           tags$h2("Collapsed Sidebar"),
+           tags$p("Content...")
+  ),
+  
+  # Custom CSS for styling the sidebar and main content
+  tags$style(HTML("
+    .sidebar {
+      height: 100%; /* Full-height */
+      width: 0; /* Initially hidden */
+      position: fixed; /* Stay in place */
+      z-index: 1; /* Stay on top */
+      top: 0;
+      left: 0;
+      background-color: #111; /* Dark background */
+      overflow-x: hidden; /* Disable horizontal scroll */
+      transition: 0.5s; /* Transition effect */
+      padding-top: 60px; /* Place content 60px from the top */
+    }
+    
+    .sidebar a, .sidebar button {
+      padding: 8px 8px 8px 32px;
+      text-decoration: none;
+      font-size: 18px;
+      color: #818181;
+      display: block;
+      transition: 0.3s;
+      background: none;
+      border: none;
+      text-align: left;
+      width: 100%;
+    }
+    
+    .sidebar a:hover, .sidebar button:hover {
+      color: #f1f1f1;
+    }
+    
+    .sidebar .closebtn {
+      position: absolute;
+      top: 0;
+      right: 25px;
+      font-size: 36px;
+    }
+    
+    #main {
+      transition: margin-left 0.5s;
+      padding: 16px;
+    }
+    
+    .openbtn {
+      font-size: 20px;
+      cursor: pointer;
+      background-color: #111;
+      color: white;
+      padding: 10px 15px;
+      border: none;
+    }
+  "))
 )
 
+
+
+
 server <- function(input, output, session) {
+  output <- server_rendering(output)
   
   roots <- c(home = "C:/Users/17735/Downloads") # CHANGE
   
@@ -85,8 +179,8 @@ server <- function(input, output, session) {
            "orthofinder" = tagList(
              orthofinder_page()
            ),
-             "dnds" = tagList(
-               dnds_page()
+           "dnds" = tagList(
+             dnds_page()
            ),
            'segregating_duplicates' = tagList(
              segregating_duplicates_page()
@@ -113,14 +207,14 @@ server <- function(input, output, session) {
              h4('Select Data Types:'),
              checkboxGroupInput("data_types", "", 
                                 choices = c(# multi species
-                                            "Expression Data", 
-                                            "OrthoFinder Data", 
-                                            "Duplicate Gene Data",
-                                            'Nucleotide CDS Sequences', 
-                                            'Protein Sequences',
-                                            # pop gen 
-                                            'Population Duplicate Gene Data',
-                                            'Population Nucleotide CDS Sequences'),
+                                  "Expression Data", 
+                                  "OrthoFinder Data", 
+                                  "Duplicate Gene Data",
+                                  'Nucleotide CDS Sequences', 
+                                  'Protein Sequences',
+                                  # pop gen 
+                                  'Population Duplicate Gene Data',
+                                  'Population Nucleotide CDS Sequences'),
                                 selected = character(0)),
              tags$div(style = "margin-bottom: 40px;"), # empty space
              uiOutput("available_models")
@@ -163,8 +257,8 @@ server <- function(input, output, session) {
       }))
     )
   })
-      
-      
+  
+  
   # Function to handle file selection
   shinyFileChoose(input, "expression_file", roots = roots, session = session)
   shinyFileChoose(input, "ortho_dir", roots = roots, session = session)
@@ -213,7 +307,7 @@ server <- function(input, output, session) {
     req(input$nuc_seqs_file)
     parseFilePaths(roots, input$nuc_seqs_file)$datapath
   })
-
+  
   dnds_results_path <- reactive({
     req(input$dnds_results_path)
     parseFilePaths(roots, input$dnds_results_path)$datapath
@@ -297,7 +391,7 @@ server <- function(input, output, session) {
   observeEvent(input$run_custom_cdrom, {
     withProgress(message = 'Running CDROM model...', value = 0, {
       incProgress(0.3, detail = "This may take a few minutes")
-        
+      
       req(input$dups_file)
       req(input$exp_dir)
       
@@ -353,7 +447,7 @@ server <- function(input, output, session) {
         mcl_inflation = input$mcl_inflation,
         split_hogs = input$split_hogs, 
         no_msa_trim = input$msa_trim) 
-        
+      
       
       shinyalert("Success!", '', type = "info")
     })
@@ -362,12 +456,12 @@ server <- function(input, output, session) {
   observeEvent(input$run_dnds_pop, {
     withProgress(message = 'Calculating Dn/Ds', value = 0, {
       incProgress(0.3, detail = "This may take a few minutes")
-
+      
       main_pop_dnds(cnvs_path = cnvs_path(),
-                      nuc_file_path = nuc_seqs_file(), 
-                      aligner = input$dnds_aligner, 
-                      replace_dirs = F,# CHANGE DEFAULT TO TRUE WHEN can input directory of nuc and prot files 
-                      use_all_fastas_in_dir = input$use_all_fastas_in_dir)
+                    nuc_file_path = nuc_seqs_file(), 
+                    aligner = input$dnds_aligner, 
+                    replace_dirs = F,# CHANGE DEFAULT TO TRUE WHEN can input directory of nuc and prot files 
+                    use_all_fastas_in_dir = input$use_all_fastas_in_dir)
       
       
       shinyalert("Success!", '', type = "info")
@@ -377,7 +471,7 @@ server <- function(input, output, session) {
   observeEvent(input$run_segregating_duplications, {
     withProgress(message = 'Running Segregating Duplications', value = 0, {
       incProgress(0.3, detail = "This may take a few minutes")
-
+      
       main_Segregating_Duplications(
         cnvs_path = cnvs_path(), 
         dnds_results_path = dnds_results_path(),
@@ -385,7 +479,7 @@ server <- function(input, output, session) {
         ploidy = input$ploidy, 
         ks_oversaturation_cutoff = input$ks_cutoff,
         filter_whole_group = input$filter_whole_group)
-
+      
       
       shinyalert("Success!", '', type = "info")
     })
@@ -449,7 +543,7 @@ server <- function(input, output, session) {
                              min_score = input$min_score, 
                              min_bitscore = input$min_score,
                              e_value = input$e_value
-                          )
+        )
       )
       
       shinyalert("Success!", result, type = "info")
@@ -482,7 +576,7 @@ server <- function(input, output, session) {
     if (length(models) == 0) {return(h4("No models selected. Please select models from the sidebar."))}
     
     if ('orthofinder' %in% models) { 
-
+      
       print(input$protein_folder)
       print(paste("Protein folder:", protein_folder()))
       print(paste("Is DNA:", input$nuc_not_prot))
@@ -496,7 +590,7 @@ server <- function(input, output, session) {
       
       
       if (!dir.exists(paste0(roots, '/DuplicA/app/Results/OrthoFinder_Results'))){
-              dir.create(paste0(roots, '/DuplicA/app/Results/OrthoFinder_Results'))
+        dir.create(paste0(roots, '/DuplicA/app/Results/OrthoFinder_Results'))
       }
       
       of_results_dir <- paste0(roots, '/DuplicA/app/Results/OrthoFinder_Results/')
@@ -510,13 +604,13 @@ server <- function(input, output, session) {
                        split_hogs = input$split_hogs,
                        no_msa_trim = input$msa_trim,
                        result_dir = of_results_dir)
-      }
+    }
     
     
     if ('cdrom' %in% models) {
       
-      if (is.null(of_results_dir) {ortho_dir <- dirname(dirname(ortho_dir()))})
-      if (!is.null(of_results_dir) {ortho_dir <- of_results_dir})
+      if (is.null(of_results_dir)) {ortho_dir <- dirname(dirname(ortho_dir()))}
+      if (!is.null(of_results_dir)) {ortho_dir <- of_results_dir}
       result <- run_r_script(
         run_type = "OF",
         script_name = "model_CDROM.R",
@@ -539,14 +633,14 @@ server <- function(input, output, session) {
     
     
     #showModal(modalDialog(title = "Workflow Complete", "All selected models have been executed successfully.", easyClose = TRUE, footer = NULL))
-  
     
-    })
+    
+  })
   
 }
-  
-  
-  
+
+
+
 
 
 shinyApp(ui, server)

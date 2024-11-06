@@ -78,6 +78,7 @@ dirInput <- function(inputId, label, width = NULL, buttonLabel = "Browse...",
 
 # add CSS to style buttons make the sidebar narrower
 add_css_style <- function() {
+  
   tags$style(HTML("
     .sidebar-buttons .action-button {
       display: block;
