@@ -4,8 +4,10 @@ library(shiny)
 server <- function(input, output) {
   
   # Reactive expression to generate the requested distribution ----
+  # This is called whenever the inputs change. The output functions
+  # defined below then use the value computed from this expression
   d <- reactive({
-    dist <- switch(input$dist,
+    dist <- switch(input$distrib,
                    norm = rnorm,
                    unif = runif,
                    lnorm = rlnorm,
@@ -16,12 +18,16 @@ server <- function(input, output) {
   })
   
   # Generate a plot of the data ----
+  # Also uses the inputs to build the plot label. Note that the
+  # dependencies on the inputs and the data reactive expression are
+  # both tracked, and all expressions are called in the sequence
+  # implied by the dependency graph.
   output$plot <- renderPlot({
-    dist <- input$dist
+    distrib <- input$distrib
     n <- input$n
     
     hist(d(),
-         main = paste("r", dist, "(", n, ")", sep = ""),
+         main = paste("r", distrib, "(", n, ")", sep = ""),
          col = "#007bc2", border = "white")
   })
   
@@ -34,8 +40,6 @@ server <- function(input, output) {
   output$table <- renderTable({
     head(data.frame(x = d()))
   })
-  
 }
 
-# Build the Shiny app using the HTML template ----
 shinyApp(ui = htmlTemplate("www/index.html"), server)
