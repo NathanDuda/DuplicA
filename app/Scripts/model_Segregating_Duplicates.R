@@ -68,7 +68,10 @@ run_CNVSelectR <- function(freqs, dnds_results_path, neut_matrix, n_individuals,
     
     
     group_result <- CNVSelect_test_altered(neut_matrix, input_file_table, dS, names)
-      
+    
+    group_result$group <- group
+    group_result <- na.omit(group_result)
+    group_result$name <- names
     total_result <- rbind(total_result, group_result)
     
     
@@ -100,6 +103,7 @@ main_Segregating_Duplications <- function(cnvs_path, dnds_results_path, n_indivi
 
 
 #main_Segregating_Duplications(cnvs_path = "C:/Users/17735/Downloads/Dmel_Duplicate_Genes/connected_dups_sep.tsv", 
+#                              dnds_results_path = "C:/Users/17735/Downloads/AAAAA_Seg_Dups_input_Example/TRASH_dnds_results.tsv", 
  #                             n_individuals = 47, 
   #                            ploidy = 2, 
    #                           ks_oversaturation_cutoff = 0.8,

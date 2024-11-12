@@ -213,6 +213,7 @@ CNVSelect_test_altered <- function(neut_matrix, input_file_table, dS, names){
     output$dS <- dS[i]
     output$freq <- inputs$freq
     output$group <- names[i]
+    output$lower_tail <- lower.tail
     
     output <- as.data.frame(output)
     group_result <- rbind(group_result, output)
