@@ -28,4 +28,26 @@ ggplot(cnvselectr_output, aes(x=dS, y=n_flies_in, color=signif)) +
 
 
 
+# make frequency distributions 
+equiv_counts <- equiv_counts_matrix %>%
+  mutate_all(., ~replace(., is.na(.), 0)) %>%
+  pivot_longer(cols=c(2:ncol(equiv_counts_matrix)))
+
+n_copies_freq_dist <- data.frame()
+for (n_copies in c(1:3)){
+  n_df <- equiv_counts %>%
+    group_by(community) %>%
+    summarise(flies_with_n_copies = sum(value == n_copies)) %>%
+    mutate(n_copies = n_copies) %>%
+    filter(flies_with_n_copies != 0)
+  
+  n_copies_freq_dist <- rbind(animate_df, n_df)
+  print(n_copies)
+}
+
+ggplot(n_copies_freq_dist, aes(x = flies_with_n_copies)) +
+  geom_histogram(binwidth = 1) +
+  facet_wrap(.~n_copies)
+
+
 
