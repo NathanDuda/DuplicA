@@ -1,7 +1,19 @@
+library(shiny)
+library(shinyFiles)
+library(bslib)
+library(htmltools)
+library(shinyalert)
+library(fs) # for file paths 
+library(Biostrings) # translate() in translate_nucs_to_prots() in model_OrthoFinder.R
+library(tools) # file_ext() in combine_raw_fastas() in model_OrthoFinder.R and file_path_sans_ext() in blat
+library(testthat) # for unit tests
+library(tidyverse)
+library(readxl)
+library(shinyjs)
+
 source('./Scripts/setup.R')
 source('./workflow.R')
 source('./app_functions.R')
-source('./app_main_layout.R')
 source('./app_page_layouts.R')
 source('./Scripts/model_OrthoFinder.R')
 source('./Scripts/model_DnDs.R')
@@ -9,140 +21,46 @@ source('./Scripts/model_Segregating_Duplicates.R')
 source('./Scripts/model_EVE.R')
 source('./Scripts/model_Blat_Blast.R')
 
-
-old_div <- function() {
-  
-  div(class = "sidebar-buttons",  # Apply a class to target buttons in the sidebar
-      
-      actionButton("select_HOME", "HOME", class = "btn-primary"),
-      h5("Workflow"),
-      actionButton("select_workflow", "Workflow", class = "btn-primary"),
-      h5('Detect Duplications'),
-      actionButton("select_blat", "BLAT", class = "btn-primary"),
-      actionButton("select_blast", "BLAST", class = "btn-primary"),
-      actionButton("select_orthofinder", "OrthoFinder", class = "btn-primary"),
-      h3("Models"),
-      h5('Functional Divergence'),
-      actionButton("select_cdrom", "CDROM", class = "btn-primary"),
-      actionButton("select_expression_shift", "Expression Shift", class = "btn-primary"), # EVE
-      h5('Selective Pressure'),
-      actionButton("select_dnds", "Dn/Ds", class = "btn-primary"),
-      actionButton("select_diversity_divergence", "Diversity/Divergence", class = "btn-primary"), # EVE
-      actionButton("select_segregating_duplicates", "Segregating Duplicates", class = "btn-primary"),
-      br()
-  )
-}
 # UI with dark mode theme and sidebar layout
 ui <- fluidPage(
-  # Dark theme for the app
-  theme = bs_theme(bg = "#222", fg = "white", primary = '#555'),
+  theme = bs_theme(bg = "#222", fg = "white", primary = '#555'),  # Dark mode
   
-  # JavaScript for opening and closing the sidebar
-  tags$script(HTML("
-    function openNav() {
-      document.getElementById('mySidebar').style.width = '250px';
-      document.getElementById('main').style.marginLeft = '250px';
-    }
-    
-    function closeNav() {
-      document.getElementById('mySidebar').style.width = '0';
-      document.getElementById('main').style.marginLeft = '0';
-    }
-  ")),
   
-  # Sidebar HTML structure
-  tags$div(id = "mySidebar", class = "sidebar",
-           tags$a(href = "javascript:void(0)", class = "closebtn", onclick = "closeNav()", HTML("&times;")),
-           
-           actionButton("select_HOME", "HOME", class = "btn-primary sidebar-btn"),
-           tags$h5("Workflow"),
-           actionButton("select_workflow", "Workflow", class = "btn-primary sidebar-btn"),
-           
-           tags$h5("Detect Duplications"),
-           actionButton("select_blat", "BLAT", class = "btn-primary sidebar-btn"),
-           actionButton("select_blast", "BLAST", class = "btn-primary sidebar-btn"),
-           actionButton("select_orthofinder", "OrthoFinder", class = "btn-primary sidebar-btn"),
-           
-           tags$h3("Models"),
-           tags$h5("Functional Divergence"),
-           actionButton("select_cdrom", "CDROM", class = "btn-primary sidebar-btn"),
-           actionButton("select_expression_shift", "Expression Shift", class = "btn-primary sidebar-btn"),
-           
-           tags$h5("Selective Pressure"),
-           actionButton("select_dnds", "Dn/Ds", class = "btn-primary sidebar-btn"),
-           actionButton("select_diversity_divergence", "Diversity/Divergence", class = "btn-primary sidebar-btn"),
-           actionButton("select_segregating_duplicates", "Segregating Duplicates", class = "btn-primary sidebar-btn")
-  ),
+  # Add CSS to ensure buttons are styled and the sidebar is narrower
+  add_css_style(),
   
-  # Main content area with button to open the sidebar
-  tags$div(id = "main",
-           tags$button(class = "openbtn", onclick = "openNav()", HTML("&#9776; Open Sidebar")),
-           tags$h2("Collapsed Sidebar"),
-           tags$p("Content...")
-  ),
-  
-  # Custom CSS for styling the sidebar and main content
-  tags$style(HTML("
-    .sidebar {
-      height: 100%; /* Full-height */
-      width: 0; /* Initially hidden */
-      position: fixed; /* Stay in place */
-      z-index: 1; /* Stay on top */
-      top: 0;
-      left: 0;
-      background-color: #111; /* Dark background */
-      overflow-x: hidden; /* Disable horizontal scroll */
-      transition: 0.5s; /* Transition effect */
-      padding-top: 60px; /* Place content 60px from the top */
-    }
+  sidebarLayout(
+    sidebarPanel(
+      div(class = "sidebar-buttons",  # Apply a class to target buttons in the sidebar
+          
+          actionButton("select_HOME", "HOME", class = "btn-primary"),
+          h5("Workflow"),
+          actionButton("select_workflow", "Workflow", class = "btn-primary"),
+          h5('Detect Duplications'),
+          actionButton("select_blat", "BLAT", class = "btn-primary"),
+          actionButton("select_blast", "BLAST", class = "btn-primary"),
+          actionButton("select_orthofinder", "OrthoFinder", class = "btn-primary"),
+          h3("Models"),
+          h5('Functional Divergence'),
+          actionButton("select_cdrom", "CDROM", class = "btn-primary"),
+          actionButton("select_expression_shift", "Expression Shift", class = "btn-primary"), # EVE
+          h5('Selective Pressure'),
+          actionButton("select_dnds", "Dn/Ds", class = "btn-primary"),
+          actionButton("select_diversity_divergence", "Diversity/Divergence", class = "btn-primary"), # EVE
+          actionButton("select_segregating_duplicates", "Segregating Duplicates", class = "btn-primary"),
+          br()
+      )
+    ),
     
-    .sidebar a, .sidebar button {
-      padding: 8px 8px 8px 32px;
-      text-decoration: none;
-      font-size: 18px;
-      color: #818181;
-      display: block;
-      transition: 0.3s;
-      background: none;
-      border: none;
-      text-align: left;
-      width: 100%;
-    }
-    
-    .sidebar a:hover, .sidebar button:hover {
-      color: #f1f1f1;
-    }
-    
-    .sidebar .closebtn {
-      position: absolute;
-      top: 0;
-      right: 25px;
-      font-size: 36px;
-    }
-    
-    #main {
-      transition: margin-left 0.5s;
-      padding: 16px;
-    }
-    
-    .openbtn {
-      font-size: 20px;
-      cursor: pointer;
-      background-color: #111;
-      color: white;
-      padding: 10px 15px;
-      border: none;
-    }
-  "))
+    mainPanel(
+      uiOutput("model_ui")  # Dynamic UI output for the selected model
+    )
+  )
 )
 
-
-
-
 server <- function(input, output, session) {
-  output <- server_rendering(output)
   
-  roots <- c(home = "C:/Users/17735/Downloads") # CHANGE
+  roots <- c(home = "C:/Users/17735/Downloads")
   
   options(shiny.maxRequestSize = 50 * 1024^2)
   
@@ -552,95 +470,16 @@ server <- function(input, output, session) {
   
   
   
-  ###################################################
+  
   # workflow
   
+  # Multi-species customization options
   output$multi_species_customization <- get_multi_species_model_options(input)
-  output$one_species_customization <- get_single_species_model_options(input)
   
-  selected_models <- reactiveValues(models = list())
-  observeEvent(input$btn_orthofinder, {selected_models$models <- append(selected_models$models, "orthofinder")})
-  observeEvent(input$btn_dnds, {selected_models$models <- append(selected_models$models, "dnds")})
-  observeEvent(input$btn_cdrom, {selected_models$models <- append(selected_models$models, "cdrom")})
-  observeEvent(input$btn_expression_shift, {selected_models$models <- append(selected_models$models, "expression_shift")})
-  observeEvent(input$btn_diversity_divergence, {selected_models$models <- append(selected_models$models, "diversity_divergence")})
-  observeEvent(input$btn_blat, {selected_models$models <- append(selected_models$models, "blat")})
-  observeEvent(input$btn_blast, {selected_models$models <- append(selected_models$models, "blast")})
-  observeEvent(input$btn_segregating_duplicates, {selected_models$models <- append(selected_models$models, "segregating_duplicates")})
+  # One-species second model options
+  output$one_species_second_models <- get_single_species_model_options(input)
   
-  # run selected workflow 
-  observeEvent(input$run_workflow, {
-    print(reactiveValuesToList(selected_models)$models)
-    models <- reactiveValuesToList(selected_models)$models
-    
-    if (length(models) == 0) {return(h4("No models selected. Please select models from the sidebar."))}
-    
-    if ('orthofinder' %in% models) { 
-      
-      print(input$protein_folder)
-      print(paste("Protein folder:", protein_folder()))
-      print(paste("Is DNA:", input$nuc_not_prot))
-      print(paste("Method:", input$gene_tree_inference_method))
-      print(paste("Sequence Search:", input$sequence_search_method))
-      print(paste("Tree Method:", input$tree_method))
-      print(paste("MSA Method:", input$msa_method))
-      print(paste("MCL Inflation:", input$mcl_inflation))
-      print(paste("Split HOGs:", input$split_hogs))
-      print(paste("No MSA Trim:", input$msa_trim))
-      
-      
-      if (!dir.exists(paste0(roots, '/DuplicA/app/Results/OrthoFinder_Results'))){
-        dir.create(paste0(roots, '/DuplicA/app/Results/OrthoFinder_Results'))
-      }
-      
-      of_results_dir <- paste0(roots, '/DuplicA/app/Results/OrthoFinder_Results/')
-      main_OrthoFinder(protein_folder = protein_folder(),
-                       is_dna = input$nuc_not_prot,
-                       method = input$gene_tree_inference_method,
-                       sequence_search = input$sequence_search_method,
-                       msa_program = input$msa_method,
-                       tree_method = input$tree_method,
-                       mcl_inflation = input$mcl_inflation,
-                       split_hogs = input$split_hogs,
-                       no_msa_trim = input$msa_trim,
-                       result_dir = of_results_dir)
-    }
-    
-    
-    if ('cdrom' %in% models) {
-      
-      if (is.null(of_results_dir)) {ortho_dir <- dirname(dirname(ortho_dir()))}
-      if (!is.null(of_results_dir)) {ortho_dir <- of_results_dir}
-      result <- run_r_script(
-        run_type = "OF",
-        script_name = "model_CDROM.R",
-        expression_file = expression_file(),
-        ortho_dir = ortho_dir,
-        dups_file = NULL,
-        exp_dir = NULL,
-        add_pseudofunc = input$add_pseudofunc,
-        missing_expr_is_pseudo = input$missing_expr_is_pseudo,
-        exp_cutoff = input$exp_cutoff,
-        PC = FALSE,
-        min_dups_per_species_pair = input$min_dups_per_species_pair,
-        use_absolute_exp = input$use_absolute_exp
-      )
-      
-      
-      
-      
-    }
-    
-    
-    #showModal(modalDialog(title = "Workflow Complete", "All selected models have been executed successfully.", easyClose = TRUE, footer = NULL))
-    
-    
-  })
   
 }
-
-
-
-
 
 shinyApp(ui, server)
