@@ -62,4 +62,85 @@ cat("Protein sequences retrieved:", length(protein_sequences), "\n")
 
 
 
+###
+
+BiocManager::install("ropensci/biomartr")
+library(biomartr)
+
+# one organism
+biomartr::getCollection( db = "refseq", organism = "Saccharomyces cerevisiae")
+
+# all vertebrate genomes
+meta.retrieval(kingdom = "vertebrate_mammalian", db = "refseq", type = "genome")
+
+
+
+biomartr::getCollection( db = "refseq", organism = "Drosophila melanogaster")
+
+
+########
+
+# interactive
+
+
+
+
+# Load biomartr
+library(biomartr)
+
+# Step 1: List available databases
+available_databases <- c("refseq", "genbank", "ensembl", "ensemblgenomes")
+
+# Step 2: Let the user select a database
+cat("Select a database:\n")
+db_choice <- menu(available_databases, title = "Choose Database")
+
+# Store the chosen database
+selected_db <- available_databases[db_choice]
+
+# Step 3: List available organisms for the selected database
+# For demonstration, we'll use `meta.retrieval` to list organisms
+available_organisms <- getMetaGenomeSummary()$organism_name
+
+# Step 4: Let the user select an organism
+cat("Select an organism:\n")
+organism_choice <- menu(available_organisms, title = "Choose Organism")
+
+# Store the chosen organism
+selected_organism <- available_organisms[organism_choice]
+
+# Step 5: Retrieve the collection data based on user selections
+cat(paste("Retrieving data for", selected_organism, "from", selected_db, "...\n"))
+collection_data <- getCollection(db = selected_db, organism = selected_organism)
+
+# Display a summary of the retrieved data
+print(collection_data)
+
+
+
+######
+
+
+available_databases <- c('refseq', 'genbank', 'ensembl')
+selected_database <- 'ensembl'
+
+selected_organisms <- c('Drosophila mojavensis', 'Drosophila melanogaster', 'Drosophila ananassae')
+i <- 1
+
+
+
+# listGenomes()
+getCollection(organism = selected_organisms[i], db = selected_database)
+
+
+organismAttributes(organism = selected_organisms[i])
+
+
+
+coding 
+peptide
+
+
+getAttributes(mart = 'metazoa_mart', dataset = 'dmojavensis_eg_gene')
+
 
