@@ -58,7 +58,6 @@
         "label": "No MSA Trim",
         "default": false
       }
-    }
   },
   "CDROM": {
     "expression_file": {
@@ -100,7 +99,7 @@
       "default": false
     }
   },
-  "dnds_options": {
+  "dnds": {
     "nuc_seqs_file": {
       "type": "file",
       "label": "Nucleotide Sequences",
@@ -110,9 +109,7 @@
       "type": "file",
       "label": "CNVs File",
       "multiple": false
-    }
-  },
-  "dnds_additional_options": {
+    },
     "use_all_fastas_in_dir": {
       "type": "checkbox",
       "label": "Combine all fasta files in the directory?",
@@ -124,7 +121,7 @@
       "choices": ["muscle"]
     }
   },
-  "segregating_duplicates_options": {
+  "segregating_duplicates": {
     "cnvs_path": {
       "type": "file",
       "label": "CNVs File",
@@ -147,9 +144,7 @@
       "default": 2,
       "min": 1,
       "max": 2
-    }
-  },
-  "segregating_duplicates_additional_options": {
+    },
     "full_or_approx": {
       "type": "select",
       "label": "Full or Approximate Model",
@@ -168,7 +163,7 @@
       "default": true
     }
   },
-  "expression_shift_options": {
+  "expression_shift": {
     "ortho_dir": {
       "type": "file",
       "label": "OrthoFinder Folder",
@@ -184,9 +179,7 @@
       "label": "Test for shifted expression in",
       "choices": [],
       "multiple": true
-    }
-  },
-  "expression_shift_additional_options": {
+    },
     "use_gene_trees": {
       "type": "checkbox",
       "label": "Use gene trees for branch lengths",
@@ -222,7 +215,7 @@
       "default": false
     }
   },
-  "diversity_divergence_options": {
+  "diversity_divergence": {
     "ortho_dir": {
       "type": "file",
       "label": "OrthoFinder Folder",
@@ -238,9 +231,7 @@
       "label": "Test for shifts in beta when duplicates are in",
       "choices": [],
       "multiple": true
-    }
-  },
-  "diversity_divergence_additional_options": {
+    },
     "use_gene_trees": {
       "type": "checkbox",
       "label": "Use gene trees for branch lengths",
@@ -276,11 +267,12 @@
       "default": false
     }
   },
-  "blat_options": {
+  "blat": {
     "seq_files": {
       "type": "file",
       "label": "Sequences File",
-      "multiple": false
+      "multiple": false,
+      "required": true
     },
     "copy_number": {
       "type": "number",
@@ -293,9 +285,7 @@
       "label": "Type",
       "choices": ["protein", "nucleotide"],
       "default": "protein"
-    }
-  },
-  "blat_additional_options": {
+    },
     "min_align_length": {
       "type": "number",
       "label": "Minimum Alignment Length",
@@ -328,11 +318,12 @@
       "min": 0
     }
   },
-  "blast_options": {
+  "blast": {
     "seq_files": {
       "type": "file",
       "label": "Sequences File",
-      "multiple": false
+      "multiple": false,
+      "required": true
     },
     "copy_number": {
       "type": "number",
@@ -345,9 +336,7 @@
       "label": "Type",
       "choices": ["protein", "nucleotide", "nucleotide (translate to protein)"],
       "default": "protein"
-    }
-  },
-  "blast_additional_options": {
+    },
     "min_align_length": {
       "type": "number",
       "label": "Minimum Alignment Length",
@@ -365,7 +354,8 @@
       "type": "number",
       "label": "Minimum Percent Identity",
       "default": 90,
-      "min": 0
+      "min": 0,
+      "max": 100
     },
     "min_gn_length": {
       "type": "number",

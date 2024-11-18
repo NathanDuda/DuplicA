@@ -6,25 +6,25 @@ library(biomartr)
 # the possible inputs 
 available_databases <- c('refseq', 'genbank', 'ensembl') # for prot and cds
 available_organisms <- listGenomes()
-data_types <- c('Proteomes', 'CDS', 'Genomes')
+data_types <- c('Proteomes', 'CDS', 'Genomes') # need prot + cds, genomes is optional
 keep_which_transcript <- c('longest', 'first')
 
 
 
 ###
 
-get_data_for_organisms <- function(selected_organisms, data_types, selected_database_protein, selected_database_cds, selected_database_genome, prot_data_dir, cds_data_dir, genome_data_dir) {
+get_data_for_organisms <- function(selected_organisms, data_types, selected_database_protein, selected_database_cds, selected_database_genome, prot_data_dir, cds_data_dir, genome_data_dir, must_be_reference) {
   
   if ('Proteomes' %in% data_types){
-    getProteomeSet(db = selected_database_protein, organism = selected_organisms, path = prot_data_dir)
+    getProteomeSet(db = selected_database_protein, organism = selected_organisms, path = prot_data_dir, reference = must_be_reference)
   }
 
   if ('CDS' %in% data_types){
-    getCDSSet(db = selected_database_cds, organism = selected_organisms, path = cds_data_dir)
+    getCDSSet(db = selected_database_cds, organism = selected_organisms, path = cds_data_dir, reference = must_be_reference)
   }
   
   if ('Genomes' %in% data_types){
-    getGenomeSet(db = selected_database_genome, organism = selected_organisms, path = genome_data_dir)
+    getGenomeSet(db = selected_database_genome, organism = selected_organisms, path = genome_data_dir, reference = must_be_reference)
   }
   
   
@@ -149,7 +149,7 @@ move_genome_files <- function(selected_organism, genome_files) {
   
 }
 
-main_ncbi <- function(selected_organisms, data_types, selected_database_protein, selected_database_cds, selected_database_genome, keep_which_transcript) {
+main_ncbi <- function(selected_organisms, data_types, selected_database_protein, selected_database_cds, selected_database_genome, keep_which_transcript, must_be_reference) {
   
   selected_organisms <- gsub(' ', '_', selected_organisms)
   
@@ -158,7 +158,7 @@ main_ncbi <- function(selected_organisms, data_types, selected_database_protein,
   genome_data_dir <- paste0(here_results, '/ncbi_output/genome_data')
   
   # get the data types from ncbi 
-  get_data_for_organisms(selected_organisms, data_types, selected_database_protein, selected_database_cds, selected_database_genome, prot_data_dir, cds_data_dir, genome_data_dir)
+  get_data_for_organisms(selected_organisms, data_types, selected_database_protein, selected_database_cds, selected_database_genome, prot_data_dir, cds_data_dir, genome_data_dir, must_be_reference)
   
   # list all files provided by ncbi 
   prot_files <- list.files(prot_data_dir, full.names = TRUE)
@@ -195,22 +195,19 @@ main_ncbi <- function(selected_organisms, data_types, selected_database_protein,
 
 
 
-
-
-
-prot_output_dir <- paste0(here_results, '/Fastas/Protein_Fastas/')
-
-
-
 # example input
-selected_database_protein <- 'refseq'
-selected_database_cds <- 'refseq'
+selected_database_protein <- 'ensembl'
+selected_database_cds <- 'ensembl'
 selected_database_genome <- 'ensembl'
 
-selected_organisms <- c('Deinococcus radiodurans', 'Piscirickettsia salmonis', 'Drosophila ananassae')
-data_types <- c('Proteomes', 'CDS', 'Genomes')
+selected_organisms <- c('Homo sapiens', 'Pan troglodytes')
+data_types <- c('Proteomes', 'CDS')
 keep_which_transcript <- 'longest'
+must_be_reference <- F
 
-main_ncbi(selected_organisms, data_types, selected_database_protein, selected_database_cds, selected_database_genome, keep_which_transcript)
+#main_ncbi(selected_organisms, data_types, selected_database_protein, selected_database_cds, selected_database_genome, keep_which_transcript, must_be_reference)
 
 
+# deal with errors from when data can not be found
+# deal with warnings caused by creating already existing folders
+# allow all databases to be checked for data

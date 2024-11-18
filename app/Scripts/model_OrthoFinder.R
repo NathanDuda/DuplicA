@@ -20,7 +20,7 @@ main_OrthoFinder <- function(protein_folder, is_dna = FALSE, method = "dendrobla
   #if (!is.null(result_dir)) result_dir <- convert_to_wsl_path(result_dir)
   
   #protein_folder <- gsub('C:/Users/17735/Downloads', '/mnt/c/Users/17735/Downloads', protein_folder)
-  protein_folder <- as.character(dirname(protein_folder))
+  #protein_folder <- as.character(dirname(protein_folder))
   protein_folder <- gsub(here, here_linux, protein_folder)
 
   path_to_orthofinder <- paste0(here_linux, '/DuplicA/app/Dependencies/OrthoFinder/orthofinder')

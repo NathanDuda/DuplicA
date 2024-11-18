@@ -185,7 +185,7 @@ get_anc_copy <- function(OF_dir_path, dups, dup_pair_orthologs, clean_expression
     distances <- distances[distances > 0] # remove itself from distance calculation 
     
     # set non-expressed genes to NA 
-    row[!row %in% expression$id] <- NA
+    if(!is.na(expression)) {row[!row %in% expression$id] <- NA}
     
     # remove the duplicate pair species and missing species from the possible top choices 
     exclude_species <- colnames(row)[apply(row, 2, function(x) all(is.na(x)))]
@@ -222,7 +222,7 @@ get_anc_copy <- function(OF_dir_path, dups, dup_pair_orthologs, clean_expression
   dups <- orthologs %>%
     select(Orthogroup, ancestral_copy, ancestral_species) %>%
     merge(., dups, by = 'Orthogroup') %>%
-    filter(!is.na(ancestral_copy)) # remove duplicates without ancestral copies 
+    filter(!is.na(ancestral_copy) & !ancestral_copy == "") # remove duplicates without ancestral copies 
   
   ################################
   # unit tests
