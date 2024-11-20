@@ -57,16 +57,16 @@ get_orthogroups <- function(OF_dir_path, dup_species_list, copy_amount, nondup_s
   
 }
 
-get_exp <- function(exp_path) {
+#get_exp <- function(exp_path) {
   
   # import expression data 
-  all_exp <- read.delim(exp_path, sep = ' ')
-  all_exp[all_exp < rm_exp_lower_than] <- 0 
+#  all_exp <- read.delim(exp_path, sep = ' ')
+#  all_exp[all_exp < rm_exp_lower_than] <- 0 
   
-  colnames(all_exp)[1] <- 'id'
+#  colnames(all_exp)[1] <- 'id'
   
-  return(all_exp)
-}
+#  return(all_exp)
+#}
 
 get_tissueexp <- function(all_exp, tissue) {
   
@@ -76,7 +76,7 @@ get_tissueexp <- function(all_exp, tissue) {
   return(all_tissue_exp)
 }
 
-add_tissueexp_to_orthogroups <- function(tissue, all_orthogroups, all_tissueexp, rm_exp_lower_than, missing_exp_is_zero, copy_amount, dup_species_list) {
+add_tissueexp_to_orthogroups <- function(tissue, all_orthogroups, all_tissueexp, missing_exp_is_zero, copy_amount, dup_species_list) {
   
   # merge expression data with all_orthogroups
   orthogroups_cols <- colnames(all_orthogroups)
@@ -94,11 +94,6 @@ add_tissueexp_to_orthogroups <- function(tissue, all_orthogroups, all_tissueexp,
   all_orthogroups_exp <- all_orthogroups_exp %>%
     filter(rowSums(., na.rm = TRUE) != 0) %>%  # rm rows summing to 0 
     filter(apply(., 1, function(row) length(unique(na.omit(row))) > 1))  # rm rows with all same expression
-  
-  if (missing_exp_is_zero == T) {
-    all_orthogroups_exp <- all_orthogroups_exp %>% 
-      mutate(across(everything(), ~ replace(., is.na(.), 0)))
-  }
   
   all_orthogroups_exp <- all_orthogroups_exp %>% na.omit()
   
@@ -185,11 +180,11 @@ get_species_gn_key <- function(all_orthogroups, all_orthogroups_tissueexp, dup_s
 
 
 # TwoTheta
-main_Expression_Shift <- function(OF_dir_path, exp_path, dup_species_list, tissue_list, copy_amount, nondup_species_need_onecopy, rm_exp_lower_than, use_gene_trees, missing_exp_is_zero) {
+main_Expression_Shift <- function(OF_dir_path, clean_expression, dup_species_list, tissue_list, copy_amount, nondup_species_need_onecopy, use_gene_trees) {
   
   OF_dir_path <- paste0(OF_dir_path, '/')
   
-  all_exp <- get_exp(exp_path)
+  all_exp <- clean_expression #get_exp(exp_path)
   if ('All Tissues' %in% tissue_list) {tissue_list <- colnames(all_exp)[2:ncol(all_exp)]}
   
   
@@ -257,11 +252,11 @@ main_Expression_Shift <- function(OF_dir_path, exp_path, dup_species_list, tissu
 
 
 # BetaShared
-main_DiversityDivergence <- function(OF_dir_path, exp_path, dup_species_list, tissue_list, copy_amount, nondup_species_need_onecopy, rm_exp_lower_than, use_gene_trees, missing_exp_is_zero, lower_beta_lim, upper_beta_lim) {
+main_DiversityDivergence <- function(OF_dir_path, clean_expression, dup_species_list, tissue_list, copy_amount, nondup_species_need_onecopy, use_gene_trees, lower_beta_lim, upper_beta_lim) {
   
   OF_dir_path <- paste0(OF_dir_path, '/')
   
-  all_exp <- get_exp(exp_path)
+  all_exp <- clean_expression #get_exp(exp_path)
   if ('All Tissues' %in% tissue_list) {tissue_list <- colnames(all_exp)[2:ncol(all_exp)]}
   
   all_orthogroups <- get_orthogroups(OF_dir_path, dup_species_list, copy_amount, nondup_species_need_onecopy)

@@ -1,4 +1,56 @@
 {
+  "Public Datasets": {
+    "selected_organisms": {
+      "type": "select",
+      "label": "Organisms",
+      "required": true,
+      "choices": [],
+      "multiple": true
+  },
+    "selected_database_protein": {
+       "type": "select",
+       "label": "Database for protein data",
+       "choices": ["refseq", "genbank", "ensembl"],
+       "default": "refseq",
+       "multiple": true,
+       "condition": "'Proteomes' %in% data_types"
+  },
+    "selected_database_cds": {
+       "type": "select",
+       "label": "Database for CDS data",
+       "choices": ["refseq", "genbank", "ensembl"],
+       "default": "refseq",
+       "multiple": true,
+       "condition": "'CDS' %in% data_types"
+  },
+    "selected_database_genome": {
+       "type": "select",
+       "label": "Database for genome data",
+       "choices": ["refseq", "genbank", "ensembl"],
+       "default": "refseq",
+       "multiple": true,
+       "condition": "'Genomes' %in% data_types"
+  },
+    "data_types": {
+       "type": "select",
+       "label": "Get what data",
+       "choices": ["Proteomes", "CDS", "Genomes"],
+       "multiple": true,
+       "default": ["Proteomes", "CDS"]
+  },
+    "keep_which_transcript": {
+       "type": "select",
+       "label": "Keep which transcript",
+       "choices": ["longest", "first"],
+       "default": "longest",
+       "multiple": false
+  },
+    "must_be_reference": {
+       "type": "boolean",
+       "label": "Get only reference data",
+       "default": false",
+  }
+ },
   "OrthoFinder": {
     "protein_folder": {
       "type": "directory",
@@ -60,9 +112,9 @@
       }
   },
   "CDROM": {
-    "expression_file": {
-      "type": "file",
-      "label": "Expression File",
+    "expression_directory": {
+      "type": "directory",
+      "label": "Expression Folder",
       "multiple": false
     },
     "ortho_dir": {
@@ -173,6 +225,7 @@
       "type": "file",
       "label": "Expression File",
       "multiple": false
+      "required": true
     },
     "dup_species_list": {
       "type": "select",
@@ -224,7 +277,8 @@
     "expression_file": {
       "type": "file",
       "label": "Expression File",
-      "multiple": false
+      "multiple": false,
+      "required": true
     },
     "dup_species_list": {
       "type": "select",

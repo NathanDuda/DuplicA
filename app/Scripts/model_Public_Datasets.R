@@ -149,18 +149,18 @@ move_genome_files <- function(selected_organism, genome_files) {
   
 }
 
-main_ncbi <- function(selected_organisms, data_types, selected_database_protein, selected_database_cds, selected_database_genome, keep_which_transcript, must_be_reference) {
+main_public_datasets <- function(selected_organisms, data_types, selected_database_protein, selected_database_cds, selected_database_genome, keep_which_transcript, must_be_reference) {
   
   selected_organisms <- gsub(' ', '_', selected_organisms)
   
-  prot_data_dir <- paste0(here_results, '/ncbi_output/protein_data')
-  cds_data_dir <- paste0(here_results, '/ncbi_output/cds_data')
-  genome_data_dir <- paste0(here_results, '/ncbi_output/genome_data')
+  prot_data_dir <- paste0(here_results, '/public_datasets_output/protein_data')
+  cds_data_dir <- paste0(here_results, '/public_datasets_output/cds_data')
+  genome_data_dir <- paste0(here_results, '/public_datasets_output/genome_data')
   
-  # get the data types from ncbi 
+  # get the data types from the public datasets 
   get_data_for_organisms(selected_organisms, data_types, selected_database_protein, selected_database_cds, selected_database_genome, prot_data_dir, cds_data_dir, genome_data_dir, must_be_reference)
   
-  # list all files provided by ncbi 
+  # list all files provided by the public datasets 
   prot_files <- list.files(prot_data_dir, full.names = TRUE)
   cds_files <- list.files(cds_data_dir, full.names = TRUE)
   genome_files <- list.files(genome_data_dir, full.names = TRUE)
@@ -188,8 +188,8 @@ main_ncbi <- function(selected_organisms, data_types, selected_database_protein,
     
   }
   
-  # delete the ncbi output directory
-  unlink(paste0(here_results, '/ncbi_output'), recursive = T)
+  # delete the public_datasets_output directory
+  unlink(paste0(here_results, '/public_datasets_output'), recursive = T)
   
 }
 
@@ -205,7 +205,7 @@ data_types <- c('Proteomes', 'CDS')
 keep_which_transcript <- 'longest'
 must_be_reference <- F
 
-#main_ncbi(selected_organisms, data_types, selected_database_protein, selected_database_cds, selected_database_genome, keep_which_transcript, must_be_reference)
+#main_public_datasets(selected_organisms, data_types, selected_database_protein, selected_database_cds, selected_database_genome, keep_which_transcript, must_be_reference)
 
 
 # deal with errors from when data can not be found

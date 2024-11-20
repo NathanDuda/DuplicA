@@ -608,22 +608,17 @@ CreatePlot_FuncPie <- function(all_func){
 # rm unecessary objects throughout code 
 # make sure all necessary orthofinder files exist 
 
-main_CDROM <- function(exp_path, OF_dir_path, add_pseudofunc, missing_expr_is_pseudo, rm_exp_lower_than, PC, min_dups_per_species_pair, useAbsExpr){
-  
-  OF_dir_path <- paste0(OF_dir_path, '/')
-  
-  out1 <- get_dups_from_OF(OF_dir_path)
-  dups <- out1$dups
-  dup_pair_orthologs <- out1$dup_pair_orthologs
 
-  
-  out2 <- clean_exp_and_pseudo(exp_path, dups, add_pseudofunc, missing_expr_is_pseudo, rm_exp_lower_than, PC)
-  clean_expression <- out2$clean_expression
-  
-  dups_anc <- get_anc_copy(OF_dir_path, dups, dup_pair_orthologs, clean_expression)
-  
-  
 
+
+#out <- main_get_dups_anc_exp_from_OF(OF_dir_path, exp_path, add_pseudofunc, missing_expr_is_pseudo, rm_exp_lower_than)
+#dups_anc <- out$dups_anc
+#dups <- out$dups
+#clean_expression <- out$clean_expression
+
+
+main_CDROM <- function(dups, dups_anc, clean_expression, OF_dir_path, add_pseudofunc, missing_expr_is_pseudo, rm_exp_lower_than, PC, min_dups_per_species_pair, useAbsExpr){
+  
   all_sc_genes <- get_all_sc_genes(OF_dir_path)
   
 

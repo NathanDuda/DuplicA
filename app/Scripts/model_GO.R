@@ -90,9 +90,21 @@ getHomologs(genes, from = "hsapiens_gene_ensembl", to = "mmusculus_gene_ensembl"
 
 
 
+all_genes_list <- c()
+
 library(biomartr)
-getGO(organism = 'Homo sapiens', genes = c("ENSG00000010404"),
-      filters = 'ensembl_gene_id')
+t <- getGO(organism = 'Homo sapiens', filters = 'ensembl_gene_id', genes = all_genes_list)
+
+
+
+
+
+
+
+
+
+
+
 
 
 

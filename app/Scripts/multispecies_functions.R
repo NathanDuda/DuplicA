@@ -77,6 +77,8 @@ get_dups_from_OF <- function(OF_dir_path) {
 }
 
 
+
+
 clean_exp_and_pseudo <- function(exp_path, dups, add_pseudofunc, missing_expr_is_pseudo, exp_cutoff, PC) {
   
   ################################
@@ -185,7 +187,7 @@ get_anc_copy <- function(OF_dir_path, dups, dup_pair_orthologs, clean_expression
     distances <- distances[distances > 0] # remove itself from distance calculation 
     
     # set non-expressed genes to NA 
-    if(!is.na(expression)) {row[!row %in% expression$id] <- NA}
+    if(all(!is.na(expression))) {row[!row %in% expression$id] <- NA}
     
     # remove the duplicate pair species and missing species from the possible top choices 
     exclude_species <- colnames(row)[apply(row, 2, function(x) all(is.na(x)))]
@@ -241,6 +243,8 @@ get_anc_copy <- function(OF_dir_path, dups, dup_pair_orthologs, clean_expression
   
 }
 
+# get dups species 
+
 
 get_exp_df_for_copy <- function(copy, dups_anc, clean_expression) {
   
@@ -250,5 +254,31 @@ get_exp_df_for_copy <- function(copy, dups_anc, clean_expression) {
   exp_df <- merge(dups, clean_expression, by = copy)
   
   return(exp_df)
+}
+
+
+
+main_get_dups_anc_exp_from_OF <- function(OF_dir_path, exp_path = NA, add_pseudofunc = NA, missing_expr_is_pseudo = NA, rm_exp_lower_than = NA) {
+  
+  OF_dir_path <- paste0(OF_dir_path, '/')
+  
+  out1 <- get_dups_from_OF(OF_dir_path)
+  dups <- out1$dups
+  dup_pair_orthologs <- out1$dup_pair_orthologs
+  
+  
+  if (!is.na(exp_path)) {
+    out2 <- clean_exp_and_pseudo(exp_path, dups, add_pseudofunc, missing_expr_is_pseudo, rm_exp_lower_than, PC = F)
+    clean_expression <- out2$clean_expression
+  }
+  if (is.na(exp_path)) {
+    clean_expression <- NA
+  }
+  
+  
+  dups_anc <- get_anc_copy(OF_dir_path, dups, dup_pair_orthologs, clean_expression)
+  
+  return(list(dups = dups, dups_anc = dups_anc, clean_expression = clean_expression))
+  
 }
 

@@ -3,7 +3,7 @@
 source('C:/Users/17735/Downloads/DuplicA/app/Scripts/pop_functions.R') ######## CHANGE
 
 # this function allows two to two to twos
-get_pairs_from_OF <- function(OF_dir_path) {
+get_two_to_two_pairs_from_OF <- function(OF_dir_path) {
 
   
   orthogroup_gene_count <- read.delim(paste0(OF_dir_path, "Orthogroups/Orthogroups.GeneCount.tsv"))
@@ -193,5 +193,27 @@ main_pop_dnds <- function(cnvs_path, nuc_file_path, prot_file_path = NA, aligner
 #aligner = 'muscle' 
 #replace_dirs = F
 #use_all_fastas_in_dir = T
+
+
+main_multispecies_dnds <- function(OF_dir_path, dups, allow_two_to_twos) {
+  
+  if (allow_two_to_twos == T) {dups <- get_two_to_two_pairs_from_OF(OF_dir_path)}
+  
+  pairs <- dups 
+  
+  get_paired_fastas(pairs, nuc_file_path, prot_file_path, use_all_fastas_in_dir)
+  get_prot_alignments(aligner)
+  get_codon_alignments()
+  dnds_results <- get_dnds()
+  
+  write.table(dnds_results, 'C:/Users/17735/Downloads/DuplicA/TRASH_dnds_results.tsv') # CHANGEEE
+  
+  
+  
+  
+  
+  
+}
+
 
 
