@@ -141,12 +141,62 @@ get_best_pdb_for_gene <- function(avail_data, output_directory, gene) {
 }
 
 
-main_alphafold <- function(dups, chosen_organism) {
+main_alphafold <- function(dups, file_organism_table) {
   output_directory <- './app/Results/AlphaFold/'
   
-  avail_data <- get_avail_data_for_organism(chosen_organism)
+  colnames(file_organism_table) <- c('protein_file_name', 'organism_scientific_name')
   
-  if (nrow(avail_data) == 0) {return('no data available for chosen organism')}
+  # iterate over all organisms with data 
+  for (chosen_organism in file_organism_table$organism_scientific_name) {
+    
+    avail_data <- get_avail_data_for_organism(chosen_organism)
+    if (nrow(avail_data) == 0) {return('no data available for chosen organism')}
+    
+    # get file name for the chosen organism
+    chosen_protein_file_name <- file_organism_table %>%
+      filter(organism_scientific_name == chosen_organism) %>%
+      select(protein_file_name) %>%
+      as.character()
+    
+    # get all genes for the organism (any duplicate copies and any ancestral copies)
+    
+    
+    chosen_genes <- dups
+    
+    
+    
+    
+    
+    
+    
+    
+    %>%
+      select(dup_1, dup_2, ancestral_copy, dup_species, ancestral_copy_species) %>%
+      pivot_longer(cols = c('dup_species', 'ancestral_copy_species'), 
+                   names_to = 'dup_or_anc', 
+                   values_to = 'protein_file_name') %>%
+      pivot_longer(cols = c('dup_1', 'dup_2', 'ancestral_copy'), 
+                   names_to = 'copy', 
+                   values_to = 'gene')
+    
+    
+    
+    
+    
+    
+    %>%
+      filter(protein_file_name == chosen_protein_file_name)
+    
+    
+    
+    
+  }
+  
+  
+
+  
+  
+  
   
   for (row in 1:nrow(dups)) {
   

@@ -213,8 +213,8 @@ main_run_workflow <- function(selected_models, input) {
   
   
   if ('alphafold_db' %in% selected_models) {
-    main_alphafold(dups = dups,
-                   chosen_organism = input$chosen_organism)
+    main_alphafold(dups = dups_anc,
+                   chosen_organisms = input$chosen_organisms)
   }
   
   

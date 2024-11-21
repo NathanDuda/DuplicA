@@ -1,4 +1,20 @@
 {
+  
+  "Alphafold Database": {
+    "ortho_dir": {
+      "type": "directory",
+      "label": "OrthoFinder Folder",
+      "multiple": false,
+      "required": true
+   },
+    "chosen_organisms":
+       "type": "match",
+       "label": "Provide the organisms scientific name for each protein file":
+       "match_file_name": [],
+       "match_species": [],
+       "required": true
+       "returns": "table with columns match_file_name and user-selected match_species"
+ },
   "Public Datasets": {
     "selected_organisms": {
       "type": "select",
@@ -118,7 +134,7 @@
       "multiple": false
     },
     "ortho_dir": {
-      "type": "file",
+      "type": "directory",
       "label": "OrthoFinder Folder",
       "multiple": false
     },
