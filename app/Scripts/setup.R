@@ -22,6 +22,7 @@ here_static_images <- paste0(fs::path_home(), '/Downloads/DuplicA/app/Static/Ima
 here_linux <- '/mnt/c/Users/17735/Downloads'
 here_linux_temp <- paste0(here_linux, '/DuplicA/app/Temp')
 here_linux_dep <- paste0(here_linux, '/DuplicA/app/Dependencies')
+here_linux_results <- paste0(here_linux, '/DuplicA/app/Results')
 
 # wsl is required 
 # chmod +x /mnt/c/Users/17735/Downloads/DuplicA/app/Dependencies/MUSCLE/muscle-linux-x86.v5.2

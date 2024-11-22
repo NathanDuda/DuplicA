@@ -7,12 +7,15 @@
       "multiple": false,
       "required": true
    },
-    "chosen_organisms":
+    "file_organism_table":
        "type": "match",
        "label": "Provide the organisms scientific name for each protein file":
        "match_file_name": [],
        "match_species": [],
-       "required": true
+       "required": true,
+       "condition": "Public Datasets is not selected"
+       "multiple": false,
+       "allow_repeats": false,
        "returns": "table with columns match_file_name and user-selected match_species"
  },
   "Public Datasets": {

@@ -14,18 +14,18 @@ selected_database_protein <- 'ensembl'
 selected_database_cds <- 'ensembl'
 selected_database_genome <- NA
 
-selected_organisms <- c('Homo sapiens', 'Pan troglodytes')
+selected_organisms <- c('Homo sapiens', 'Drosophila melanogaster', 'Arabidopsis thaliana')
 data_types <- c('Proteomes', 'CDS')
 keep_which_transcript <- 'longest'
 must_be_reference <- F
 
 # get protein and cds data from ncbi 
-main_ncbi(selected_organisms, data_types, selected_database_protein, selected_database_cds, selected_database_genome, keep_which_transcript, must_be_reference)
+main_public_datasets(selected_organisms, data_types, selected_database_protein, selected_database_cds, selected_database_genome, keep_which_transcript, must_be_reference)
 prot_output_dir <- paste0(here_results, '/Fastas/Protein_Fastas/')
 
-# run orthofinder on the human + chimp proteins to find duplicate genes
-main_OrthoFinder(prot_output_dir, result_name = 'Results', result_dir = here_results)
-of_output_dir <- paste0(here_results, '/OrthoFinder/Results/')
+# run orthofinder on the 3 organisms proteins to find duplicate genes
+main_OrthoFinder(prot_output_dir, result_name = 'Results', result_dir = paste0(here_linux_results, '/OrthoFinder/'))
+of_output_dir <- paste0(here_results, '/OrthoFinder/Results_Results/')
 
 
 # format duplicates from orthofinder results
@@ -109,6 +109,7 @@ user_provided_path_to_orthofinder_output # If OrthoFinder not selected
 
 
 
+
 main_run_workflow <- function(selected_models, input) {
   
   if('Public Datasets' %in% selected_models) {
@@ -161,7 +162,7 @@ main_run_workflow <- function(selected_models, input) {
     missing_expr_is_pseudo <- NA
     rm_exp_lower_than <- NA
   }
-  out <- main_get_dups_anc_exp_from_OF(OF_dir_path, exp_path, add_pseudofunc, missing_expr_is_pseudo, rm_exp_lower_than)
+  out <- main_get_dups_anc_exp_from_OF(of_output_dir, exp_path, add_pseudofunc, missing_expr_is_pseudo, rm_exp_lower_than)
   dups_anc <- out$dups_anc
   dups <- out$dups
   clean_expression <- out$clean_expression
@@ -213,8 +214,22 @@ main_run_workflow <- function(selected_models, input) {
   
   
   if ('alphafold_db' %in% selected_models) {
-    main_alphafold(dups = dups_anc,
-                   chosen_organisms = input$chosen_organisms)
+    # match: prot_output_dir
+    # to: listGenomes() 
+    
+    # format chosen organisms 
+    if ('Public Datasets' %in% selected_models) {
+      file_organism_table <- data.frame(protein_file_name = list.files(prot_output_dir, full.names = T),
+                                     organism_scientific_name = gsub('_prot.fasta', '', list.files(prot_output_dir)))
+    }
+    if (!'Public Datasets' %in% selected_models) {
+      file_organism_table <- as.data.frame(input$file_organism_table)
+      colnames(file_organism_table) <- c('protein_file_name', 'organism_scientific_name')
+    }
+    
+    
+    main_alphafold(dups_anc = dups_anc,
+                   file_organism_table = file_organism_table)
   }
   
   

@@ -56,11 +56,35 @@ get_avail_data_for_organism <- function(chosen_organism) {
   avail_data <- organismAttributes(organism = chosen_organism, topic = 'alphafold')
   
   avail_data <- avail_data %>%
-    filter(name == 'alphafold' &
-             !str_detect(dataset, '_eg_gene')) %>%
+    filter(name == 'alphafold' 
+        #   & !str_detect(dataset, '_eg_gene')
+           ) %>%
     distinct()
   
   return(avail_data)
+}
+
+
+format_dups_for_alphafold_db <- function(dups_anc) {
+  
+  #dups <- dups %>%
+  #  mutate(func = 'NA') %>%
+  #  select(-Orthogroup) %>%
+  #  group_by(duplicate_pair_species) %>%
+  #  group_split()
+  
+  all_copies <- dups_anc %>%
+    select(Orthogroup, dup_1, dup_2, ancestral_copy, duplicate_pair_species, ancestral_species) %>%
+    pivot_longer(cols = c('duplicate_pair_species', 'ancestral_species'), 
+                 names_to = 'dup_or_anc', 
+                 values_to = 'protein_file_name') %>%
+    pivot_longer(cols = c('dup_1', 'dup_2', 'ancestral_copy'), 
+                 names_to = 'copy', 
+                 values_to = 'gene') %>%
+    filter((dup_or_anc == 'duplicate_pair_species' & copy %in% c('dup_1', 'dup_2')) | 
+             (dup_or_anc == 'ancestral_species' & copy == 'ancestral_copy'))
+  
+  return(all_copies)
 }
 
 
@@ -141,89 +165,80 @@ get_best_pdb_for_gene <- function(avail_data, output_directory, gene) {
 }
 
 
-main_alphafold <- function(dups, file_organism_table) {
+
+get_plddt <- function(accession) {
+  url <- paste0("https://alphafold.ebi.ac.uk/files/", accession, "-model_v3.pdb")
+  response <- GET(url)
+  
+  if (status_code(response) == 200) {
+    pdb <- read.pdb(response$url)
+    plddt_score <- mean(pdb$atom$b, na.rm = TRUE) 
+    
+    return(plddt_score)
+  }
+}
+
+
+main_alphafold <- function(dups_anc, file_organism_table) {
   output_directory <- './app/Results/AlphaFold/'
   
-  colnames(file_organism_table) <- c('protein_file_name', 'organism_scientific_name')
+  ####
+  dups_anc <- dups_anc %>%
+    filter(Orthogroup == 'OG0002996' | Orthogroup == 'OG0003101' | Orthogroup == 'OG0002998')
   
+  ####
+  
+  
+  all_copies <- format_dups_for_alphafold_db(dups_anc)
+  
+  all_copies$gene <- sub("\\.[^.]*$", "", all_copies$gene)
+  
+  
+
   # iterate over all organisms with data 
+  all_gene_alphafold_data <- data.frame()
   for (chosen_organism in file_organism_table$organism_scientific_name) {
     
     avail_data <- get_avail_data_for_organism(chosen_organism)
-    if (nrow(avail_data) == 0) {return('no data available for chosen organism')}
+    if (nrow(avail_data) == 0) {return(paste0('No alphafold data is available for '), chosen_organism)}
     
     # get file name for the chosen organism
     chosen_protein_file_name <- file_organism_table %>%
       filter(organism_scientific_name == chosen_organism) %>%
-      select(protein_file_name) %>%
-      as.character()
+      select(protein_file_name) %>% as.character()
     
     # get all genes for the organism (any duplicate copies and any ancestral copies)
+    species_name <- gsub('.fasta', '', basename(chosen_protein_file_name))
+    genes <- all_copies %>%
+      filter(protein_file_name == species_name)
     
     
-    chosen_genes <- dups
+    mart <- avail_data$mart[1]
+    dataset <- avail_data$dataset[1]
     
     
-    
-    
-    
-    
-    
-    
-    %>%
-      select(dup_1, dup_2, ancestral_copy, dup_species, ancestral_copy_species) %>%
-      pivot_longer(cols = c('dup_species', 'ancestral_copy_species'), 
-                   names_to = 'dup_or_anc', 
-                   values_to = 'protein_file_name') %>%
-      pivot_longer(cols = c('dup_1', 'dup_2', 'ancestral_copy'), 
-                   names_to = 'copy', 
-                   values_to = 'gene')
+    gene_accessions <- biomart(mart = mart,
+                               dataset = dataset, 
+                               attributes = 'alphafold', 
+                               filters = 'ensembl_gene_id', 
+                               genes = genes$gene) %>%
+      filter(str_detect(alphafold, 'AF'))
     
     
     
+    gene_alphafold_data <- gene_accessions %>%
+      rowwise() %>%
+      mutate(plddt = get_plddt(alphafold)) %>%
+      group_by(ensembl_gene_id) %>%
+      filter(plddt == max(plddt)) %>%
+      mutate(protein_file_name = species_name)
     
-    
-    
-    %>%
-      filter(protein_file_name == chosen_protein_file_name)
-    
-    
-    
-    
+    all_gene_alphafold_data <- rbind(all_gene_alphafold_data, gene_alphafold_data)
   }
   
-  
-
-  
+  final_output <- left_join(all_copies, all_gene_alphafold_data, by = c('gene' = 'ensembl_gene_id', 'protein_file_name'))
   
   
-  
-  for (row in 1:nrow(dups)) {
-  
-    pair <- dups[row,]
-    
-    dup_1 <- pair$fbgn_1
-    dup_2 <- pair$fbgn_2
-    anc <- pair$anc
-    func <- pair$func
-    
-    get_best_pdb_for_gene(avail_data, './app/Results/AlphaFold/', dup_1)
-    get_best_pdb_for_gene(avail_data, './app/Results/AlphaFold/', dup_2)
-    get_best_pdb_for_gene(avail_data, './app/Results/AlphaFold/', anc)
-    
-    if(!file.exists(paste0(output_directory, dup_1, '.pdb')) |
-       !file.exists(paste0(output_directory, dup_2, '.pdb')) |
-       !file.exists(paste0(output_directory, anc, '.pdb'))) {break}
-
-    pdb1 <- read.pdb(paste0(output_directory, dup_1, '.pdb'))
-    pdb2 <- read.pdb(paste0(output_directory, dup_2, '.pdb'))
-    anc <- read.pdb(paste0(output_directory, anc, '.pdb'))
-    
-    #visualize_pdb(pdb1)
-    
-  
-  }
-
 }
 
 
@@ -239,5 +254,38 @@ main_alphafold <- function(dups, file_organism_table) {
 #pdb$calpha    # alpha carbons
 
 
-# FBgn0010434 FBgn0264975
+
+
+
+
+
+accession <- 'AF-Q5MK24-F1'
+url <- paste0("https://alphafold.ebi.ac.uk/files/", accession, "-model_v3.pdb")
+response1 <- GET(url)
+dup1_pdb <- read.pdb(response1$url)
+
+accession <- 'AF-Q5MK23-F1'
+url <- paste0("https://alphafold.ebi.ac.uk/files/", accession, "-model_v3.pdb")
+response2 <- GET(url)
+dup2_pdb <- read.pdb(response2$url)
+
+accession <- 'AF-Q8SYH1-F1'
+url <- paste0("https://alphafold.ebi.ac.uk/files/", accession, "-model_v3.pdb")
+responsea <- GET(url)
+anc_pdb <- read.pdb(responsea$url)
+
+
+
+pdbaln(files = list(response1$url, response2$url), 
+       exefile = 'C:/Users/17735/Downloads/muscle-win64.v5.3.exe', 
+       outfile = 'C:/Users/17735/Downloads/alignment.pir')
+
+options(bio3d.muscle = "wsl muscle")
+
+
+
+# does it make enough sense to use your own expression data on public database sequences?
+
+
+
 
