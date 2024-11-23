@@ -70,18 +70,7 @@ get_dup_mechanism <- function(dups_anc, exons_path, mech_type) {
   return(dup_mech)
 }
 
-main_dup_mechanism <- function(OF_dir_path, exons_path, mech_type, exp_path, exp_cutoff, PC) {
-  
-  out1 <- get_dups_from_OF(OF_dir_path)
-  dups <- out1$dups
-  dup_pair_orthologs <- out1$dup_pair_orthologs
-  
-  
-  out2 <- clean_exp_and_pseudo(exp_path, dups, add_pseudofunc = F, missing_expr_is_pseudo = F, exp_cutoff, PC)
-  clean_expression <- out2$clean_expression
-  
-  dups_anc <- get_anc_copy(OF_dir_path, dups, dup_pair_orthologs, clean_expression)
-  
+main_dup_mechanism <- function(exons_path, dups_anc, mech_type) {
   
   mech <- get_dup_mechanism(dups_anc, exons_path, mech_type)
   

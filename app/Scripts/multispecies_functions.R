@@ -243,8 +243,6 @@ get_anc_copy <- function(OF_dir_path, dups, dup_pair_orthologs, clean_expression
   
 }
 
-# get dups species 
-
 
 get_exp_df_for_copy <- function(copy, dups_anc, clean_expression) {
   
@@ -281,4 +279,56 @@ main_get_dups_anc_exp_from_OF <- function(OF_dir_path, exp_path = NA, add_pseudo
   return(list(dups = dups, dups_anc = dups_anc, clean_expression = clean_expression))
   
 }
+
+
+
+
+format_dups_for_db_search <- function(dups_anc) {
+  
+  #dups <- dups %>%
+  #  mutate(func = 'NA') %>%
+  #  select(-Orthogroup) %>%
+  #  group_by(duplicate_pair_species) %>%
+  #  group_split()
+  
+  all_copies <- dups_anc %>%
+    select(Orthogroup, dup_1, dup_2, ancestral_copy, duplicate_pair_species, ancestral_species) %>%
+    pivot_longer(cols = c('duplicate_pair_species', 'ancestral_species'), 
+                 names_to = 'dup_or_anc', 
+                 values_to = 'protein_file_name') %>%
+    pivot_longer(cols = c('dup_1', 'dup_2', 'ancestral_copy'), 
+                 names_to = 'copy', 
+                 values_to = 'gene') %>%
+    filter((dup_or_anc == 'duplicate_pair_species' & copy %in% c('dup_1', 'dup_2')) | 
+             (dup_or_anc == 'ancestral_species' & copy == 'ancestral_copy'))
+  
+  return(all_copies)
+}
+
+
+
+get_avail_data_for_organism <- function(chosen_organism, topic) {
+  chosen_organism <- gsub('_', ' ', chosen_organism)
+  avail_data <- organismAttributes(organism = chosen_organism, topic = topic)
+  
+  avail_data <- avail_data %>%
+    filter(name == topic 
+           #   & !str_detect(dataset, '_eg_gene')
+    ) %>%
+    distinct()
+  
+  return(avail_data)
+}
+
+
+get_protein_file_name <- function(chosen_organism, file_organism_table) {
+  
+  chosen_protein_file_name <- file_organism_table %>%
+    filter(organism_scientific_name == chosen_organism) %>%
+    select(protein_file_name) %>% as.character()
+  
+  return(chosen_protein_file_name)
+}
+
+
 

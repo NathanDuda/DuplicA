@@ -4,7 +4,7 @@ library(r3dmol)
 library(httr)
 library(bio3d)
 
-
+source('./app/Scripts/multispecies_functions.R')
 
 get_alphafold_for_pair <- function(dup_1, dup_2, func, output_directory, output_file, output_file2) {
   
@@ -48,43 +48,6 @@ visualize_pdb <- function(pdb_file) {
     m_spin(axis = "y", speed = 0.5)  
   
   
-}
-
-
-get_avail_data_for_organism <- function(chosen_organism) {
-  chosen_organism <- gsub('_', ' ', chosen_organism)
-  avail_data <- organismAttributes(organism = chosen_organism, topic = 'alphafold')
-  
-  avail_data <- avail_data %>%
-    filter(name == 'alphafold' 
-        #   & !str_detect(dataset, '_eg_gene')
-           ) %>%
-    distinct()
-  
-  return(avail_data)
-}
-
-
-format_dups_for_alphafold_db <- function(dups_anc) {
-  
-  #dups <- dups %>%
-  #  mutate(func = 'NA') %>%
-  #  select(-Orthogroup) %>%
-  #  group_by(duplicate_pair_species) %>%
-  #  group_split()
-  
-  all_copies <- dups_anc %>%
-    select(Orthogroup, dup_1, dup_2, ancestral_copy, duplicate_pair_species, ancestral_species) %>%
-    pivot_longer(cols = c('duplicate_pair_species', 'ancestral_species'), 
-                 names_to = 'dup_or_anc', 
-                 values_to = 'protein_file_name') %>%
-    pivot_longer(cols = c('dup_1', 'dup_2', 'ancestral_copy'), 
-                 names_to = 'copy', 
-                 values_to = 'gene') %>%
-    filter((dup_or_anc == 'duplicate_pair_species' & copy %in% c('dup_1', 'dup_2')) | 
-             (dup_or_anc == 'ancestral_species' & copy == 'ancestral_copy'))
-  
-  return(all_copies)
 }
 
 
@@ -164,8 +127,6 @@ get_best_pdb_for_gene <- function(avail_data, output_directory, gene) {
   }
 }
 
-
-
 get_plddt <- function(accession) {
   url <- paste0("https://alphafold.ebi.ac.uk/files/", accession, "-model_v3.pdb")
   response <- GET(url)
@@ -180,17 +141,14 @@ get_plddt <- function(accession) {
 
 
 main_alphafold <- function(dups_anc, file_organism_table) {
+  file_organism_table$organism_scientific_name <- gsub('_', ' ', file_organism_table$organism_scientific_name)
+  
+  
   output_directory <- './app/Results/AlphaFold/'
   
-  ####
-  dups_anc <- dups_anc %>%
-    filter(Orthogroup == 'OG0002996' | Orthogroup == 'OG0003101' | Orthogroup == 'OG0002998')
+  all_copies <- format_dups_for_db_search(dups_anc)
   
-  ####
-  
-  
-  all_copies <- format_dups_for_alphafold_db(dups_anc)
-  
+  # remove the characters after the first period in the gene name (causes issues with human genes)
   all_copies$gene <- sub("\\.[^.]*$", "", all_copies$gene)
   
   
@@ -199,33 +157,27 @@ main_alphafold <- function(dups_anc, file_organism_table) {
   all_gene_alphafold_data <- data.frame()
   for (chosen_organism in file_organism_table$organism_scientific_name) {
     
-    avail_data <- get_avail_data_for_organism(chosen_organism)
+    avail_data <- get_avail_data_for_organism(chosen_organism, topic = 'alphafold')
     if (nrow(avail_data) == 0) {return(paste0('No alphafold data is available for '), chosen_organism)}
     
     # get file name for the chosen organism
-    chosen_protein_file_name <- file_organism_table %>%
-      filter(organism_scientific_name == chosen_organism) %>%
-      select(protein_file_name) %>% as.character()
+    chosen_protein_file_name <- get_protein_file_name(chosen_organism, file_organism_table)
     
     # get all genes for the organism (any duplicate copies and any ancestral copies)
     species_name <- gsub('.fasta', '', basename(chosen_protein_file_name))
-    genes <- all_copies %>%
-      filter(protein_file_name == species_name)
+    genes <- all_copies %>% filter(protein_file_name == species_name)
     
-    
-    mart <- avail_data$mart[1]
+    # get the mart and dataset for the organism
+    mart <- avail_data$mart[1] # CHANGEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEee
     dataset <- avail_data$dataset[1]
     
-    
-    gene_accessions <- biomart(mart = mart,
-                               dataset = dataset, 
-                               attributes = 'alphafold', 
-                               filters = 'ensembl_gene_id', 
-                               genes = genes$gene) %>%
+    # get the alphafold accessions for each gene
+    gene_accessions <- biomart(mart = mart, dataset = dataset, attributes = 'alphafold', 
+                               filters = 'ensembl_gene_id', genes = genes$gene) %>%
       filter(str_detect(alphafold, 'AF'))
     
     
-    
+    # get the best plddt score for each gene
     gene_alphafold_data <- gene_accessions %>%
       rowwise() %>%
       mutate(plddt = get_plddt(alphafold)) %>%
@@ -280,7 +232,6 @@ pdbaln(files = list(response1$url, response2$url),
        exefile = 'C:/Users/17735/Downloads/muscle-win64.v5.3.exe', 
        outfile = 'C:/Users/17735/Downloads/alignment.pir')
 
-options(bio3d.muscle = "wsl muscle")
 
 
 

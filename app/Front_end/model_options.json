@@ -1,5 +1,52 @@
 {
-  
+ "Duplication Mechanism": {
+    "ortho_dir": {
+      "type": "directory",
+      "label": "OrthoFinder Folder",
+      "multiple": false,
+      "required": true
+    },
+    "exons_file": {
+      "type": "file",
+      "label": "Exon Counts File",
+      "multiple": false,
+      "required": true
+    },
+    "mech_type": {
+      "type": "select",
+      "label": "Mechanism model"
+      "choices": ["standard", "conservative", ultra-conservative"]
+      "default": "standard",
+      "multiple": false
+    }
+ },
+ "Post-duplication Fates": {
+    "expression_directory": {
+      "type": "directory",
+      "label": "Expression Folder",
+      "multiple": false,
+      "required": true
+    },
+    "ortho_dir": {
+      "type": "directory",
+      "label": "OrthoFinder Folder",
+      "multiple": false,
+      "required": true
+    },
+    "v": {
+      "type": "numeric", 
+      "label": "Novelty threshold",
+      "default": 0.05,
+      "min": 0,
+      "max": 1
+   },
+    "p": {
+      "type": "numeric", 
+      "label": "Pseudogene threshold",
+      "default": 0.2,
+      "min": 0,
+      "max": 1
+ },
   "Alphafold Database": {
     "ortho_dir": {
       "type": "directory",

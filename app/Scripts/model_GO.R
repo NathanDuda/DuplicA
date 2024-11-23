@@ -93,15 +93,95 @@ getHomologs(genes, from = "hsapiens_gene_ensembl", to = "mmusculus_gene_ensembl"
 all_genes_list <- c()
 
 library(biomartr)
-t <- getGO(organism = 'Homo sapiens', filters = 'ensembl_gene_id', genes = all_genes_list)
+
+
+#library(goseq)
+source('./app/Scripts/multispecies_functions.R')
+
+library(biomaRt)
 
 
 
 
 
 
+main_go <- function(dups_anc, file_organism_table) {
+  file_organism_table$organism_scientific_name <- gsub('_', ' ', file_organism_table$organism_scientific_name)
+  
+    
+  all_copies <- format_dups_for_db_search(dups_anc)
+  
+  # remove the characters after the first period in the gene name (causes issues with human genes)
+  all_copies$gene <- sub("\\.[^.]*$", "", all_copies$gene)
+
+  
+  
+  # iterate over all organisms with data 
+  all_go_output <- data.frame()
+  for (chosen_organism in file_organism_table$organism_scientific_name) {
+    
+    # get file name for the chosen organism
+    chosen_protein_file_name <- get_protein_file_name(chosen_organism, file_organism_table)
+    
+    # get all genes for the organism (any duplicate copies and any ancestral copies)
+    species_name <- gsub('.fasta', '', basename(chosen_protein_file_name))
+    genes <- all_copies %>% filter(protein_file_name == species_name)
+    
+    # check if data is available for the given organism
+    avail_data <- get_avail_data_for_organism(chosen_organism, topic = 'go_id')
+    if (nrow(avail_data) == 0) {return(paste0('No GO data is available for '), chosen_organism)}
+    
+    
+    # get gene ontology data for the organism, when only one dataset is available
+    if (nrow(avail_data) == 1) {
+      go_output <- getGO(organism = chosen_organism, 
+                         genes = genes$gene, 
+                         filters = 'ensembl_gene_id')
+      
+      go_output <- go_output %>% 
+        select(gene_id = ensembl_gene_id, 
+               go_id = goslim_goa_accession,
+               go_description = goslim_goa_description)
+      
+    }
+    
+    # specify the dataset to use when multiple are available 
+    if (nrow(avail_data) > 1) {
+      chosen_mart <- avail_data$mart[1] # CHANGEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEee
+      chosen_dataset <- avail_data$dataset[1] 
+      
+      chosen_data <- useDataset(dataset = chosen_dataset, 
+                                mart = useMart(chosen_mart))
+      
+      go_output <- getBM(attributes = c('ensembl_gene_id', "go_id", 'namespace_1003', 'goslim_goa_description', 'name_1006'),
+                         filters = "ensembl_gene_id",
+                         values = genes$gene,
+                         mart = chosen_data)
+      
+      go_output <- go_output %>% 
+        select(gene_id = ensembl_gene_id, 
+               go_id = go_id) 
+      
+      
+      
+      
+    }
+    
+    # combine go output for all species 
+    go_output <- go_output %>% mutate(protein_file_name = species_name)
+    all_go_output <- rbind(all_go_output, go_output)
+  }
+  
+  final_output <- left_join(all_copies, all_go_output, by = c('gene' = 'gene_id', 'protein_file_name'))
+  
+
+}
 
 
+
+
+library(httr)
+library(jsonlite)
 
 
 

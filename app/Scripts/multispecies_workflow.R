@@ -9,6 +9,9 @@ source('./app/scripts/model_CDROM.R')
 source('./app/scripts/model_EVE.R')
 source('./app/scripts/model_DnDs.R')
 source('./app/scripts/model_alphafold_db.R')
+source('./app/scripts/model_postduplication_fates.R')
+source('./app/scripts/model_duplication_mechanism.R')
+
 
 selected_database_protein <- 'ensembl'
 selected_database_cds <- 'ensembl'
@@ -166,8 +169,7 @@ main_run_workflow <- function(selected_models, input) {
   dups_anc <- out$dups_anc
   dups <- out$dups
   clean_expression <- out$clean_expression
-  
-  
+
   if ('CDROM' %in% selected_models) {
     main_CDROM(dups = dups, 
                dups_anc = dups_anc, 
@@ -212,7 +214,6 @@ main_run_workflow <- function(selected_models, input) {
     )
   }
   
-  
   if ('alphafold_db' %in% selected_models) {
     # match: prot_output_dir
     # to: listGenomes() 
@@ -220,7 +221,7 @@ main_run_workflow <- function(selected_models, input) {
     # format chosen organisms 
     if ('Public Datasets' %in% selected_models) {
       file_organism_table <- data.frame(protein_file_name = list.files(prot_output_dir, full.names = T),
-                                     organism_scientific_name = gsub('_prot.fasta', '', list.files(prot_output_dir)))
+                                        organism_scientific_name = gsub('_prot.fasta', '', list.files(prot_output_dir)))
     }
     if (!'Public Datasets' %in% selected_models) {
       file_organism_table <- as.data.frame(input$file_organism_table)
@@ -232,6 +233,15 @@ main_run_workflow <- function(selected_models, input) {
                    file_organism_table = file_organism_table)
   }
   
+  if('postduplication_fates' %in% selected_models) {
+    main_postduplication_fates(dups_anc, clean_expression, input$v, input$p)
+  }
+  
+  if('duplication_mechanism' %in% selected_models) {
+    
+    main_dup_mechanism(input$exons_path, dups_anc, input$mech_type)
+    
+  }
   
   
   

@@ -153,18 +153,8 @@ get_func_probs <- function(dups_anc_exp, v, p) {
 
 
 
-
-main_postduplication_fates <- function(OF_dir_path, exp_path, exp_cutoff, PC, v, p) {
+main_postduplication_fates <- function(dups_anc, clean_expression, v, p) {
   
-  out1 <- get_dups_from_OF(OF_dir_path)
-  dups <- out1$dups
-  dup_pair_orthologs <- out1$dup_pair_orthologs
-  
-  
-  out2 <- clean_exp_and_pseudo(exp_path, dups, add_pseudofunc = F, missing_expr_is_pseudo = F, exp_cutoff, PC)
-  clean_expression <- out2$clean_expression
-  
-  dups_anc <- get_anc_copy(OF_dir_path, dups, dup_pair_orthologs, clean_expression)
   dups_anc_exp <- get_exp_df_for_all_copies(dups_anc, clean_expression)
   
   func_probs <- get_func_probs(dups_anc_exp, v, p)
