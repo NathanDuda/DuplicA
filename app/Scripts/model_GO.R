@@ -160,7 +160,8 @@ main_go <- function(dups_anc, file_organism_table) {
       
       go_output <- go_output %>% 
         select(gene_id = ensembl_gene_id, 
-               go_id = go_id) 
+               go_id = go_id,
+               go_description = goslim_goa_description) 
       
       
       
@@ -180,8 +181,65 @@ main_go <- function(dups_anc, file_organism_table) {
 
 
 
-library(httr)
-library(jsonlite)
+
+
+
+
+
+
+t <- final_output %>%
+  head(100) %>%
+  mutate(
+    go_description = map(go_id, function(id) {
+      response <- GET(paste0("http://api.geneontology.org/api/ontology/term/", id))
+      if (status_code(response) == 200) {
+        as.character(fromJSON(content(response, as = "text"))[["label"]])
+      } else {NA}
+    })
+  )
+
+
+
+x <- final_output %>%
+  mutate(go_description = as.character(go_description)) %>%
+  select(Orthogroup, copy, go_description) %>%
+  group_by(Orthogroup) 
+
+
+t <- x %>%
+  pivot_wider(
+    names_from = copy,
+    values_from = go_description,
+    values_fn = ~ paste(unique(.), collapse = "; ")
+  ) %>%
+  separate_rows(dup_1, dup_2, ancestral_copy, sep = ";")
+
+
+
+##
+
+
+
+t <- x %>%
+  pivot_wider(
+    names_from = copy,
+    values_from = go_description,
+    values_fn = ~ paste(unique(.), collapse = "; ")
+  )
+
+# Split and align rows with padding
+t_split <- t %>%
+  mutate(across(
+    where(is.character), 
+    ~ strsplit(., "; ")  # Split each column into lists
+  )) %>%
+  mutate(row_id = row_number())
+
+t_split$dup_1 <- as.character(t$dup_1)
+t_split$dup_2 <- as.character(t$dup_2)
+t_split$ancestral_copy <- as.character(t$ancestral_copy)
+
+
 
 
 
