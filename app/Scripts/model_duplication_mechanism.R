@@ -13,7 +13,7 @@
 #  mutate(exon_count = sample(1:20, n(), replace = TRUE))
 
 
-get_dup_mechanism <- function(dups_anc, exons_path, mech_type) {
+get_dup_mechanism <- function(dups_anc, gn_exons, mech_type) {
   
   # unit test the gn_exons input
   # unit test the gene ids match between exon file and dups file 
@@ -21,7 +21,7 @@ get_dup_mechanism <- function(dups_anc, exons_path, mech_type) {
   #########
   
   # import gn_exons file 
-  gn_exons <- read.delim(exons_path, sep = ' ')
+  #gn_exons <- read.delim(exons_path, sep = ' ')
   colnames(gn_exons) <- c('id', 'exon_count')
   
   # connect each copy with their exon count 
@@ -70,9 +70,9 @@ get_dup_mechanism <- function(dups_anc, exons_path, mech_type) {
   return(dup_mech)
 }
 
-main_dup_mechanism <- function(exons_path, dups_anc, mech_type) {
+main_dup_mechanism <- function(gn_exons, dups_anc, mech_type) {
   
-  mech <- get_dup_mechanism(dups_anc, exons_path, mech_type)
+  mech <- get_dup_mechanism(dups_anc, gn_exons, mech_type)
   
   return(mech)
 }

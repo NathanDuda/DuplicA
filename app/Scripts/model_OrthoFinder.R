@@ -24,7 +24,7 @@ main_OrthoFinder <- function(protein_folder, is_dna = FALSE, method = "dendrobla
   protein_folder <- gsub(here, here_linux, protein_folder)
 
   path_to_orthofinder <- paste0(here_linux, '/DuplicA/app/Dependencies/OrthoFinder/orthofinder')
-  results_dir <- paste0(here_linux, '/DuplicA/app/Results')
+  results_dir <- here_results
   
   # base command
   command <- paste(path_to_orthofinder, "-f", shQuote(protein_folder))

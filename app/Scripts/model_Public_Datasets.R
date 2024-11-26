@@ -77,7 +77,7 @@ get_prot_transcript_seq <- function(prot_fasta_data, keep_which_transcript, sele
   
   gene_transcript <- prot_seqs_df %>% select(gene_id, transcript_id)
   selected_organism <- gsub(' ', '_', selected_organism)
-  write.table(gene_transcript, file = paste0(here_results, '/Fastas/', selected_organism, '_transcript_kept_per_gene.tsv'), sep = '\t', quote = F, row.names = F)
+  write.table(gene_transcript, file = paste0(here_results, '/Fastas/kept_transcript/', selected_organism, '_transcript_kept_per_gene.tsv'), sep = '\t', quote = F, row.names = F)
   
   return(prot_seqs_df)
 }

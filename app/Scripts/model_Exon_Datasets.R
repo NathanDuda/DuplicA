@@ -4,7 +4,8 @@ library(R.utils)
 library(biomartr)
 source('./app/Scripts/multispecies_functions.R')
 
-
+library(conflicted)
+conflicts_prefer(dplyr::select)
 
 get_gff_file <- function(selected_organism, selected_database_exon, must_be_reference) {
   
@@ -23,7 +24,7 @@ get_gff_file <- function(selected_organism, selected_database_exon, must_be_refe
 
 get_exon_counts <- function(exon_gz_file_path) {
   # unzip .gz file 
-  gunzip(exon_gz_file_path, overwrite = TRUE)
+  if(file.exists(exon_gz_file_path)) {R.utils::gunzip(exon_gz_file_path, overwrite = TRUE)}
   exon_file_path <- sub(".gz$", "", exon_gz_file_path)
   
   # Read the decompressed file

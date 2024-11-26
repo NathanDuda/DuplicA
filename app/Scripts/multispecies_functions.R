@@ -1,6 +1,6 @@
 
 
-
+source('./app/Scripts/tool_ID_conversion.R')
 
 get_dups_from_OF <- function(OF_dir_path) {
   
@@ -329,6 +329,51 @@ get_protein_file_name <- function(chosen_organism, file_organism_table) {
   
   return(chosen_protein_file_name)
 }
+
+
+
+any_gene_ids_overlap_across_species <- function() {
+  
+  
+  
+}
+
+get_kept_transcript_ids_list <- function(selected_organism, kept_transcript_dir) {
+  gn_tr <- read.delim(paste0(kept_transcript_dir, '/', selected_organism, "_transcript_kept_per_gene.tsv"))
+  colnames(gn_tr) <- c('gene_id', 'transcript_id')
+  
+  gn_tr$gene_id <- sub("\\.[^.]*$", "", gn_tr$gene_id) # remove the version indicator in human gene ids 
+  gn_tr$transcript_id <- sub("\\.[^.]*$", "", gn_tr$transcript_id) # remove the version indicator in human gene ids 
+  
+  kept_transcript_ids_list <- gn_tr$transcript_id
+  
+  return(kept_transcript_ids_list)
+}
+
+
+
+get_exon_counts_per_copy <- function(dups_anc, selected_organisms, exon_output_dir, kept_transcript_dir) {
+  
+  exon_file <- paste0(exon_output_dir, selected_organism, '_exon.tsv')
+  exon_data <- read.delim(exon_file)
+  
+  gene_column_number <- 1
+  
+  kept_transcript_ids_list <- get_kept_transcript_ids_list(selected_organism, kept_transcript_dir)
+  
+  # convert gene symbols to ensembl gene ids
+  exon_data <- main_id_convert(df = exon_data, 
+                               gene_column_number = gene_column_number, 
+                               chosen_organism = selected_organism, 
+                               kept_transcript_ids_list = kept_transcript_ids_list)
+  
+  
+  
+  
+}
+
+
+
 
 
 

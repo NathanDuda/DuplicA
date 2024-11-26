@@ -228,9 +228,9 @@ anc_pdb <- read.pdb(responsea$url)
 
 
 
-pdbaln(files = list(response1$url, response2$url), 
-       exefile = 'C:/Users/17735/Downloads/muscle-win64.v5.3.exe', 
-       outfile = 'C:/Users/17735/Downloads/alignment.pir')
+#pdbaln(files = list(response1$url, response2$url), 
+ #      exefile = 'C:/Users/17735/Downloads/muscle-win64.v5.3.exe', 
+  #     outfile = 'C:/Users/17735/Downloads/alignment.pir')
 
 
 

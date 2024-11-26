@@ -10,70 +10,15 @@ source('./app/scripts/model_EVE.R')
 source('./app/scripts/model_DnDs.R')
 source('./app/scripts/model_alphafold_db.R')
 source('./app/scripts/model_postduplication_fates.R')
+source('./app/scripts/model_Exon_Datasets.R')
 source('./app/scripts/model_duplication_mechanism.R')
 
-
-selected_database_protein <- 'ensembl'
-selected_database_cds <- 'ensembl'
-selected_database_genome <- NA
-
-selected_organisms <- c('Homo sapiens', 'Drosophila melanogaster', 'Arabidopsis thaliana')
-data_types <- c('Proteomes', 'CDS')
-keep_which_transcript <- 'longest'
-must_be_reference <- F
-
-# get protein and cds data from ncbi 
-main_public_datasets(selected_organisms, data_types, selected_database_protein, selected_database_cds, selected_database_genome, keep_which_transcript, must_be_reference)
-prot_output_dir <- paste0(here_results, '/Fastas/Protein_Fastas/')
-
-# run orthofinder on the 3 organisms proteins to find duplicate genes
-main_OrthoFinder(prot_output_dir, result_name = 'Results', result_dir = paste0(here_linux_results, '/OrthoFinder/'))
-of_output_dir <- paste0(here_results, '/OrthoFinder/Results_Results/')
+library(R.utils)
+#library(conflicted)
+#conflicts_prefer(dplyr::select)
 
 
-# format duplicates from orthofinder results
-out <- get_dups_from_OF(of_output_dir)
 
-dups <- out$dups
-dup_pair_orthologs <- out$dup_pair_orthologs
-
-
-#all_dups <- format_dups_for_alphafold_db(dups)
-
-use_ancestral_copy <- T
-
-
-if (use_ancestral_copy == F) {
-  dups$anc <- NA
-}
-
-
-# get ancestral copy
-if (use_ancestral_copy == T) {
-  
-  dups <- get_anc_copy(OF_dir_path = of_output_dir, 
-                       dups = dups,
-                       dup_pair_orthologs = dup_pair_orthologs, 
-                       clean_expression = NA)
-  
-}
-
-all_dups <- format_dups_for_alphafold_db(dups)
-
-
-for (i in length(all_dups)) {
-  
-  dups <- all_dups[[i]]
-
-  chosen_organism <- gsub('_prot', '', dups$duplicate_pair_species[1])
-  
-  dups <- dups %>%
-    select(dup_1, dup_2, anc = ancestral_copy, func)
-  
-
-  main_alphafold(dups, chosen_organism)
-  
-}
 
 
 
@@ -89,27 +34,42 @@ for (i in length(all_dups)) {
 
 
 # example inputs
+input <- list()
 
 # for main_public_datasets
-selected_organisms <- c('Homo sapiens', 'Pan troglodytes')
+input$selected_organisms <- c('Homo sapiens', 'Drosophila melanogaster', 'Arabidopsis thaliana')
 
 ## additional for main_public_datasets
-selected_database_protein <- 'ensembl'
-selected_database_cds <- 'ensembl'
-selected_database_genome <- 'ensembl'
-data_types <- c('Proteomes', 'CDS')
-keep_which_transcript <- 'longest'
-must_be_reference <- F
+input$selected_database_protein <- 'ensembl'
+input$selected_database_cds <- 'ensembl'
+input$selected_database_genome <- 'ensembl'
+input$data_types <- c('Proteomes', 'CDS')
+input$keep_which_transcript <- 'longest'
+input$must_be_reference <- F
 
 # for main_orthofinder
+
+
+
 user_provided_path_to_protein_directory # If Public Datasets not selected 
 
 ## additional
-
+input$nuc_not_prot = F
+input$gene_tree_inference_method = 'dendroblast'
+input$sequence_search_method = 'diamond'
+input$msa_method = NA
+input$tree_method = NA
+input$species_tree_path = NULL
+input$mcl_inflation = 1.5
+input$split_hogs = F
+input$msa_trim = F
 
 # 
 user_provided_path_to_orthofinder_output # If OrthoFinder not selected
 
+
+#
+input$selected_database_exon = 'refseq'
 
 
 
@@ -124,6 +84,7 @@ main_run_workflow <- function(selected_models, input) {
                          keep_which_transcript = input$keep_which_transcript, 
                          must_be_reference = input$must_be_reference)
     prot_output_dir <- paste0(here_results, '/Fastas/Protein_Fastas/')
+    kept_transcript_dir <- paste0(here_results, '/Fastas/kept_transcript/')
   }
   # get protein folder path when public datasets not chosen
   if(!('Public Datasets' %in% selected_models) & ('OrthoFinder' %in% selected_models)) {
@@ -133,9 +94,8 @@ main_run_workflow <- function(selected_models, input) {
   
   if('OrthoFinder' %in% selected_models) {
     
-    dir.create(paste0(here_results, '/OrthoFinder'))
-    
-    main_OrthoFinder(protein_folder = input$protein_folder,
+
+    main_OrthoFinder(protein_folder = prot_output_dir,
                      is_dna = input$nuc_not_prot, 
                      method = input$gene_tree_inference_method,
                      sequence_search = input$sequence_search_method, 
@@ -145,10 +105,10 @@ main_run_workflow <- function(selected_models, input) {
                      mcl_inflation = input$mcl_inflation,
                      split_hogs = input$split_hogs, 
                      no_msa_trim = input$msa_trim,
-                     result_dir = paste0(here_results, '/OrthoFinder/'),
+                     result_dir = paste0(here_linux_results, '/OrthoFinder/'),
                      result_name = 'Results')
     
-    of_output_dir <- paste0(here_results, '/OrthoFinder/Results/')
+    of_output_dir <- paste0(here_results, '/OrthoFinder/Results_Results')
     
   }
   # get OrthoFinder output path when OrthoFinder not selected
@@ -235,6 +195,15 @@ main_run_workflow <- function(selected_models, input) {
   
   if('postduplication_fates' %in% selected_models) {
     main_postduplication_fates(dups_anc, clean_expression, input$v, input$p)
+  }
+  
+  
+  if(('exon_datasets' %in% selected_models) & ('Public Datasets' %in% selected_models)) {
+    main_exon_datasets(selected_organisms = input$selected_organisms, 
+                       selected_database_exon = input$selected_database_exon, 
+                       must_be_reference = input$must_be_reference)
+    exon_output_dir <- paste0(here_results, '/Exon_Counts/')
+    
   }
   
   if('duplication_mechanism' %in% selected_models) {
