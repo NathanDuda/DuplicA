@@ -2,17 +2,16 @@
 
 
 
+source('./app/Scripts/multispecies_functions.R')
 
 
 if (!requireNamespace("BiocManager", quietly = TRUE))
   install.packages("BiocManager")
 BiocManager::install("biomaRt")
 BiocManager::install("clusterProfiler")
-BiocManager::install("org.Hs.eg.db")  # Replace with relevant organism package if not human
 
 library(biomaRt)
 library(clusterProfiler)
-library(org.Hs.eg.db)  # Replace if not human
 
 
 
@@ -112,7 +111,7 @@ main_go <- function(dups_anc, file_organism_table) {
   all_copies <- format_dups_for_db_search(dups_anc)
   
   # remove the characters after the first period in the gene name (causes issues with human genes)
-  all_copies$gene <- sub("\\.[^.]*$", "", all_copies$gene)
+  all_copies$gene <- sub("\\.[^.]*$", "", all_copies$gene) # remove the version indicator in human gene ids 
 
   
   
@@ -173,7 +172,7 @@ main_go <- function(dups_anc, file_organism_table) {
     all_go_output <- rbind(all_go_output, go_output)
   }
   
-  final_output <- left_join(all_copies, all_go_output, by = c('gene' = 'gene_id', 'protein_file_name'))
+  all_copy_go <- left_join(all_copies, all_go_output, by = c('gene' = 'gene_id', 'protein_file_name'))
   
 
 }
@@ -182,62 +181,29 @@ main_go <- function(dups_anc, file_organism_table) {
 
 
 
+compare_copy_go <- function(all_copy_go) {
+  
+  
+  t <- all_copy_go %>%
+    group_by(gene, go_id) %>%
+    distinct() %>%
+    ungroup() %>%
+    group_by(Orthogroup) %>%
+    filter(!any(is.na(across(everything())))) %>%
+    summarize(
+      all_d1_d2 = all(go_id[copy == "dup_1"] %in% go_id[copy == "dup_2"]),
+      all_d2_d1 = all(go_id[copy == "dup_2"] %in% go_id[copy == "dup_1"]),
+      all_d1_anc = all(go_id[copy == "dup_1"] %in% go_id[copy == "ancestral_copy"]),
+      all_anc_d1 = all(go_id[copy == "ancestral_copy"] %in% go_id[copy == "dup_1"]),
+      all_d2_anc = all(go_id[copy == "dup_2"] %in% go_id[copy == "ancestral_copy"]),
+      all_anc_d2 = all(go_id[copy == "ancestral_copy"] %in% go_id[copy == "dup_2"]),
+      any_d1_d2 = any(go_id[copy == "dup_1"] %in% go_id[copy == "dup_2"]),
+      any_d2_d1 = any(go_id[copy == "dup_2"] %in% go_id[copy == "dup_1"]),
+      any_d1_anc = any(go_id[copy == "dup_1"] %in% go_id[copy == "ancestral_copy"])
+    )
+  
+}
 
-
-
-
-
-t <- final_output %>%
-  head(100) %>%
-  mutate(
-    go_description = map(go_id, function(id) {
-      response <- GET(paste0("http://api.geneontology.org/api/ontology/term/", id))
-      if (status_code(response) == 200) {
-        as.character(fromJSON(content(response, as = "text"))[["label"]])
-      } else {NA}
-    })
-  )
-
-
-
-x <- final_output %>%
-  mutate(go_description = as.character(go_description)) %>%
-  select(Orthogroup, copy, go_description) %>%
-  group_by(Orthogroup) 
-
-
-t <- x %>%
-  pivot_wider(
-    names_from = copy,
-    values_from = go_description,
-    values_fn = ~ paste(unique(.), collapse = "; ")
-  ) %>%
-  separate_rows(dup_1, dup_2, ancestral_copy, sep = ";")
-
-
-
-##
-
-
-
-t <- x %>%
-  pivot_wider(
-    names_from = copy,
-    values_from = go_description,
-    values_fn = ~ paste(unique(.), collapse = "; ")
-  )
-
-# Split and align rows with padding
-t_split <- t %>%
-  mutate(across(
-    where(is.character), 
-    ~ strsplit(., "; ")  # Split each column into lists
-  )) %>%
-  mutate(row_id = row_number())
-
-t_split$dup_1 <- as.character(t$dup_1)
-t_split$dup_2 <- as.character(t$dup_2)
-t_split$ancestral_copy <- as.character(t$ancestral_copy)
 
 
 

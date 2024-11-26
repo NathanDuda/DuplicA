@@ -44,7 +44,7 @@ get_organisms_cds_fasta_data <- function(selected_organism, cds_files) {
   
 }
 
-get_prot_transcript_seq <- function(prot_fasta_data, keep_which_transcript) {
+get_prot_transcript_seq <- function(prot_fasta_data, keep_which_transcript, selected_organism) {
   prot_seqs_df <- as.data.frame(prot_fasta_data) %>%
     rownames_to_column('names') %>%
     mutate(
@@ -74,6 +74,10 @@ get_prot_transcript_seq <- function(prot_fasta_data, keep_which_transcript) {
       ungroup() 
   }
   any(duplicated(prot_seqs_df$gene_id)) # should be FALSE
+  
+  gene_transcript <- prot_seqs_df %>% select(gene_id, transcript_id)
+  selected_organism <- gsub(' ', '_', selected_organism)
+  write.table(gene_transcript, file = paste0(here_results, '/Fastas/', selected_organism, '_transcript_kept_per_gene.tsv'), sep = '\t', quote = F, row.names = F)
   
   return(prot_seqs_df)
 }
@@ -173,7 +177,7 @@ main_public_datasets <- function(selected_organisms, data_types, selected_databa
     cds_fasta_data <- get_organisms_cds_fasta_data(selected_organism, cds_files)
     
     # format the fasta data into a table. keep only one sequence per gene
-    prot_seqs_df <- get_prot_transcript_seq(prot_fasta_data, keep_which_transcript = 'longest')
+    prot_seqs_df <- get_prot_transcript_seq(prot_fasta_data, keep_which_transcript = 'longest', selected_organism)
     seqs_df <- add_cds_transcript_seq(cds_fasta_data, prot_seqs_df)
     
     # write the sequences into fasta files 
