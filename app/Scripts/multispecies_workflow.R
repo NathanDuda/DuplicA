@@ -67,6 +67,7 @@ input$msa_trim = F
 # 
 user_provided_path_to_orthofinder_output # If OrthoFinder not selected
 
+user_provided_path_to_exon_output_dir # If no exon_datasets but yes duplication_mechanism
 
 #
 input$selected_database_exon = 'refseq'
@@ -120,12 +121,18 @@ main_run_workflow <- function(selected_models, input) {
   
   # get dups from OrthoFinder and format expression (if expression file path exists)
   if (!exists(input$exp_path)) {
-    exp_path <- NA
-    add_pseudofunc <- NA
-    missing_expr_is_pseudo <- NA
-    rm_exp_lower_than <- NA
+    input$exp_path <- NA
+    input$normalization_type <- NA
+    input$add_pseudofunc <- NA
+    input$missing_expr_is_pseudo <- NA
+    input$rm_exp_lower_than <- NA
   }
-  out <- main_get_dups_anc_exp_from_OF(of_output_dir, exp_path, add_pseudofunc, missing_expr_is_pseudo, rm_exp_lower_than)
+  out <- main_get_dups_anc_exp_from_OF(OF_dir_path = of_output_dir, 
+                                       exp_path = input$exp_path, 
+                                       normalization_type = input$normalization_type, 
+                                       add_pseudofunc = input$add_pseudofunc, 
+                                       missing_expr_is_pseudo = input$missing_expr_is_pseudo, 
+                                       rm_exp_lower_than = input$rm_exp_lower_than)
   dups_anc <- out$dups_anc
   dups <- out$dups
   clean_expression <- out$clean_expression
@@ -174,29 +181,33 @@ main_run_workflow <- function(selected_models, input) {
     )
   }
   
-  if ('alphafold_db' %in% selected_models) {
-    # match: prot_output_dir
-    # to: listGenomes() 
+  # format chosen organisms (get file_organism_table) and format_dups_for_db_search
+  if(('alphafold_db' %in% selected_models) | ('go' %in% selected_models)) {
     
-    # format chosen organisms 
     if ('Public Datasets' %in% selected_models) {
       file_organism_table <- data.frame(protein_file_name = list.files(prot_output_dir, full.names = T),
                                         organism_scientific_name = gsub('_prot.fasta', '', list.files(prot_output_dir)))
     }
+    
     if (!'Public Datasets' %in% selected_models) {
+      # match: prot_output_dir
+      # to: listGenomes() 
       file_organism_table <- as.data.frame(input$file_organism_table)
       colnames(file_organism_table) <- c('protein_file_name', 'organism_scientific_name')
     }
     
-    
-    main_alphafold(dups_anc = dups_anc,
+
+    all_copies <- format_dups_for_db_search(dups_anc)
+  }
+  
+  if ('alphafold_db' %in% selected_models) {
+    main_alphafold(all_copies = all_copies,
                    file_organism_table = file_organism_table)
   }
   
   if('postduplication_fates' %in% selected_models) {
     main_postduplication_fates(dups_anc, clean_expression, input$v, input$p)
   }
-  
   
   if(('exon_datasets' %in% selected_models) & ('Public Datasets' %in% selected_models)) {
     main_exon_datasets(selected_organisms = input$selected_organisms, 
@@ -206,11 +217,20 @@ main_run_workflow <- function(selected_models, input) {
     
   }
   
-  if('duplication_mechanism' %in% selected_models) {
-    
-    main_dup_mechanism(input$exons_path, dups_anc, input$mech_type)
+  if(!('exon_datasets' %in% selected_models) & ('duplication_mechanism' %in% selected_models)) {
+    exon_output_dir <- user_provided_path_to_exon_output_dir
+    # species names need to match up 
     
   }
+  
+  if('duplication_mechanism' %in% selected_models) {
+    main_dup_mechanism(input$exons_path, dups_anc, input$mech_type)
+  }
+  
+  if('go' %in% selected_models) {
+    main_go(all_copies, file_organism_table)
+  }
+  
   
   
   

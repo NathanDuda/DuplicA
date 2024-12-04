@@ -79,7 +79,7 @@ get_dups_from_OF <- function(OF_dir_path) {
 
 
 
-clean_exp_and_pseudo <- function(exp_path, dups, add_pseudofunc, missing_expr_is_pseudo, exp_cutoff, PC) {
+clean_exp_and_pseudo <- function(exp_path, dups, normalization_type, add_pseudofunc, missing_expr_is_pseudo, exp_cutoff, PC) {
   
   ################################
   # unit tests
@@ -160,7 +160,42 @@ clean_exp_and_pseudo <- function(exp_path, dups, add_pseudofunc, missing_expr_is
     
     return(list(pseudo = pseudo, clean_expression = clean_expression))
   }
-  return(list(clean_expression = clean_expression))
+  
+  if (!is.na(normalization_type)) {
+    
+    counts <- clean_expression
+    
+    
+    norm_counts <- counts 
+    if (normalization_type == 'RPKM') {
+      total_reads <- sum(counts)
+      total_reads <- total_reads / 1e6 
+      
+      norm_counts <- norm_counts %>%
+        mutate(length_kb = Length / 1000,
+               !!paste0('norm_', colnames(.)) := .data / (length_kb * total_reads))
+    }
+    if (normalization_type == 'TPM') {
+      norm_counts <- norm_counts %>% mutate(n_over_l = .data[[group]] / Length)
+      denominator <- sum(norm_counts$n_over_l) / 1e6
+      
+      norm_counts <- norm_counts %>%
+        mutate(!!paste0('norm_', group) := n_over_l / denominator)
+    }
+    
+    
+    # keep only normalized columns
+    norm_counts <- norm_counts %>%
+      select(ID, starts_with(paste('norm_')))
+    
+    
+    
+    
+    
+    
+  }
+  
+  return(clean_expression)
 }
 
 
@@ -256,7 +291,7 @@ get_exp_df_for_copy <- function(copy, dups_anc, clean_expression) {
 
 
 
-main_get_dups_anc_exp_from_OF <- function(OF_dir_path, exp_path = NA, add_pseudofunc = NA, missing_expr_is_pseudo = NA, rm_exp_lower_than = NA) {
+main_get_dups_anc_exp_from_OF <- function(OF_dir_path, exp_path = NA, normalization_type = NA, add_pseudofunc = NA, missing_expr_is_pseudo = NA, rm_exp_lower_than = NA) {
   
   OF_dir_path <- paste0(OF_dir_path, '/')
   
@@ -266,8 +301,7 @@ main_get_dups_anc_exp_from_OF <- function(OF_dir_path, exp_path = NA, add_pseudo
   
   
   if (!is.na(exp_path)) {
-    out2 <- clean_exp_and_pseudo(exp_path, dups, add_pseudofunc, missing_expr_is_pseudo, rm_exp_lower_than, PC = F)
-    clean_expression <- out2$clean_expression
+    clean_expression <- clean_exp_and_pseudo(exp_path, dups, normalization_type, add_pseudofunc, missing_expr_is_pseudo, rm_exp_lower_than, PC = F)
   }
   if (is.na(exp_path)) {
     clean_expression <- NA
@@ -302,8 +336,27 @@ format_dups_for_db_search <- function(dups_anc) {
     filter((dup_or_anc == 'duplicate_pair_species' & copy %in% c('dup_1', 'dup_2')) | 
              (dup_or_anc == 'ancestral_species' & copy == 'ancestral_copy'))
   
+  # remove the characters after the first period in the gene name (causes issues with human genes)
+  all_copies$gene <- sub("\\.[^.]*$", "", all_copies$gene) # remove the version indicator in human gene ids 
+  
   return(all_copies)
 }
+
+get_protein_file_name <- function(chosen_organism, file_organism_table) {
+  
+  chosen_protein_file_name <- file_organism_table %>%
+    filter(organism_scientific_name == chosen_organism) %>%
+    select(protein_file_name) %>% as.character()
+  
+  return(chosen_protein_file_name)
+}
+
+get_genes_for_organism <- function(chosen_protein_file_name) {
+  species_name <- gsub('.fasta', '', basename(chosen_protein_file_name))
+  genes <- all_copies %>% filter(protein_file_name == species_name)
+  return(genes)
+}
+
 
 
 
@@ -321,14 +374,6 @@ get_avail_data_for_organism <- function(chosen_organism, topic) {
 }
 
 
-get_protein_file_name <- function(chosen_organism, file_organism_table) {
-  
-  chosen_protein_file_name <- file_organism_table %>%
-    filter(organism_scientific_name == chosen_organism) %>%
-    select(protein_file_name) %>% as.character()
-  
-  return(chosen_protein_file_name)
-}
 
 
 

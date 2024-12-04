@@ -51,6 +51,18 @@ visualize_pdb <- function(pdb_file) {
 }
 
 
+get_plddt <- function(accession) {
+  url <- paste0("https://alphafold.ebi.ac.uk/files/", accession, "-model_v3.pdb")
+  response <- GET(url)
+  
+  if (status_code(response) == 200) {
+    pdb <- read.pdb(response$url)
+    plddt_score <- mean(pdb$atom$b, na.rm = TRUE) 
+    
+    return(plddt_score)
+  }
+}
+
 get_best_pdb_for_gene <- function(avail_data, output_directory, gene) {
   
   for (data_row in 1:nrow(avail_data)) {
@@ -127,29 +139,15 @@ get_best_pdb_for_gene <- function(avail_data, output_directory, gene) {
   }
 }
 
-get_plddt <- function(accession) {
-  url <- paste0("https://alphafold.ebi.ac.uk/files/", accession, "-model_v3.pdb")
-  response <- GET(url)
-  
-  if (status_code(response) == 200) {
-    pdb <- read.pdb(response$url)
-    plddt_score <- mean(pdb$atom$b, na.rm = TRUE) 
-    
-    return(plddt_score)
-  }
-}
 
 
-main_alphafold <- function(dups_anc, file_organism_table) {
+main_alphafold <- function(all_copies, file_organism_table) {
   file_organism_table$organism_scientific_name <- gsub('_', ' ', file_organism_table$organism_scientific_name)
   
   
   output_directory <- './app/Results/AlphaFold/'
   
-  all_copies <- format_dups_for_db_search(dups_anc)
-  
-  # remove the characters after the first period in the gene name (causes issues with human genes)
-  all_copies$gene <- sub("\\.[^.]*$", "", all_copies$gene)
+
   
   
 
@@ -164,8 +162,7 @@ main_alphafold <- function(dups_anc, file_organism_table) {
     chosen_protein_file_name <- get_protein_file_name(chosen_organism, file_organism_table)
     
     # get all genes for the organism (any duplicate copies and any ancestral copies)
-    species_name <- gsub('.fasta', '', basename(chosen_protein_file_name))
-    genes <- all_copies %>% filter(protein_file_name == species_name)
+    genes <- get_genes_for_organism(chosen_protein_file_name)
     
     # get the mart and dataset for the organism
     mart <- avail_data$mart[1] # CHANGEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEee

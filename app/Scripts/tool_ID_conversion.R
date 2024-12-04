@@ -1,22 +1,15 @@
 
 
 library(tidyverse)
+library(biomaRt)
+library(biomartr)
 
 # convert between gene symbols and ensembl ids
 
 
 
 #source('./app/Scripts/multispecies_functions.R')
-library(biomaRt)
-library(biomartr)
 
-
-
-
-
-
-library(biomaRt)
-library(dplyr)
 
 
 
