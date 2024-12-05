@@ -48,11 +48,25 @@ replace_ids <- function(df, ids, gene_column_number, from, to) {
 }
 
 
+get_kept_transcript_ids_list <- function(selected_organism, kept_transcript_dir) {
+  selected_organism <- gsub(' ', '_', selected_organism)
+  
+  gn_tr_file <- paste0(kept_transcript_dir, selected_organism, '_transcript_kept_per_gene.tsv')
+  gn_tr <- read.delim(gn_tr_file)
+  
+  gn_tr$transcript_id <- sub("\\.[^.]*$", "", gn_tr$transcript_id) # remove the version indicator in human gene ids 
+  kept_transcript_ids_list <- gn_tr$transcript_id
+  
+  
+  return(kept_transcript_ids_list)
+}
 
 
 
 # Main function for ID conversion
-main_id_convert <- function(df, gene_column_number, chosen_organism, from_to = c('symbol', 'ensembl_transcript', 'ensembl_gene'), kept_transcript_ids_list = NA) {
+main_id_convert <- function(df, gene_column_number, chosen_organism, from_to = c('symbol', 'ensembl_transcript', 'ensembl_gene'), kept_transcript_dir = NA) {
+  
+  if(!is.na(kept_transcript_dir)) {kept_transcript_ids_list <- get_kept_transcript_ids_list(chosen_organism, kept_transcript_dir)}
   
   colnames(df)[gene_column_number] <- 'gene_id'
   

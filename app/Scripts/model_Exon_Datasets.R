@@ -4,8 +4,8 @@ library(R.utils)
 library(biomartr)
 source('./app/Scripts/multispecies_functions.R')
 
-library(conflicted)
-conflicts_prefer(dplyr::select)
+#library(conflicted)
+#conflicts_prefer(dplyr::select)
 
 get_gff_file <- function(selected_organism, selected_database_exon, must_be_reference) {
   
@@ -33,7 +33,7 @@ get_exon_counts <- function(exon_gz_file_path) {
   gn_exon_counts <- gff_data %>%
     filter(V3 == 'exon') %>%
     mutate(gene_id = str_extract(V9, "(?<=gene=)[^;]+")) %>%
-    select(gene_id) %>%
+    dplyr::select(gene_id) %>%
     group_by(gene_id) %>%
     summarize(n_exons = n())
   rm(gff_data)
@@ -56,7 +56,7 @@ write_exon_tsv <- function(gn_exon_counts, selected_organism) {
 
 
 
-main_exon_datasets <- function(selected_organisms, selected_database_exon, must_be_reference) {
+main_exon_datasets <- function(selected_organisms, selected_database_exon, must_be_reference, id_type_of_gene_ids, kept_transcript_dir) {
   
   for (selected_organism in selected_organisms) {
     # get the gff file for the given organism
@@ -64,6 +64,18 @@ main_exon_datasets <- function(selected_organisms, selected_database_exon, must_
     
     # count the exons in the gff file
     gn_exon_counts <- get_exon_counts(exon_gz_file_path)
+    
+    # convert the ids
+    if (id_type_of_gene_ids == 'ensembl') {
+
+      gn_exon_counts <- main_id_convert(df = gn_exon_counts, 
+                                        gene_column_number = 1, 
+                                        chosen_organism = selected_organism, 
+                                        from_to = c('symbol', 'ensembl_transcript', 'ensembl_gene'),
+                                        kept_transcript_dir = kept_transcript_dir)
+      
+      
+    }
     
     # write the exon counts into a file 
     write_exon_tsv(gn_exon_counts, selected_organism)

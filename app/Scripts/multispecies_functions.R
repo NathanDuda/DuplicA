@@ -26,7 +26,7 @@ get_dups_from_OF <- function(OF_dir_path) {
   # get the two to one to ones to zeros 
   two_to_ones <- orthogroup_gene_count %>%
     filter(if_all(2:(n_species + 1), ~. <= 2)) %>%          # keep only pairs 
-    filter(rowSums(select(., 2:(n_species + 1)) == 2) == 1) # make sure there is only one species with 2 copies 
+    filter(rowSums(dplyr::select(., 2:(n_species + 1)) == 2) == 1) # make sure there is only one species with 2 copies 
   
   ################################
   # unit tests
@@ -46,7 +46,7 @@ get_dups_from_OF <- function(OF_dir_path) {
       return(colnames(two_to_ones[, 2:(n_species + 1)])[col_index])})
   
   two_to_ones <- two_to_ones %>%
-    select(Orthogroup, duplicate_pair_species)
+    dplyr::select(Orthogroup, duplicate_pair_species)
   
   # merge back with the gene names 
   orthogroups <- read.delim(paste0(OF_dir_path, "/Orthogroups/Orthogroups.tsv"))
@@ -57,7 +57,7 @@ get_dups_from_OF <- function(OF_dir_path) {
   dups <- two_to_ones %>%
     rowwise() %>%
     mutate(duplicate_pair = toString(c_across(2:(n_species + 1))[grep(",", c_across(2:(n_species + 1)))])) %>%
-    select(Orthogroup, duplicate_pair, duplicate_pair_species) %>%
+    dplyr::select(Orthogroup, duplicate_pair, duplicate_pair_species) %>%
     separate(duplicate_pair, into = c("dup_1", "dup_2"), sep = ", ")
   
   ################################
@@ -68,7 +68,7 @@ get_dups_from_OF <- function(OF_dir_path) {
   )
   ## duplicate pairs do not repeat 
   test_that('ensure duplicate pairs do not repeat',
-            expect_false(any(duplicated(dups %>% select(dup_1, dup_2))), 
+            expect_false(any(duplicated(dups %>% dplyr::select(dup_1, dup_2))), 
                          label = paste0('There are repeating duplicate gene ids. Duplicate gene pairs repeat'))
   )
   ################################
@@ -154,7 +154,7 @@ clean_exp_and_pseudo <- function(exp_path, dups, normalization_type, add_pseudof
       mutate(pseudo = case_when(sum(across(5:(n_tissues + 4))) == 0 & sum(across((n_tissues + 5):((n_tissues*2) + 4))) == 0 ~ 'pseudo_both',
                                 sum(across(5:(n_tissues + 4))) == 0 ~ 'pseudo_dup_1',
                                 sum(across((n_tissues + 5):((n_tissues*2) + 4))) == 0 ~ 'pseudo_dup_2')) %>%
-      select(dup_1, dup_2, pseudo) # add Orthogroup column if genes not unique
+      dplyr::select(dup_1, dup_2, pseudo) # add Orthogroup column if genes not unique
     
     if (PC == T) {colnames(pseudo) <- c('parent', 'child', 'pseudo')}
     
@@ -186,7 +186,7 @@ clean_exp_and_pseudo <- function(exp_path, dups, normalization_type, add_pseudof
     
     # keep only normalized columns
     norm_counts <- norm_counts %>%
-      select(ID, starts_with(paste('norm_')))
+      dplyr::select(ID, starts_with(paste('norm_')))
     
     
     
@@ -257,7 +257,7 @@ get_anc_copy <- function(OF_dir_path, dups, dup_pair_orthologs, clean_expression
   }
   
   dups <- orthologs %>%
-    select(Orthogroup, ancestral_copy, ancestral_species) %>%
+    dplyr::select(Orthogroup, ancestral_copy, ancestral_species) %>%
     merge(., dups, by = 'Orthogroup') %>%
     filter(!is.na(ancestral_copy) & !ancestral_copy == "") # remove duplicates without ancestral copies 
   
@@ -281,7 +281,7 @@ get_anc_copy <- function(OF_dir_path, dups, dup_pair_orthologs, clean_expression
 
 get_exp_df_for_copy <- function(copy, dups_anc, clean_expression) {
   
-  dups <- dups_anc %>% select(Orthogroup, all_of(copy))
+  dups <- dups_anc %>% dplyr::select(Orthogroup, all_of(copy))
   
   colnames(clean_expression)[1] <- copy
   exp_df <- merge(dups, clean_expression, by = copy)
@@ -321,12 +321,12 @@ format_dups_for_db_search <- function(dups_anc) {
   
   #dups <- dups %>%
   #  mutate(func = 'NA') %>%
-  #  select(-Orthogroup) %>%
+  #  dplyr::select(-Orthogroup) %>%
   #  group_by(duplicate_pair_species) %>%
   #  group_split()
   
   all_copies <- dups_anc %>%
-    select(Orthogroup, dup_1, dup_2, ancestral_copy, duplicate_pair_species, ancestral_species) %>%
+    dplyr::select(Orthogroup, dup_1, dup_2, ancestral_copy, duplicate_pair_species, ancestral_species) %>%
     pivot_longer(cols = c('duplicate_pair_species', 'ancestral_species'), 
                  names_to = 'dup_or_anc', 
                  values_to = 'protein_file_name') %>%
@@ -346,7 +346,7 @@ get_protein_file_name <- function(chosen_organism, file_organism_table) {
   
   chosen_protein_file_name <- file_organism_table %>%
     filter(organism_scientific_name == chosen_organism) %>%
-    select(protein_file_name) %>% as.character()
+    dplyr::select(protein_file_name) %>% as.character()
   
   return(chosen_protein_file_name)
 }

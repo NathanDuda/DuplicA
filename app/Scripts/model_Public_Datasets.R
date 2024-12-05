@@ -52,7 +52,7 @@ get_prot_transcript_seq <- function(prot_fasta_data, keep_which_transcript, sele
       gene_id = str_extract(names, "(?<=gene:)[^ ]+"),
       transcript_id = str_extract(names, "(?<=transcript:)[^ ]+")
     ) %>%
-    select(gene_id, transcript_id, protein_id, prot_seq = x) %>%
+    dplyr::select(gene_id, transcript_id, protein_id, prot_seq = x) %>%
     mutate(len = nchar(prot_seq)) 
   
   
@@ -75,7 +75,7 @@ get_prot_transcript_seq <- function(prot_fasta_data, keep_which_transcript, sele
   }
   any(duplicated(prot_seqs_df$gene_id)) # should be FALSE
   
-  gene_transcript <- prot_seqs_df %>% select(gene_id, transcript_id)
+  gene_transcript <- prot_seqs_df %>% dplyr::select(gene_id, transcript_id)
   selected_organism <- gsub(' ', '_', selected_organism)
   write.table(gene_transcript, file = paste0(here_results, '/Fastas/kept_transcript/', selected_organism, '_transcript_kept_per_gene.tsv'), sep = '\t', quote = F, row.names = F)
   
@@ -86,11 +86,11 @@ add_cds_transcript_seq <- function(cds_fasta_data, prot_seqs_df) {
   cds_seqs_df <- as.data.frame(cds_fasta_data) %>%
     rownames_to_column('names') %>%
     mutate(transcript_id = str_extract(names, "^[^ ]+")) %>%
-    select(transcript_id, cds_seq = x)
+    dplyr::select(transcript_id, cds_seq = x)
   
   seqs_df <- merge(cds_seqs_df, prot_seqs_df, by = 'transcript_id')
   
-  seqs_df <- seqs_df %>% select(gene_id, transcript_id, protein_id, cds_seq, prot_seq)
+  seqs_df <- seqs_df %>% dplyr::select(gene_id, transcript_id, protein_id, cds_seq, prot_seq)
   
   return(seqs_df)
 }

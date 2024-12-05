@@ -41,6 +41,10 @@ input$selected_organisms <- c('Homo sapiens', 'Drosophila melanogaster', 'Arabid
 
 ## additional for main_public_datasets
 input$selected_database_protein <- 'ensembl'
+
+if(input$selected_database_protein == 'ensembl') {input$id_type_of_gene_ids <- 'ensembl'} # will convert exon datasets id to this format  
+
+
 input$selected_database_cds <- 'ensembl'
 input$selected_database_genome <- 'ensembl'
 input$data_types <- c('Proteomes', 'CDS')
@@ -72,11 +76,20 @@ user_provided_path_to_exon_output_dir # If no exon_datasets but yes duplication_
 #
 input$selected_database_exon = 'refseq'
 
+# duplciation mechanism
+input$mech_type <- 'standard'
 
+
+###
+selected_models <- list('Public Datasets', 'OrthoFinder')
 
 main_run_workflow <- function(selected_models, input) {
   
   if('Public Datasets' %in% selected_models) {
+    
+    result_dir <- paste0(here_results, '/Fastas/')
+    if(dir.exists(result_dir)) {dir_delete(result_dir)}
+    
     main_public_datasets(selected_organisms = input$selected_organisms, 
                          data_types = input$data_types, 
                          selected_database_protein = input$selected_database_protein, 
@@ -95,7 +108,9 @@ main_run_workflow <- function(selected_models, input) {
   
   if('OrthoFinder' %in% selected_models) {
     
-
+    result_dir <- paste0(here_results, '/OrthoFinder/')
+    if(dir.exists(result_dir)) {dir_delete(result_dir)} # delete result directory if exists already
+    
     main_OrthoFinder(protein_folder = prot_output_dir,
                      is_dna = input$nuc_not_prot, 
                      method = input$gene_tree_inference_method,
@@ -106,7 +121,7 @@ main_run_workflow <- function(selected_models, input) {
                      mcl_inflation = input$mcl_inflation,
                      split_hogs = input$split_hogs, 
                      no_msa_trim = input$msa_trim,
-                     result_dir = paste0(here_linux_results, '/OrthoFinder/'),
+                     result_dir = result_dir,
                      result_name = 'Results')
     
     of_output_dir <- paste0(here_results, '/OrthoFinder/Results_Results')
@@ -120,7 +135,7 @@ main_run_workflow <- function(selected_models, input) {
   
   
   # get dups from OrthoFinder and format expression (if expression file path exists)
-  if (!exists(input$exp_path)) {
+  if (is.null(input$exp_path)) {
     input$exp_path <- NA
     input$normalization_type <- NA
     input$add_pseudofunc <- NA
@@ -210,9 +225,14 @@ main_run_workflow <- function(selected_models, input) {
   }
   
   if(('exon_datasets' %in% selected_models) & ('Public Datasets' %in% selected_models)) {
+    
+    result_dir <- paste0(here_results, '/Exon_Counts/')
+    if(dir.exists(result_dir)) {dir_delete(result_dir)}
+    
     main_exon_datasets(selected_organisms = input$selected_organisms, 
                        selected_database_exon = input$selected_database_exon, 
-                       must_be_reference = input$must_be_reference)
+                       must_be_reference = input$must_be_reference,
+                       kept_transcript_dir = kept_transcript_dir)
     exon_output_dir <- paste0(here_results, '/Exon_Counts/')
     
   }
@@ -224,7 +244,7 @@ main_run_workflow <- function(selected_models, input) {
   }
   
   if('duplication_mechanism' %in% selected_models) {
-    main_dup_mechanism(input$exons_path, dups_anc, input$mech_type)
+    main_dup_mechanism(exon_output_dir, dups_anc, input$mech_type, input$selected_organisms)
   }
   
   if('go' %in% selected_models) {

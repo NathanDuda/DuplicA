@@ -26,12 +26,12 @@ get_dup_mechanism <- function(dups_anc, gn_exons, mech_type) {
   
   # connect each copy with their exon count 
   dups_anc_exons <- dups_anc %>%
-    select(Orthogroup, dup_1, dup_2, ancestral_copy) %>%
+    dplyr::select(Orthogroup, dup_1, dup_2, ancestral_copy) %>%
     pivot_longer(cols = c(2:4), values_to = 'id', names_to = 'copy') %>%
     merge(gn_exons, by = 'id') %>%
-    select(-id) %>%
+    dplyr::select(-id) %>%
     pivot_wider(names_from = 'copy', values_from = 'exon_count') %>%
-    select(Orthogroup, dup_1_n_exons = dup_1, dup_2_n_exons = dup_2, ancestral_copy_n_exons = ancestral_copy)
+    dplyr::select(Orthogroup, dup_1_n_exons = dup_1, dup_2_n_exons = dup_2, ancestral_copy_n_exons = ancestral_copy)
   
   
   # classify as DNA-mediated or RNA-mediated based on exon counts
@@ -70,7 +70,7 @@ get_dup_mechanism <- function(dups_anc, gn_exons, mech_type) {
   return(dup_mech)
 }
 
-main_dup_mechanism <- function(gn_exons, dups_anc, mech_type) {
+main_dup_mechanism <- function(gn_exons, dups_anc, mech_type, selected_organisms) {
   
   mech <- get_dup_mechanism(dups_anc, gn_exons, mech_type)
   
