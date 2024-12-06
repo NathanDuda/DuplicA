@@ -9,35 +9,51 @@ source('./app/Scripts/multispecies_functions.R')
 
 get_gff_file <- function(selected_organism, selected_database_exon, must_be_reference) {
   
-  selected_database_exon <- 'refseq'
+  selected_database_exon <- 'ensembl' # CHANGEEGEGEGEGEGESGEGEGEGEGEGEGEG
   exon_data_dir <- paste0(here_results, '/public_datasets_output/exon_data')
   
   getGFF(db = selected_database_exon, 
          organism = selected_organism, 
          reference = must_be_reference, 
-         path = exon_data_dir)
+         path = exon_data_dir, 
+         gunzip = T)
   
   selected_organism <- gsub(' ', '_', selected_organism)
-  exon_gz_file_path <- paste0(exon_data_dir, "/", selected_organism, "_genomic_refseq.gff.gz")
+  if(selected_database_exon == 'refseq') {exon_file_path <- paste0(exon_data_dir, "/", selected_organism, "_genomic_refseq.gff")}
+  if(selected_database_exon == 'ensembl') {exon_file_path <- list.files(path = exon_data_dir, pattern = paste0("^", selected_organism, ".*_ensembl\\.gff3$"), full.names = TRUE)}
   
+  return(exon_file_path)
 }
 
-get_exon_counts <- function(exon_gz_file_path) {
-  # unzip .gz file 
-  if(file.exists(exon_gz_file_path)) {R.utils::gunzip(exon_gz_file_path, overwrite = TRUE)}
-  exon_file_path <- sub(".gz$", "", exon_gz_file_path)
+get_exon_counts <- function(exon_file_path) {
   
-  # Read the decompressed file
-  gff_data <- fread(exon_file_path, header = FALSE, sep = "\t")
+  gff_data <- fread(exon_file_path, header = FALSE, sep = "\t", fill = T)
   
-  gn_exon_counts <- gff_data %>%
-    filter(V3 == 'exon') %>%
-    mutate(gene_id = str_extract(V9, "(?<=gene=)[^;]+")) %>%
-    dplyr::select(gene_id) %>%
-    group_by(gene_id) %>%
-    summarize(n_exons = n())
+  if(file_ext(exon_file_path) == 'gff') {
+    gn_exon_counts <- gff_data %>%
+      filter(V3 == 'exon') %>%
+      mutate(gene_id = str_extract(V9, "(?<=gene=)[^;]+")) %>%
+      dplyr::select(gene_id) %>%
+      mutate(gene_id == gsub("\\.[^.]*$", "", gene_id)) %>% # remove version numbers
+      group_by(gene_id) %>%
+      summarize(n_exons = n())
+  }
+  
+  if(file_ext(exon_file_path) == 'gff3') {
+    gn_exon_counts <- gff_data %>%
+      filter(str_detect(V1, 'exon')) %>%
+      separate(1, into = c('a', 'b', 'type', 'd', 'e', 'f', 'g', 'h', 'ids'), sep = '\t') %>%
+      filter(type == 'exon') %>%
+      mutate(gene_id = str_extract(ids, "(?<=Parent=transcript:)[^;]+")) %>%
+      dplyr::select(gene_id) %>%
+      mutate(gene_id == gsub("\\.[^.]*$", "", gene_id)) %>% # remove version numbers
+      group_by(gene_id) %>%
+      summarize(n_exons = n())
+
+  }
+  
+  
   rm(gff_data)
-  
   return(gn_exon_counts)
 }
 
@@ -60,17 +76,17 @@ main_exon_datasets <- function(selected_organisms, selected_database_exon, must_
   
   for (selected_organism in selected_organisms) {
     # get the gff file for the given organism
-    exon_gz_file_path <- get_gff_file(selected_organism, selected_database_exon, must_be_reference)
+    exon_file_path <- get_gff_file(selected_organism, selected_database_exon, must_be_reference)
     
     # count the exons in the gff file
-    gn_exon_counts <- get_exon_counts(exon_gz_file_path)
+    gn_exon_counts <- get_exon_counts(exon_file_path)
     
     # convert the ids
     if (id_type_of_gene_ids == 'ensembl') {
 
       gn_exon_counts <- main_id_convert(df = gn_exon_counts, 
                                         gene_column_number = 1, 
-                                        chosen_organism = selected_organism, 
+                                        chosen_organism = gsub(' ', '_', selected_organism), 
                                         from_to = c('symbol', 'ensembl_transcript', 'ensembl_gene'),
                                         kept_transcript_dir = kept_transcript_dir)
       

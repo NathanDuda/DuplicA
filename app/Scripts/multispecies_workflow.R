@@ -55,7 +55,7 @@ input$must_be_reference <- F
 
 
 
-user_provided_path_to_protein_directory # If Public Datasets not selected 
+#user_provided_path_to_protein_directory # If Public Datasets not selected 
 
 ## additional
 input$nuc_not_prot = F
@@ -69,9 +69,9 @@ input$split_hogs = F
 input$msa_trim = F
 
 # 
-user_provided_path_to_orthofinder_output # If OrthoFinder not selected
+#user_provided_path_to_orthofinder_output # If OrthoFinder not selected
 
-user_provided_path_to_exon_output_dir # If no exon_datasets but yes duplication_mechanism
+#user_provided_path_to_exon_output_dir # If no exon_datasets but yes duplication_mechanism
 
 #
 input$selected_database_exon = 'refseq'
@@ -229,10 +229,14 @@ main_run_workflow <- function(selected_models, input) {
     result_dir <- paste0(here_results, '/Exon_Counts/')
     if(dir.exists(result_dir)) {dir_delete(result_dir)}
     
+    result_dir <- paste0(here_results, '/public_datasets_output/')
+    if(dir.exists(result_dir)) {dir_delete(result_dir)}
+    
     main_exon_datasets(selected_organisms = input$selected_organisms, 
                        selected_database_exon = input$selected_database_exon, 
                        must_be_reference = input$must_be_reference,
-                       kept_transcript_dir = kept_transcript_dir)
+                       id_type_of_gene_ids = 'ensembl',
+                       kept_transcript_dir = gsub('/$', '', kept_transcript_dir))
     exon_output_dir <- paste0(here_results, '/Exon_Counts/')
     
   }
