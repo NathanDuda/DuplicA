@@ -13,6 +13,9 @@ source('./app/scripts/model_postduplication_fates.R')
 source('./app/scripts/model_Exon_Datasets.R')
 source('./app/scripts/model_duplication_mechanism.R')
 
+
+source('./app/Scripts/tool_ID_conversion.R')
+
 library(R.utils)
 #library(conflicted)
 #conflicts_prefer(dplyr::select)
@@ -236,7 +239,7 @@ main_run_workflow <- function(selected_models, input) {
                        selected_database_exon = input$selected_database_exon, 
                        must_be_reference = input$must_be_reference,
                        id_type_of_gene_ids = 'ensembl',
-                       kept_transcript_dir = gsub('/$', '', kept_transcript_dir))
+                       kept_transcript_dir = kept_transcript_dir)
     exon_output_dir <- paste0(here_results, '/Exon_Counts/')
     
   }

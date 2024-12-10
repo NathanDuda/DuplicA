@@ -86,8 +86,8 @@ main_id_convert <- function(df, gene_column_number, chosen_organism, from_to = c
   df <- na.omit(df)
   
   
-  any(duplicated(t$ensembl_transcript_id)) # must be false
-  any(duplicated(t$ensembl_gene_id)) # must be false
+  any(duplicated(df$ensembl_transcript_id)) # must be false
+  any(duplicated(df$ensembl_gene_id)) # must be false
   
   
   return(df)
