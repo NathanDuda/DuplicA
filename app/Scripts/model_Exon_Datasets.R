@@ -83,14 +83,12 @@ main_exon_datasets <- function(selected_organisms, selected_database_exon, must_
     
     # convert the ids
     if (id_type_of_gene_ids == 'ensembl') {
-
+      
       gn_exon_counts <- main_id_convert(df = gn_exon_counts, 
                                         gene_column_number = 1, 
-                                        chosen_organism = gsub(' ', '_', selected_organism), 
-                                        from_to = c('symbol', 'ensembl_transcript', 'ensembl_gene'),
+                                        chosen_organism = selected_organism, 
+                                        from_to = c('ensembl_transcript', 'ensembl_gene'),
                                         kept_transcript_dir = kept_transcript_dir)
-      
-      
     }
     
     # write the exon counts into a file 
@@ -106,13 +104,16 @@ main_exon_datasets <- function(selected_organisms, selected_database_exon, must_
 
 # example inputs: 
 
-#selected_database_exon <- 'ensembl'
-#selected_organisms <- c('Homo sapiens', 'Pan troglodytes')
-#must_be_reference <- T
+selected_database_exon <- 'ensembl'
+selected_organisms <- c('Arabidopsis thaliana')
+must_be_reference <- T
+kept_transcript_dir <- paste0(here_results, '/Fastas/kept_transcript/')
 
-#main_exon_datasets(selected_organisms = selected_organisms, 
- #                  selected_database_exon = selected_database_exon, 
-  #                 must_be_reference = must_be_reference)
+main_exon_datasets(selected_organisms = selected_organisms, 
+                   selected_database_exon = selected_database_exon, 
+                   id_type_of_gene_ids = 'ensembl',
+                   must_be_reference = must_be_reference,
+                   kept_transcript_dir = kept_transcript_dir)
 
 
 
