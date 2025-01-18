@@ -1,6 +1,6 @@
 
 
-source('./app/Scripts/tool_ID_conversion.R')
+#source('./app/Scripts/tool_ID_conversion.R')
 
 get_dups_from_OF <- function(OF_dir_path) {
   
@@ -302,15 +302,20 @@ main_get_dups_anc_exp_from_OF <- function(OF_dir_path, exp_path = NA, normalizat
   
   if (!is.na(exp_path)) {
     clean_expression <- clean_exp_and_pseudo(exp_path, dups, normalization_type, add_pseudofunc, missing_expr_is_pseudo, rm_exp_lower_than, PC = F)
-  }
+    
+    }
   if (is.na(exp_path)) {
     clean_expression <- NA
   }
   
+  pseudo = NA
+  if(add_pseudofunc == T) {
+    pseudo <- clean_expression$pseudo
+    clean_expression <- clean_expression$clean_expression}
   
   dups_anc <- get_anc_copy(OF_dir_path, dups, dup_pair_orthologs, clean_expression)
   
-  return(list(dups = dups, dups_anc = dups_anc, clean_expression = clean_expression))
+  return(list(dups = dups, dups_anc = dups_anc, clean_expression = clean_expression, pseudo = pseudo))
   
 }
 

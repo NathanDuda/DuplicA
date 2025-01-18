@@ -1,7 +1,6 @@
 
 
-source('C:/Users/17735/Downloads/DuplicA/app/Scripts/pop_functions.R') ######## CHANGE
-library(igraph)
+source(paste0(here_duplica, '/app/Scripts/pop_functions.R')) ######## CHANGE
 
 
 #seq_files_path <- "C:/Users/17735/Downloads/AAAAA_Pop_DupFind_Example_Input/Prot_Fastas/"

@@ -11,10 +11,27 @@ library(tidyverse)
 library(readxl)
 library(shinyjs)
 library(ape)
+library(R.utils)
+library(seqinr)
+library(evemodel)
+library(igraph)
+
+here_duplica <- paste0(fs::path_home(), '/Downloads/DuplicA')
+
+#source('./Scripts/multispecies_workflow.R')
+source(paste0(here_duplica, '/app/Scripts/multispecies_functions.R'))
+#source('./app/workflow.R')
+#source('./app/app_functions.R')
+#source('./app/app_page_layouts.R')
+source(paste0(here_duplica, '/app/Scripts/model_OrthoFinder.R'))
+source(paste0(here_duplica, '/app/Scripts/model_DnDs.R'))
+source(paste0(here_duplica, '/app/Scripts/model_Segregating_Duplicates.R'))
+source(paste0(here_duplica, '/app/Scripts/model_EVE.R'))
+source(paste0(here_duplica, '/app/Scripts/model_Blat_Blast.R'))
+
 
 
 here <- paste0(fs::path_home(), '/Downloads')
-here_duplica <- paste0(fs::path_home(), '/Downloads/DuplicA')
 here_temp <- paste0(fs::path_home(), '/Downloads/DuplicA/app/Temp')
 here_results <- paste0(fs::path_home(), '/Downloads/DuplicA/app/Results')
 here_static_images <- paste0(fs::path_home(), '/Downloads/DuplicA/app/Static/Images')

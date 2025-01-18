@@ -4,7 +4,7 @@ library(r3dmol)
 library(httr)
 library(bio3d)
 
-source('./app/Scripts/multispecies_functions.R')
+#source('./app/Scripts/multispecies_functions.R')
 
 get_alphafold_for_pair <- function(dup_1, dup_2, func, output_directory, output_file, output_file2) {
   
@@ -187,6 +187,8 @@ main_alphafold <- function(all_copies, file_organism_table) {
   
   final_output <- left_join(all_copies, all_gene_alphafold_data, by = c('gene' = 'ensembl_gene_id', 'protein_file_name'))
   
+  write.table(final_output, file = paste0(here_results, '/main_AlphaFold_output.tsv'))
+  #return(final_output)
   
 }
 

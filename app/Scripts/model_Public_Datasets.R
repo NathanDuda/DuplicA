@@ -98,7 +98,7 @@ add_cds_transcript_seq <- function(cds_fasta_data, prot_seqs_df) {
 create_output_dirs <- function() {
   prot_output_dir <- paste0(here_results, '/Fastas/Protein_Fastas/')
   dir.create(prot_output_dir, recursive = T)
-  cds_output_dir <- paste0(here_results, '/Fastas/Nucelotide_Fastas/')
+  cds_output_dir <- paste0(here_results, '/Fastas/Nucleotide_Fastas/')
   dir.create(cds_output_dir, recursive = T)
   
   return(list(prot_output_dir = prot_output_dir, cds_output_dir = cds_output_dir))
@@ -200,14 +200,14 @@ main_public_datasets <- function(selected_organisms, data_types, selected_databa
 
 
 # example input
-selected_database_protein <- 'ensembl'
-selected_database_cds <- 'ensembl'
-selected_database_genome <- 'ensembl'
+#selected_database_protein <- 'ensembl'
+#selected_database_cds <- 'ensembl'
+#selected_database_genome <- 'ensembl'
 
-selected_organisms <- c('Homo sapiens', 'Pan troglodytes')
-data_types <- c('Proteomes', 'CDS')
-keep_which_transcript <- 'longest'
-must_be_reference <- F
+#selected_organisms <- c('Homo sapiens', 'Pan troglodytes')
+#data_types <- c('Proteomes', 'CDS')
+#keep_which_transcript <- 'longest'
+#must_be_reference <- F
 
 #main_public_datasets(selected_organisms, data_types, selected_database_protein, selected_database_cds, selected_database_genome, keep_which_transcript, must_be_reference)
 

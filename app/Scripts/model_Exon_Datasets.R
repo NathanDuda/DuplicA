@@ -74,6 +74,8 @@ write_exon_tsv <- function(gn_exon_counts, selected_organism) {
 
 main_exon_datasets <- function(selected_organisms, selected_database_exon, must_be_reference, id_type_of_gene_ids, kept_transcript_dir) {
   
+  selected_organisms <- gsub(' ', '_', selected_organisms)
+  
   for (selected_organism in selected_organisms) {
     # get the gff file for the given organism
     exon_file_path <- get_gff_file(selected_organism, selected_database_exon, must_be_reference)
@@ -104,16 +106,16 @@ main_exon_datasets <- function(selected_organisms, selected_database_exon, must_
 
 # example inputs: 
 
-selected_database_exon <- 'ensembl'
-selected_organisms <- c('Arabidopsis thaliana')
-must_be_reference <- T
-kept_transcript_dir <- paste0(here_results, '/Fastas/kept_transcript/')
+#selected_database_exon <- 'ensembl'
+#selected_organisms <- c('Arabidopsis thaliana')
+#must_be_reference <- T
+#kept_transcript_dir <- paste0(here_results, '/Fastas/kept_transcript/')
 
-main_exon_datasets(selected_organisms = selected_organisms, 
-                   selected_database_exon = selected_database_exon, 
-                   id_type_of_gene_ids = 'ensembl',
-                   must_be_reference = must_be_reference,
-                   kept_transcript_dir = kept_transcript_dir)
+#main_exon_datasets(selected_organisms = selected_organisms, 
+#                   selected_database_exon = selected_database_exon, 
+ #                  id_type_of_gene_ids = 'ensembl',
+  #                 must_be_reference = must_be_reference,
+   #                kept_transcript_dir = kept_transcript_dir)
 
 
 

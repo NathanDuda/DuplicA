@@ -4,8 +4,8 @@ library(Biostrings)
 library(seqinr)
 #install_github("peterbchi/CNVSelectR")
 library(CNVSelectR)
-source('C:/Users/17735/Downloads/DuplicA/app/Dependencies/CNVSelectR/CNVSelectR_Source.R') ######## CHANGE
-source('C:/Users/17735/Downloads/DuplicA/app/Scripts/pop_functions.R') ######## CHANGE
+source(paste0(here_duplica, '/app/Dependencies/CNVSelectR/CNVSelectR_Source.R')) ######## CHANGE
+source(paste0(here_duplica, '/app/Scripts/pop_functions.R')) ######## CHANGE
 #######################
 
 

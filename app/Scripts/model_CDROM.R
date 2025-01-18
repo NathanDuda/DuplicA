@@ -1,5 +1,5 @@
 
-source('C:/Users/17735/Downloads/DuplicA/app/Scripts/multispecies_functions.R')
+source(paste0(here_duplica, '/app/Scripts/multispecies_functions.R'))
 
 
 
@@ -18,7 +18,7 @@ get_all_sc_genes <- function(OF_dir_path) {
   
   sc_orthogroups <- orthogroups %>% 
     filter(Orthogroup %in% sc_orthogroups$sc_og) %>%
-    select(-Orthogroup)
+    dplyr::select(-Orthogroup)
   
   return(sc_orthogroups)
 }
@@ -50,7 +50,7 @@ get_CDROM_inputs <- function(spec_pair, dups_anc, all_sc_genes, clean_expression
   # unit tests
   test_that('duplicate genes exist for the species pair',
             expect_true(nrow(dups_for_spec_pair) > 0,
-                        label = paste0('No duplicate genes exist with ', duplicate_pair_species, ' as the duplicate pair species, and ', ancestral_species,' as the ancestral species. Duplicate genes exist for the species pair')))
+                        label = paste0('No duplicate genes exist with the species pair: ', spec_pair, ' as the duplicate pair species and the ancestral species, respectively. Duplicate genes exist for the species pair')))
 
   # HERE##
   ################################
@@ -59,10 +59,10 @@ get_CDROM_inputs <- function(spec_pair, dups_anc, all_sc_genes, clean_expression
   ancestral_species <- dups_for_spec_pair$ancestral_species[1]
   
   sc_for_spec_pair <- all_sc_genes %>%
-    select(all_of(c(duplicate_pair_species, ancestral_species)))
+    dplyr::select(all_of(c(duplicate_pair_species, ancestral_species)))
   
   dups_for_spec_pair <- dups_for_spec_pair %>%
-    select(dup_1, dup_2, ancestral_copy)
+    dplyr::select(dup_1, dup_2, ancestral_copy)
   
   # get expression file for the ancestral species 
   rownames(clean_expression) <- NULL
@@ -554,10 +554,11 @@ add_pseudo_to_func <- function(all_func, pseudo, PC) {
   
   if (PC == F){
     all_func <- all_func %>%
-    left_join(., pseudo, by = c('dup_1', 'dup_2')) %>%
-    mutate(func = gsub('NA', NA, func),
-           func = coalesce(func, pseudo)) %>%
-    select(-pseudo)
+      left_join(., pseudo, by = c('dup_1', 'dup_2')) %>%
+      mutate(func = gsub('NA', NA, func),
+             func = ifelse(is.na(pseudo), func, pseudo)) %>%
+      dplyr::select(-pseudo) %>%
+      na.omit()
   }
   
   if (PC == T){
@@ -568,8 +569,8 @@ add_pseudo_to_func <- function(all_func, pseudo, PC) {
     all_func <- all_func %>%
       left_join(., pseudo, by = c('parent', 'child')) %>%
       mutate(func = gsub('NA', NA, func),
-             func = coalesce(func, pseudo)) %>%
-      select(-pseudo)
+             func = ifelse(is.na(pseudo), func, pseudo)) %>%
+      dplyr::select(-pseudo) 
   }
   
     
@@ -617,7 +618,7 @@ CreatePlot_FuncPie <- function(all_func){
 #clean_expression <- out$clean_expression
 
 
-main_CDROM <- function(dups, dups_anc, clean_expression, OF_dir_path, add_pseudofunc, missing_expr_is_pseudo, rm_exp_lower_than, PC, min_dups_per_species_pair, useAbsExpr){
+main_CDROM <- function(dups, dups_anc, clean_expression, OF_dir_path, add_pseudofunc, missing_expr_is_pseudo, rm_exp_lower_than, PC, min_dups_per_species_pair, useAbsExpr, pseudo = NA){
   
   all_sc_genes <- get_all_sc_genes(OF_dir_path)
   
@@ -646,12 +647,12 @@ main_CDROM <- function(dups, dups_anc, clean_expression, OF_dir_path, add_pseudo
     
     if (PC == F) {
       func <- out4$classes %>%
-      select(dup_1 = Dup1, dup_2 = Dup2, ancestral_copy = Ancestor, func = Classification) %>%
+      dplyr::select(dup_1 = Dup1, dup_2 = Dup2, ancestral_copy = Ancestor, func = Classification) %>%
       left_join(dups_spec_pair, ., by = c('dup_1', 'dup_2', 'ancestral_copy'))
     }
     if (PC == T) {
       func <- out4$classes %>%
-        select(parent = Parent, child = Child, ancestral_copy = Ancestor, func = Classification) %>%
+        dplyr::select(parent = Parent, child = Child, ancestral_copy = Ancestor, func = Classification) %>%
         left_join(dups_spec_pair, ., by = c('parent', 'child', 'ancestral_copy'))
     }
     
@@ -660,17 +661,12 @@ main_CDROM <- function(dups, dups_anc, clean_expression, OF_dir_path, add_pseudo
   }
   
   if (add_pseudofunc == TRUE) {
-    pseudo <- out2$pseudo
+    #pseudo <- out2$pseudo
     all_func <- add_pseudo_to_func(all_func, pseudo, PC)
   }
   
-  
-  FuncPie <- CreatePlot_FuncPie(all_func)
-  
-  
-  print('CDROM finished successfully.')
-  
-  
+  write.table(all_func, paste0(here_results, '/main_CDROM_output.tsv'))
+  return(all_func)
 }
 
 

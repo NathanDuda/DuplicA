@@ -1,5 +1,5 @@
 
-source('./app/Scripts/multispecies_functions.R')
+#source('./app/Scripts/multispecies_functions.R')
 
 
 get_exp_df_for_all_copies <- function(dups_anc, clean_expression) {
@@ -10,9 +10,9 @@ get_exp_df_for_all_copies <- function(dups_anc, clean_expression) {
   anc <- get_exp_df_for_copy(copy = 'ancestral_copy', dups_anc, clean_expression) 
   
   # add copy name to start of each column name 
-  dup_1 <- dup_1 %>% select(-dup_1) %>% rename_with(~ paste0("dup_1_", .), -1)
-  dup_2 <- dup_2 %>% select(-dup_2) %>% rename_with(~ paste0("dup_2_", .), -1)
-  anc <- anc %>% select(-ancestral_copy) %>% rename_with(~ paste0("anc_", .), -1)
+  dup_1 <- dup_1 %>% dplyr::select(-dup_1) %>% rename_with(~ paste0("dup_1_", .), -1)
+  dup_2 <- dup_2 %>% dplyr::select(-dup_2) %>% rename_with(~ paste0("dup_2_", .), -1)
+  anc <- anc %>% dplyr::select(-ancestral_copy) %>% rename_with(~ paste0("anc_", .), -1)
   
   # combine all expression dataframes into one dataframe
   dups_anc_exp <- merge(dup_1, dup_2, by = 'Orthogroup')
@@ -146,7 +146,7 @@ get_func_probs <- function(dups_anc_exp, v, p) {
       SP = specializ_prob(a, b, g, v, p)
     ) %>%
     ungroup() %>%
-    select(Orthogroup, PS_dup_1, PS_dup_2, N_dup_1, N_dup_2, DN, C, SB, SP)
+    dplyr::select(Orthogroup, PS_dup_1, PS_dup_2, N_dup_1, N_dup_2, DN, C, SB, SP)
   
   return(func_probs)
 }
@@ -159,6 +159,7 @@ main_postduplication_fates <- function(dups_anc, clean_expression, v, p) {
   
   func_probs <- get_func_probs(dups_anc_exp, v, p)
   
+  write.table(func_probs, paste0(here_results, '/main_postduplication_fates_output.tsv'))
   return(func_probs)
 }
 

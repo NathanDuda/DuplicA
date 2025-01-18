@@ -74,9 +74,10 @@ main_dup_mechanism <- function(gn_exons, dups_anc, mech_type, selected_organisms
   
   mech <- get_dup_mechanism(dups_anc, gn_exons, mech_type)
   
-  mech_output_path <- paste0(here_results, '/Duplication_Mechanism.tsv')
+  mech_output_path <- paste0(here_results, '/main_dup_mechanism_output.tsv')
   write.table(mech, file = mech_output_path, row.names = F, sep = '/t')
   
+  return(mech)
 }
 
 

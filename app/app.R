@@ -1,25 +1,6 @@
-library(shiny)
-library(shinyFiles)
-library(bslib)
-library(htmltools)
-library(shinyalert)
-library(fs) # for file paths 
-library(Biostrings) # translate() in translate_nucs_to_prots() in model_OrthoFinder.R
-library(tools) # file_ext() in combine_raw_fastas() in model_OrthoFinder.R and file_path_sans_ext() in blat
-library(testthat) # for unit tests
-library(tidyverse)
-library(readxl)
-library(shinyjs)
-
 source('./Scripts/setup.R')
-source('./workflow.R')
-source('./app_functions.R')
-source('./app_page_layouts.R')
-source('./Scripts/model_OrthoFinder.R')
-source('./Scripts/model_DnDs.R')
-source('./Scripts/model_Segregating_Duplicates.R')
-source('./Scripts/model_EVE.R')
-source('./Scripts/model_Blat_Blast.R')
+
+
 
 # UI with dark mode theme and sidebar layout
 ui <- fluidPage(

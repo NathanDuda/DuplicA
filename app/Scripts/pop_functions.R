@@ -38,19 +38,26 @@ combine_raw_fastas <- function(file_path, type) {
   file_extension <- file_ext(file_path)
   dir_path <- dirname(file_path)
   temp_output_file_path <- paste0(dir_path, '/temp_', type, '_fasta.fa')
-  output_file_path <- paste0(dirname(dir_path), '/combined_', type, '_fasta.fa')
+  output_file_path <- paste0(dir_path, '/combined_', type, '_fasta.fa')
   
   
   fasta_files <- list.files(paste0(dir_path, "*.", file_extension), full.names = TRUE)
   
   
+  # windows to linux conversion
+  dir_path <- gsub('C:', '/mnt/c', dir_path)
+  output_file_path <- gsub('C:', '/mnt/c', output_file_path)
   
   system(paste0("
   wsl for file in ", dir_path, "/*.", file_extension, "; do
-    individual_name=$(basename $file)
-    individual_name=$(echo ${individual_name} | sed 's/-/_/g')
-    individual_name=$(echo ${individual_name} | sed 's/_/./g')
-    sed -i 's/>/>$individual_name_/' $file #########################################################
+    individual_name=$(basename \"$file\" | sed 's/\\..*//') # Extract the individual name by removing the file extension
+    individual_name=$(echo \"${individual_name}\" | sed 's/-/_/g') # Replace '-' with '_'
+    individual_name=$(echo \"${individual_name}\" | sed 's/_/./g') # Replace '_' with '.'
+    
+    # Only prepend the individual's name if it is not already in the header
+    awk -v name=\"${individual_name}\" '/^>/ {if ($0 !~ name) print \">\"name\"_\"substr($0, 2); else print $0; next} {print}' \"$file\" > \"$file.temp\"
+    
+    mv \"$file.temp\" \"$file\" # Replace the original file with the modified one
   done
   
   cat ", dir_path, "/*.", file_extension, " > ", output_file_path))

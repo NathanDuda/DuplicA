@@ -4,8 +4,8 @@ library(tidyverse)
 library(ape)
 
 
-source('C:/Users/17735/Downloads/DuplicA/app/Dependencies/EVE/initParamsTwoTheta_gene_tree.R')
-source('C:/Users/17735/Downloads/DuplicA/app/Dependencies/EVE/initParamsBetaShared_gene_tree.R')
+source(paste0(here_duplica, '/app/Dependencies/EVE/initParamsTwoTheta_gene_tree.R'))
+source(paste0(here_duplica, '/app/Dependencies/EVE/initParamsBetaShared_gene_tree.R'))
 
 
 #OF_dir_path <- "C:/Users/17735/Downloads/AAAAA_Results_Jan01/"
@@ -45,7 +45,7 @@ get_orthogroups <- function(OF_dir_path, dup_species_list, copy_amount, nondup_s
   # merge back with the gene names 
   orthogroup_gns <- read.delim(paste0(OF_dir_path, "/Orthogroups/Orthogroups.tsv"))
   orthogroups <- orthogroups %>%
-    select(Orthogroup) %>%
+    dplyr::select(Orthogroup) %>%
     merge(orthogroup_gns, ., by = 'Orthogroup')
   
   # split each column with duplicates
@@ -71,7 +71,7 @@ get_orthogroups <- function(OF_dir_path, dup_species_list, copy_amount, nondup_s
 get_tissueexp <- function(all_exp, tissue) {
   
   all_tissue_exp <- all_exp %>%
-    select(id, all_of(tissue))
+    dplyr::select(id, all_of(tissue))
   
   return(all_tissue_exp)
 }
@@ -87,7 +87,7 @@ add_tissueexp_to_orthogroups <- function(tissue, all_orthogroups, all_tissueexp,
     pivot_longer(cols = all_of(orthogroups_cols), values_to = 'id', names_to = 'colnames') %>%
     merge(all_tissueexp, by = 'id') %>%
     pivot_wider(names_from = 'colnames', values_from = c(id, all_of(tissue))) %>%
-    select(-starts_with("id_")) %>%
+    dplyr::select(-starts_with("id_")) %>%
     column_to_rownames('Orthogroup')
   
   # remove problematic rows
@@ -119,7 +119,7 @@ add_tissueexp_to_orthogroups <- function(tissue, all_orthogroups, all_tissueexp,
     group_by(orthogroup, new_group) %>%
     filter(if (n() > 1) !all(value == 0) else TRUE) %>% 
     ungroup() %>%
-    select(-new_group) %>%
+    dplyr::select(-new_group) %>%
     pivot_wider(names_from = 'group', values_from = 'value') %>%
     na.omit()%>%
     column_to_rownames(var = 'orthogroup')
@@ -137,6 +137,10 @@ get_orthogroup_tree <- function(orthogroup, OF_dir_path, species_gn_key) {
   
   # add arbitrary node labels to the tree
   orthogroup_tree$node.label <- paste0("N", 0:(orthogroup_tree$Nnode -1)) 
+  
+  # remove species names from tip labels when exist
+  pattern <- paste0(paste0(unique(species_gn_key), "_"), collapse = "|")
+  orthogroup_tree$tip.label <- gsub(pattern, '', orthogroup_tree$tip.label)
   
   # replace current tip labels (which are gene ids) with the species names (so they can match dup_species_list)
   current_labels <- orthogroup_tree$tip.label
@@ -196,7 +200,7 @@ main_Expression_Shift <- function(OF_dir_path, clean_expression, dup_species_lis
   alltissue_tt_results <- data.frame()
   for (tissue in tissue_list) {
     all_tissueexp <- get_tissueexp(all_exp, tissue)
-    all_orthogroups_tissueexp <- add_tissueexp_to_orthogroups(tissue, all_orthogroups, all_tissueexp, rm_exp_lower_than, missing_exp_is_zero, copy_amount, dup_species_list)
+    all_orthogroups_tissueexp <- add_tissueexp_to_orthogroups(tissue, all_orthogroups, all_tissueexp, missing_exp_is_zero, copy_amount, dup_species_list)
     
     
     nreps <- nrow(all_orthogroups_tissueexp)
@@ -246,7 +250,8 @@ main_Expression_Shift <- function(OF_dir_path, clean_expression, dup_species_lis
     alltissue_tt_results <- rbind(alltissue_tt_results, onetissue_res)
   }
   
-  write.table(alltissue_tt_results, file = './ExpressionShift_Results.tsv')
+  write.table(alltissue_tt_results, file = paste0(here_results, '/main_ExpressionShift_output.tsv'))
+  return(alltissue_tt_results)
   
 }
 
@@ -266,7 +271,7 @@ main_DiversityDivergence <- function(OF_dir_path, clean_expression, dup_species_
   alltissue_bt_results <- data.frame()
   for (tissue in tissue_list) {
     all_tissueexp <- get_tissueexp(all_exp, tissue)
-    all_orthogroups_tissueexp <- add_tissueexp_to_orthogroups(tissue, all_orthogroups, all_tissueexp, rm_exp_lower_than, missing_exp_is_zero, copy_amount, dup_species_list)
+    all_orthogroups_tissueexp <- add_tissueexp_to_orthogroups(tissue, all_orthogroups, all_tissueexp, missing_exp_is_zero, copy_amount, dup_species_list)
     
     
     nreps <- nrow(all_orthogroups_tissueexp)
@@ -313,8 +318,9 @@ main_DiversityDivergence <- function(OF_dir_path, clean_expression, dup_species_
     alltissue_bt_results <- rbind(alltissue_bt_results, onetissue_res)
   }
   
-  write.table(alltissue_bt_results, file = './DiversityDivergence_Results.tsv') #CHANGE
-
+  write.table(alltissue_bt_results, file = paste0(here_results, '/main_DiversityDivergence_output.tsv'))
+  return(alltissue_bt_results)
+  
 }
 
 
