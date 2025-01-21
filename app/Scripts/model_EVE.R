@@ -186,141 +186,147 @@ get_species_gn_key <- function(all_orthogroups, all_orthogroups_tissueexp, dup_s
 # TwoTheta
 main_Expression_Shift <- function(OF_dir_path, clean_expression, dup_species_list, tissue_list, copy_amount, nondup_species_need_onecopy, use_gene_trees) {
   
-  OF_dir_path <- paste0(OF_dir_path, '/')
-  
-  all_exp <- clean_expression #get_exp(exp_path)
-  if ('All Tissues' %in% tissue_list) {tissue_list <- colnames(all_exp)[2:ncol(all_exp)]}
-  
-  
-  all_orthogroups <- get_orthogroups(OF_dir_path, dup_species_list, copy_amount, nondup_species_need_onecopy)
-  if(nrow(all_orthogroups) == 0) {return(paste0('No orthogroups exist with ', copy_amount, 'copies in ', dup_species_list))}
-  
-  
-  
-  alltissue_tt_results <- data.frame()
-  for (tissue in tissue_list) {
-    all_tissueexp <- get_tissueexp(all_exp, tissue)
-    all_orthogroups_tissueexp <- add_tissueexp_to_orthogroups(tissue, all_orthogroups, all_tissueexp, missing_exp_is_zero, copy_amount, dup_species_list)
+  allspecies_all_tissue_tt_results <- data.frame()
+  for (dup_species in dup_species_list) {
+    OF_dir_path <- paste0(OF_dir_path, '/')
+    
+    all_exp <- clean_expression #get_exp(exp_path)
+    if ('All Tissues' %in% tissue_list) {tissue_list <- colnames(all_exp)[2:ncol(all_exp)]}
     
     
-    nreps <- nrow(all_orthogroups_tissueexp)
-    onetissue_res <- data.frame(orthogroup = rep(NA, nreps), tissue = rep(NA, nreps), LRT = rep(NA, nreps))
+    all_orthogroups <- get_orthogroups(OF_dir_path, dup_species, copy_amount, nondup_species_need_onecopy)
+    if(nrow(all_orthogroups) == 0) {return(paste0('No orthogroups exist with ', copy_amount, 'copies in ', dup_species))}
     
-    if(use_gene_trees == F) {
-      species_tree <- read.tree(file = paste0(OF_dir_path, "Species_Tree/SpeciesTree_rooted_node_labels.txt"))
+    
+    
+    alltissue_tt_results <- data.frame()
+    for (tissue in tissue_list) {
+      all_tissueexp <- get_tissueexp(all_exp, tissue)
+      all_orthogroups_tissueexp <- add_tissueexp_to_orthogroups(tissue, all_orthogroups, all_tissueexp, missing_exp_is_zero, copy_amount, dup_species)
       
-      is_theta2_edge <- get_is_theta2_edge(species_tree, dup_species_list)
       
-      tt_result <- twoThetaTest(tree = species_tree,
-                                gene.data = all_orthogroups_tissueexp, 
-                                isTheta2edge = is_theta2_edge,
-                                colSpecies = colnames(all_orthogroups_tissueexp))
+      nreps <- nrow(all_orthogroups_tissueexp)
+      onetissue_res <- data.frame(orthogroup = rep(NA, nreps), tissue = rep(NA, nreps), LRT = rep(NA, nreps))
       
-      onetissue_res$orthogroup <- rownames(all_orthogroups_tissueexp)
-      onetissue_res$LRT <- tt_result$LRT
-
-    }
-    
-    
-    # REQUIRE ENOUGH SPECIES and copies CHOSEN SO GENE TREE WAS MADE 
-    # if true, might require nondup_species_need_onecopy
-    if (use_gene_trees == T) {
-      species_gn_key <- get_species_gn_key(all_orthogroups, all_orthogroups_tissueexp, dup_species_list)
-      for (row in 1:nrow(all_orthogroups_tissueexp)){
+      if(use_gene_trees == F) {
+        species_tree <- read.tree(file = paste0(OF_dir_path, "Species_Tree/SpeciesTree_rooted_node_labels.txt"))
         
-        orthogroup <- rownames(all_orthogroups_tissueexp)[row]
-        orthogroup_tree <- get_orthogroup_tree(orthogroup, OF_dir_path, species_gn_key)
+        is_theta2_edge <- get_is_theta2_edge(species_tree, dup_species)
         
-        is_theta2_edge <- get_is_theta2_edge(orthogroup_tree, dup_species_list) 
+        tt_result <- twoThetaTest(tree = species_tree,
+                                  gene.data = all_orthogroups_tissueexp, 
+                                  isTheta2edge = is_theta2_edge,
+                                  colSpecies = colnames(all_orthogroups_tissueexp))
         
-        tt_result <- twoThetaTest_gene_tree(tree = orthogroup_tree,
-                                            gene.data = all_orthogroups_tissueexp[row,], 
-                                            isTheta2edge = is_theta2_edge,
-                                            colSpecies = colnames(all_orthogroups_tissueexp))
-        
-        
-        onetissue_res[row, 'orthogroup'] <- orthogroup
-        onetissue_res[row, 'LRT'] <- tt_result$LRT
+        onetissue_res$orthogroup <- rownames(all_orthogroups_tissueexp)
+        onetissue_res$LRT <- tt_result$LRT
         
       }
+      
+      
+      # REQUIRE ENOUGH SPECIES and copies CHOSEN SO GENE TREE WAS MADE 
+      # if true, might require nondup_species_need_onecopy
+      if (use_gene_trees == T) {
+        species_gn_key <- get_species_gn_key(all_orthogroups, all_orthogroups_tissueexp, dup_species)
+        for (row in 1:nrow(all_orthogroups_tissueexp)){
+          
+          orthogroup <- rownames(all_orthogroups_tissueexp)[row]
+          orthogroup_tree <- get_orthogroup_tree(orthogroup, OF_dir_path, species_gn_key)
+          
+          is_theta2_edge <- get_is_theta2_edge(orthogroup_tree, dup_species) 
+          
+          tt_result <- twoThetaTest_gene_tree(tree = orthogroup_tree,
+                                              gene.data = all_orthogroups_tissueexp[row,], 
+                                              isTheta2edge = is_theta2_edge,
+                                              colSpecies = colnames(all_orthogroups_tissueexp))
+          
+          
+          onetissue_res[row, 'orthogroup'] <- orthogroup
+          onetissue_res[row, 'LRT'] <- tt_result$LRT
+          
+        }
+        
+      }
+      
+      onetissue_res$tissue <- tissue
+      alltissue_tt_results <- rbind(alltissue_tt_results, onetissue_res)
+    }
+    allspecies_all_tissue_tt_results <- rbind(allspecies_all_tissue_tt_results, alltissue_tt_results)
     
   }
-  
-    onetissue_res$tissue <- tissue
-    alltissue_tt_results <- rbind(alltissue_tt_results, onetissue_res)
-  }
-  
-  write.table(alltissue_tt_results, file = paste0(here_results, '/main_ExpressionShift_output.tsv'))
-  return(alltissue_tt_results)
-  
+  write.table(allspecies_all_tissue_tt_results, file = paste0(here_results, '/main_ExpressionShift_output.tsv'))
+  return(allspecies_all_tissue_tt_results)
 }
 
 
 # BetaShared
 main_DiversityDivergence <- function(OF_dir_path, clean_expression, dup_species_list, tissue_list, copy_amount, nondup_species_need_onecopy, use_gene_trees, lower_beta_lim, upper_beta_lim) {
   
-  OF_dir_path <- paste0(OF_dir_path, '/')
-  
-  all_exp <- clean_expression #get_exp(exp_path)
-  if ('All Tissues' %in% tissue_list) {tissue_list <- colnames(all_exp)[2:ncol(all_exp)]}
-  
-  all_orthogroups <- get_orthogroups(OF_dir_path, dup_species_list, copy_amount, nondup_species_need_onecopy)
-  if(nrow(all_orthogroups) == 0) {return(paste0('No orthogroups exist with ', copy_amount, 'copies in ', dup_species_list))}
-  
-  
-  alltissue_bt_results <- data.frame()
-  for (tissue in tissue_list) {
-    all_tissueexp <- get_tissueexp(all_exp, tissue)
-    all_orthogroups_tissueexp <- add_tissueexp_to_orthogroups(tissue, all_orthogroups, all_tissueexp, missing_exp_is_zero, copy_amount, dup_species_list)
+  allspecies_all_tissue_bt_results <- data.frame()
+  for (dup_species in dup_species_list) {
+    OF_dir_path <- paste0(OF_dir_path, '/')
+    
+    all_exp <- clean_expression #get_exp(exp_path)
+    if ('All Tissues' %in% tissue_list) {tissue_list <- colnames(all_exp)[2:ncol(all_exp)]}
+    
+    all_orthogroups <- get_orthogroups(OF_dir_path, dup_species, copy_amount, nondup_species_need_onecopy)
+    if(nrow(all_orthogroups) == 0) {return(paste0('No orthogroups exist with ', copy_amount, 'copies in ', dup_species))}
     
     
-    nreps <- nrow(all_orthogroups_tissueexp)
-    onetissue_res <- data.frame(orthogroup = rep(NA, nreps), tissue = rep(NA, nreps), LRT = rep(NA, nreps))
-    
-    if(use_gene_trees == F) {
-      species_tree <- read.tree(file = paste0(OF_dir_path, "Species_Tree/SpeciesTree_rooted_node_labels.txt"))
+    alltissue_bt_results <- data.frame()
+    for (tissue in tissue_list) {
+      all_tissueexp <- get_tissueexp(all_exp, tissue)
+      all_orthogroups_tissueexp <- add_tissueexp_to_orthogroups(tissue, all_orthogroups, all_tissueexp, missing_exp_is_zero, copy_amount, dup_species)
       
-
-      bt_result <- betaSharedTest(tree = species_tree,
-                                  gene.data = all_orthogroups_tissueexp, 
-                                  colSpecies = colnames(all_orthogroups_tissueexp),
-                                  sharedBetaInterval = c(lower_beta_lim, upper_beta_lim))
       
-      onetissue_res$orthogroup <- rownames(all_orthogroups_tissueexp)
-      onetissue_res$LRT <- bt_result$LRT
+      nreps <- nrow(all_orthogroups_tissueexp)
+      onetissue_res <- data.frame(orthogroup = rep(NA, nreps), tissue = rep(NA, nreps), LRT = rep(NA, nreps))
       
-    }
-    
-    
-    # REQUIRE ENOUGH SPECIES and copies CHOSEN SO GENE TREE WAS MADE 
-    # if true, might require nondup_species_need_onecopy
-    if (use_gene_trees == T) {
-      species_gn_key <- get_species_gn_key(all_orthogroups, all_orthogroups_tissueexp, dup_species_list)
-      for (row in 1:nrow(all_orthogroups_tissueexp)){
+      if(use_gene_trees == F) {
+        species_tree <- read.tree(file = paste0(OF_dir_path, "Species_Tree/SpeciesTree_rooted_node_labels.txt"))
         
-        orthogroup <- rownames(all_orthogroups_tissueexp)[row]
-        orthogroup_tree <- get_orthogroup_tree(orthogroup, OF_dir_path, species_gn_key)
+  
+        bt_result <- betaSharedTest(tree = species_tree,
+                                    gene.data = all_orthogroups_tissueexp, 
+                                    colSpecies = colnames(all_orthogroups_tissueexp),
+                                    sharedBetaInterval = c(lower_beta_lim, upper_beta_lim))
         
-        
-        bt_result <- betaSharedTest_gene_tree(tree = orthogroup_tree, 
-                                              gene.data = all_orthogroups_tissueexp[row,], 
-                                              colSpecies = colnames(all_orthogroups_tissueexp),
-                                              sharedBetaInterval = c(lower_beta_lim, upper_beta_lim))
-        
-        onetissue_res[row, 'orthogroup'] <- orthogroup
-        onetissue_res[row, 'LRT'] <- bt_result$LRT
+        onetissue_res$orthogroup <- rownames(all_orthogroups_tissueexp)
+        onetissue_res$LRT <- bt_result$LRT
         
       }
       
+      
+      # REQUIRE ENOUGH SPECIES and copies CHOSEN SO GENE TREE WAS MADE 
+      # if true, might require nondup_species_need_onecopy
+      if (use_gene_trees == T) {
+        species_gn_key <- get_species_gn_key(all_orthogroups, all_orthogroups_tissueexp, dup_species)
+        for (row in 1:nrow(all_orthogroups_tissueexp)){
+          
+          orthogroup <- rownames(all_orthogroups_tissueexp)[row]
+          orthogroup_tree <- get_orthogroup_tree(orthogroup, OF_dir_path, species_gn_key)
+          
+          
+          bt_result <- betaSharedTest_gene_tree(tree = orthogroup_tree, 
+                                                gene.data = all_orthogroups_tissueexp[row,], 
+                                                colSpecies = colnames(all_orthogroups_tissueexp),
+                                                sharedBetaInterval = c(lower_beta_lim, upper_beta_lim))
+          
+          onetissue_res[row, 'orthogroup'] <- orthogroup
+          onetissue_res[row, 'LRT'] <- bt_result$LRT
+          
+        }
+        
+      }
+      
+      onetissue_res$tissue <- tissue
+      alltissue_bt_results <- rbind(alltissue_bt_results, onetissue_res)
     }
+    allspecies_all_tissue_bt_results <- rbind(allspecies_all_tissue_bt_results, alltissue_bt_results)
     
-    onetissue_res$tissue <- tissue
-    alltissue_bt_results <- rbind(alltissue_bt_results, onetissue_res)
   }
-  
-  write.table(alltissue_bt_results, file = paste0(here_results, '/main_DiversityDivergence_output.tsv'))
-  return(alltissue_bt_results)
-  
+  write.table(allspecies_all_tissue_bt_results, file = paste0(here_results, '/main_DiversityDivergence_output.tsv'))
+  return(allspecies_all_tissue_bt_results)
 }
 
 

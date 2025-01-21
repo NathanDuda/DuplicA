@@ -108,7 +108,7 @@ input$mech_type <- 'standard'
 input$allow_two_to_twos <- F
 
 # for eve
-input$nondup_species_need_onecopy = T
+input$nondup_species_need_onecopy = F
 
 ###
 selected_models <- list('Public Datasets', 'OrthoFinder')
@@ -297,9 +297,7 @@ main_run_workflow <- function(selected_models, input) {
   }
   
   
-  
-  
-  
+  write.table(dups, paste0(here_results, '/Duplicates.tsv'))
 }
 
 

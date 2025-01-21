@@ -315,6 +315,8 @@ main_get_dups_anc_exp_from_OF <- function(OF_dir_path, exp_path = NA, normalizat
   
   dups_anc <- get_anc_copy(OF_dir_path, dups, dup_pair_orthologs, clean_expression)
   
+  if(length(clean_expression) > 1) {write.table(clean_expression, paste0(here_results, '/Expression.tsv'))}
+  
   return(list(dups = dups, dups_anc = dups_anc, clean_expression = clean_expression, pseudo = pseudo))
   
 }
