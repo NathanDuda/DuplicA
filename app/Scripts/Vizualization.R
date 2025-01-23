@@ -209,17 +209,17 @@ dynamic_plot <- function(
 dynamic_plot(
   data = all_data,
   plot_type = "scatterplot",
-  x = "LRT_ExpressionShift",
+  x = "PS_dup_1",
   y = "N_dup_1",
   facet = NULL,
-  facet_label = NULL, 
-  title = "Custom Boxplot with Log Scaling",
+  title = "title title",
   x_label = NULL,
   y_label = NULL,
-  legend_label_color = NULL,
   custom_theme = NULL, # options are c('bw', 'minimal', 'linedraw', 'classic')
   y_log = F,
-  x_log = F
+  x_log = F,
+  color_set = '',
+  point_size = 1
 )
 
 

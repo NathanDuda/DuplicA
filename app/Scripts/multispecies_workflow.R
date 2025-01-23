@@ -296,13 +296,74 @@ main_run_workflow <- function(selected_models, input) {
     main_go(all_copies, file_organism_table)
   }
   
+  if('pathway' %in% selected_models) {}
+  
   
   write.table(dups, paste0(here_results, '/Duplicates.tsv'))
 }
 
 
 
+selected_models <- list('Public Datasets', 'OrthoFinder', 'CDROM', 'dnds', 'expression_shift', 
+                        'diversity_divergence', 'alphafold_db', 'postduplication_fates', 
+                        'duplication_mechanism')
 
+main_get_button_list <- function(selected_models, input) {
+  
+  # NOTE: if 'Public Datasets' in selected_models, 'OrthoFinder' must be chosen
+  
+  required_button_list <- list() 
+  additional_button_list <- list() 
+  
+  if('Public Datasets' %in% selected_models) {
+    required_button_list <- c(required_button_list, 'selected_organisms')
+    additional_button_list <- c(additional_button_list, 'data_types', 'selected_database_protein', 'selected_database_cds', 'selected_database_genome', 'must_be_reference', 'keep_which_transcript')
+    if('OrthoFinder' %in% selected_models) {
+      if(!'Proteomes' %in% input$data_types) {required_button_list <- c(required_button_list, 'Protein Folder')}
+      additional_button_list <- c(additional_button_list, 'custom_species_tree', 'sequence_search_method', 'gene_tree_inference_method', 'mcl_inflation', 'split_hogs', 'nuc_not_prot')
+      if(input$gene_tree_inference_method == 'msa') {additional_button_list <- c(additional_button_list, 'msa_method', 'tree_method', 'msa_trim')}
+    }
+  }
+  
+  if(!'Public Datasets' %in% selected_models) {
+    if('OrthoFinder' %in% selected_models) {
+      required_button_list <- c(required_button_list, 'Protein Folder')
+      additional_button_list <- c(additional_button_list, 'custom_species_tree', 'sequence_search_method', 'gene_tree_inference_method', 'mcl_inflation', 'split_hogs', 'nuc_not_prot')
+    }
+    if(!'OrthoFinder' %in% selected_models) {
+      required_button_list <- c(required_button_list, 'ortho_dir')
+    }
+  }
+  
+  
+  
+  
+  if('CDROM' %in% selected_models) {
+    
+  }
+  
+  
+  
+  
+  #if(all(c('Public Datasets', 'OrthoFinder') %in% selected_models)) {}
+  
+  
+
+  
+  
+  
+  return(list(additional_button_list = additional_button_list,
+              required_button_list = required_button_list))
+  
+  
+}
+
+
+
+
+# add gene length and gc content to miscellaneous results 
+# add option for exon datasets into duplication mechanism,
+# only then add exon counts to miscellaneous
 
 
 

@@ -100,7 +100,7 @@ get_significance_summary <- function(p_value, data, column_1, column_2, sig_thre
   
   signif <- p_value < sig_threshold
   higher <- mean(data[[column_1]]) > mean(data[[column_2]])
-  lower <- mean(data[[column_1]]) > mean(data[[column_2]])
+  lower <- mean(data[[column_1]]) < mean(data[[column_2]])
   
   
   if (signif) {
@@ -118,6 +118,31 @@ get_significance_summary <- function(p_value, data, column_1, column_2, sig_thre
   if (!signif) {
     stat_summary <- 'not signif'
   }
+  
+  
+  pval_larger_or_smaller_than_threshold <- ''
+  null_hy_is <- 'rejected, and the alternative hypothesis is accepted.'
+  conclusion <- ''
+  
+  stat_summary <- paste0(
+    
+    '
+    Hypothesis tested:
+    P-value: ', p_value, '
+    
+    The p_value is ', pval_larger_or_smaller_than_threshold, ' than the significance threshold (', sig_threshold,'),
+    therefore, the null hypothesis is ', null_hy_is,'
+    
+    Conclusion:
+    ', conclusion
+    
+    
+    
+  
+  
+    
+    
+  )
   
   
   return(stat_summary)
