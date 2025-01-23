@@ -1,0 +1,191 @@
+{
+  "selected_organisms": {
+    "type": "text",
+    "label": "Organisms (comma separated)"
+  },
+  "selected_database_protein": {
+    "type": "select",
+    "label": "Database for protein data",
+    "choices": ["refseq", "genbank", "ensembl"],
+    "default": ["refseq"],
+    "multiple": false,
+  },
+  "selected_database_cds": {
+    "type": "select",
+    "label": "Database for CDS data",
+    "choices": ["refseq", "genbank", "ensembl"],
+    "default": ["refseq"],
+    "multiple": false
+  },
+  "selected_database_genome": {
+    "type": "select",
+    "label": "Database for genome data",
+    "choices": ["refseq", "genbank", "ensembl"],
+    "default": ["refseq"],
+    "multiple": false
+  },
+  "data_types": {
+    "type": "select",
+    "label": "Get which data types",
+    "choices": ["Proteomes", "CDS", "Genomes"],
+    "multiple": true,
+    "default": ["Proteomes", "CDS"]
+  },
+  "keep_which_transcript": {
+    "type": "select",
+    "label": "Keep which transcript",
+    "choices": ["longest", "first"],
+    "default": ["longest"],
+    "multiple": false
+  },
+  "must_be_reference": {
+    "type": "boolean",
+    "label": "Get only reference data?",
+    "default": false
+  },
+  "protein_folder": {
+    "type": "directory",
+    "label": "Folder of Protein Sequences"
+  },
+  "custom_species_tree": {
+    "type": "file",
+    "label": "Species Tree",
+    "multiple": false
+  },
+  "sequence_search_method": {
+    "type": "select",
+    "label": "Sequence Search Method",
+    "choices": ["diamond", "blast", "mmseqs2"],
+    "default": ["diamond"]
+  },
+  "gene_tree_inference_method": {
+    "type": "select",
+    "label": "Gene Tree Inference Method",
+    "choices": ["dendroblast", "msa"],
+    "default": ["dendroblast"]
+  },
+  "mcl_inflation": {
+    "type": "number",
+    "label": "MCL Inflation",
+    "default": 1.5,
+    "step": 0.1,
+    "min": 0
+  },
+  "split_hogs": {
+    "type": "boolean",
+    "label": "Split HOGs",
+    "default": false
+  },
+  "msa_method": {
+    "type": "select",
+    "label": "MSA Method",
+    "choices": ["mafft", "muscle"],
+    "default": ["mafft"]
+  },
+  "tree_method": {
+    "type": "select",
+    "label": "MSA Tree Inference Method",
+    "choices": ["fasttree", "raxml"],
+    "default": ["fasttree"]
+  },
+  "msa_trim": {
+    "type": "boolean",
+    "label": "No MSA Trim",
+    "default": false
+  },
+  "ortho_dir": {
+    "type": "directory",
+    "label": "OrthoFinder Results Folder",
+    "multiple": false
+  },
+  "exons_folder": {
+    "type": "directory",
+    "label": "Folder of Exon Counts",
+    "multiple": false
+  },
+  "mech_type": {
+    "type": "select",
+    "label": "Mechanism model",
+    "choices": ["standard", "conservative", "ultra-conservative"],
+    "default": ["standard"],
+    "multiple": false
+  },
+  "v": {
+    "type": "number",
+    "label": "Novelty threshold",
+    "default": 0.05,
+    "min": 0,
+    "max": 1
+  },
+  "p": {
+    "type": "number",
+    "label": "Pseudogene threshold",
+    "default": 0.2,
+    "min": 0,
+    "max": 1
+  },
+  "min_dups_per_species_pair": {
+    "type": "number",
+    "label": "Minimum duplicates per species pair",
+    "default": 10,
+    "min": 1
+  },
+  "exp_cutoff": {
+    "type": "number",
+    "label": "Expression level cutoff",
+    "default": 1,
+    "min": 0,
+    "step": 0.1
+  },
+  "add_pseudofunc": {
+    "type": "boolean",
+    "label": "Add pseudofunctionalization?",
+    "default": true
+  },
+  "use_absolute_exp": {
+    "type": "boolean",
+    "label": "Use absolute expression?",
+    "default": false
+  },
+  "nuc_folder": {
+    "type": "directory",
+    "label": "Folder of Nucleotide Sequences",
+    "multiple": false
+  },
+  "dnds_aligner": {
+    "type": "select",
+    "label": "Protein Alignment Program",
+    "choices": ["muscle"]
+  },
+  "dup_species_list": {
+    "type": "text",
+    "label": "Species to test for shifted expression in (comma separated)"
+  },
+  "use_gene_trees": {
+    "type": "boolean",
+    "label": "Use gene trees for branch lengths",
+    "default": true
+  },
+  "tissue_list": {
+    "type": "text",
+    "label": "Tissues to use (comma separated)",
+    "default": "All Tissues"
+  },
+  "copy_amount": {
+    "type": "number",
+    "label": "Use duplication events with how many copies",
+    "default": 2,
+    "min": 2,
+    "step": 1
+  },
+  "nondup_species_need_onecopy": {
+    "type": "boolean",
+    "label": "Other species need one copy",
+    "default": true
+  },
+  "missing_exp_is_zero": {
+    "type": "boolean",
+    "label": "Missing expression means expression level of 0",
+    "default": false
+  }
+}

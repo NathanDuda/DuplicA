@@ -157,25 +157,23 @@
       "label": "DNA Instead of Protein",
       "default": false
     },
-    "conditional_options": {
-      "condition": "gene_tree_inference_method == 'msa'",
-      "msa_method": {
-        "type": "select",
-        "label": "MSA Method",
-        "choices": ["mafft", "muscle"],
-        "default": "mafft"
-      },
-      "tree_method": {
-        "type": "select",
-        "label": "MSA Tree Inference Method",
-        "choices": ["fasttree", "raxml"],
-        "default": "fasttree"
-      },
-      "msa_trim": {
-        "type": "checkbox",
-        "label": "No MSA Trim",
-        "default": false
-      }
+    "msa_method": {
+      "type": "select",
+      "label": "MSA Method",
+      "choices": ["mafft", "muscle"],
+      "default": "mafft"
+    },
+    "tree_method": {
+       "type": "select",
+       "label": "MSA Tree Inference Method",
+       "choices": ["fasttree", "raxml"],
+       "default": "fasttree"
+    },
+    "msa_trim": {
+       "type": "checkbox",
+       "label": "No MSA Trim",
+       "default": false
+    }
   },
   "CDROM": {
     "expression_directory": {

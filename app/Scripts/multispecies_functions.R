@@ -419,8 +419,44 @@ get_exon_counts_per_copy <- function(dups_anc, selected_organisms, exon_output_d
                                chosen_organism = selected_organism, 
                                kept_transcript_ids_list = kept_transcript_ids_list)
   
+}
+
+
+
+
+
+# FOR generate_file_organism_table()
+# function to check if both genus and species are in the protein file name
+match_protein_file <- function(organism_name, protein_files) {
+  # Split the organism name into genus and species
+  genus_species <- unlist(strsplit(organism_name, " "))
+  # Check if both genus and species are in any protein file name
+  matched_file <- protein_files[sapply(protein_files, function(file) {
+    all(sapply(genus_species, function(word) grepl(word, file)))
+  })]
+  # Return the first match (or NA if no match)
+  if (length(matched_file) > 0) matched_file[1] else NA
+}
+
+
+
+generate_file_organism_table <- function(prot_output_dir, selected_organisms) {
   
+  # make all names lowercase
+  organism_scientific_names <- tolower(selected_organisms)
+  protein_files <- tolower(list.files(prot_output_dir))
   
+  # match each organism with a protein file
+  matched_files <- sapply(organism_scientific_names, match_protein_file, protein_files = protein_files)
+  
+  # create file_organism_table with the matched results
+  file_organism_table <- data.frame(
+    protein_file_name = matched_files,
+    organism_scientific_name = organism_scientific_names,
+    stringsAsFactors = FALSE
+  )
+  
+  return(file_organism_table)
   
 }
 

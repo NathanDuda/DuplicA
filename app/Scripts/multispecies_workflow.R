@@ -136,8 +136,8 @@ main_run_workflow <- function(selected_models, input) {
   }
   # get protein folder path when public datasets not chosen
   if(!('Public Datasets' %in% selected_models) & ('OrthoFinder' %in% selected_models)) {
-    prot_output_dir <- user_provided_path_to_protein_directory # CHANGEEEEEEEEEEEEEEEEEEEEEEEEE
-    nuc_output_dir <- user_provided_path_to_nucleotide_directory
+    prot_output_dir <- input$protein_folder 
+    if ('dnds' %in% selected_models) {nuc_output_dir <- input$nuc_folder}
   }
   
   if('OrthoFinder' %in% selected_models) {
@@ -163,7 +163,7 @@ main_run_workflow <- function(selected_models, input) {
   }
   # get OrthoFinder output path when OrthoFinder not selected
   if(!('OrthoFinder' %in% selected_models)) {
-    of_output_dir <- user_provided_path_to_orthofinder_output # CHANGEEEEEEEEEEEEEEEEEEEEEEEEE
+    of_output_dir <- input$ortho_dir
   }
   
   # get dups from OrthoFinder and format expression (if expression file path exists)
@@ -304,9 +304,7 @@ main_run_workflow <- function(selected_models, input) {
 
 
 
-selected_models <- list('Public Datasets', 'OrthoFinder', 'CDROM', 'dnds', 'expression_shift', 
-                        'diversity_divergence', 'alphafold_db', 'postduplication_fates', 
-                        'duplication_mechanism')
+#selected_models <- list('Public Datasets', 'OrthoFinder', 'CDROM', 'dnds', 'expression_shift', 'diversity_divergence', 'alphafold_db', 'postduplication_fates', 'duplication_mechanism')
 
 main_get_button_list <- function(selected_models, input) {
   
@@ -314,12 +312,19 @@ main_get_button_list <- function(selected_models, input) {
   
   required_button_list <- list() 
   additional_button_list <- list() 
-  
+
   if('Public Datasets' %in% selected_models) {
     required_button_list <- c(required_button_list, 'selected_organisms')
-    additional_button_list <- c(additional_button_list, 'data_types', 'selected_database_protein', 'selected_database_cds', 'selected_database_genome', 'must_be_reference', 'keep_which_transcript')
+    additional_button_list <- c(additional_button_list, 'data_types', 'must_be_reference', 'keep_which_transcript')
+    
+    
+    if('Proteomes' %in% input$data_types) {additional_button_list <- c(additional_button_list, 'selected_database_protein')}
+    if('CDS' %in% input$data_types) {additional_button_list <- c(additional_button_list, 'selected_database_cds')}
+    if('Genomes' %in% input$data_types) {additional_button_list <- c(additional_button_list, 'selected_database_genome')}
+    
+    
     if('OrthoFinder' %in% selected_models) {
-      if(!'Proteomes' %in% input$data_types) {required_button_list <- c(required_button_list, 'Protein Folder')}
+      if(!'Proteomes' %in% input$data_types) {required_button_list <- c(required_button_list, 'protein_folder')}
       additional_button_list <- c(additional_button_list, 'custom_species_tree', 'sequence_search_method', 'gene_tree_inference_method', 'mcl_inflation', 'split_hogs', 'nuc_not_prot')
       if(input$gene_tree_inference_method == 'msa') {additional_button_list <- c(additional_button_list, 'msa_method', 'tree_method', 'msa_trim')}
     }
@@ -327,43 +332,95 @@ main_get_button_list <- function(selected_models, input) {
   
   if(!'Public Datasets' %in% selected_models) {
     if('OrthoFinder' %in% selected_models) {
-      required_button_list <- c(required_button_list, 'Protein Folder')
+      required_button_list <- c(required_button_list, 'protein_folder')
       additional_button_list <- c(additional_button_list, 'custom_species_tree', 'sequence_search_method', 'gene_tree_inference_method', 'mcl_inflation', 'split_hogs', 'nuc_not_prot')
     }
     if(!'OrthoFinder' %in% selected_models) {
       required_button_list <- c(required_button_list, 'ortho_dir')
     }
   }
-  
-  
-  
+
+  # get expression, if expression models selected
+  if(any(c('CDROM', 'expression_shift', 'diversity_divergence', 'postduplication_fates') %in% selected_models)) {
+    required_button_list <- c(required_button_list, 'expression_directory')
+    additional_button_list <- c(additional_button_list, 'exp_cutoff', 'missing_expr_is_zero')
+  }
   
   if('CDROM' %in% selected_models) {
-    
+    additional_button_list <- c(additional_button_list, 'min_dups_per_species_pair', 'add_pseudofunc', 'use_absolute_exp')
   }
   
   
+  if('duplication_mechanism' %in% selected_models) {
+    if(is.null(input$exons_file) & isFALSE(input$get_public_exon_data)) {
+      required_button_list <- c(required_button_list, 'exons_file')
+    }
+    additional_button_list <- c(additional_button_list, 'mech_type')
+  }
   
+  if('postduplication_fates' %in% selected_models) {
+    additional_button_list <- c(additional_button_list, 'v', 'p')
+  }
   
-  #if(all(c('Public Datasets', 'OrthoFinder') %in% selected_models)) {}
-  
-  
+  if('dnds' %in% selected_models) {
+    if(!'CDS' %in% input$data_types) {required_button_list <- c(required_button_list, 'nuc_folder')}
+    additional_button_list <- c(additional_button_list, 'dnds_aligner')
+  }
 
-  
-  
-  
+  if(any(c('expression_shift', 'diversity_divergence') %in% selected_models)) {
+    additional_button_list <- c(additional_button_list, 'dup_species_list', 'use_gene_trees', 'tissue_list', 'copy_amount', 'nondup_species_need_onecopy')
+    
+  }
+
   return(list(additional_button_list = additional_button_list,
               required_button_list = required_button_list))
-  
-  
 }
 
 
 
+# Example main_get_button_list usage:
+
+# necessary options to test
+#input <- list()
+#input$data_types <- NULL
+#input$gene_tree_inference_method <- 'dendroblast'
+
+# custom options added to test
+#input$data_types <- 'Proteomes'
+
+
+#l <- main_get_button_list(c('OrthoFinder', 'alphafold_db', 'CDROM'), input)
+#l$required_button_list
+#l$additional_button_list
+
+
+
+
+# selected_organisms, tissue_list, and  is now text, separated by , or , and space 
+# change missing_expr_is_pseudo to take in missing_expr_is_zero 
+# change dnds requirement 'nuc_seqs_file' to nuc_folder in json and multispecies workflow 
+# for duplication mechanism, add if(is.null(input$exons_file) & isFALSE(input$get_public_exon_data), maybe change to exons_folder everywhere
+# change to code and inputs to protein_folder
+# deal with file_organism_table - make each folder name have to start with species name 
+# removed use_all_fastas_in_dir
+
+
+
+# removed nuc_not_prot - deal with detecting if aa or dna and translate when dna
 
 # add gene length and gc content to miscellaneous results 
 # add option for exon datasets into duplication mechanism,
 # only then add exon counts to miscellaneous
+
+
+
+
+
+selected_organisms <- c('Drosophila melanogaster', 'Drosophila ananassae', 'Drosophila mojavensis')
+# selected_organisms is already split up 
+prot_output_dir <- 'C:/Users/17735/Downloads/AAAAA_Protein_Folder'
+
+generate_file_organism_table(prot_output_dir, selected_organisms)
 
 
 
