@@ -79,7 +79,7 @@ get_dups_from_OF <- function(OF_dir_path) {
 
 
 
-clean_exp_and_pseudo <- function(exp_path, dups, normalization_type, add_pseudofunc, missing_expr_is_pseudo, exp_cutoff, PC) {
+clean_exp_and_pseudo <- function(exp_path, dups, normalization_type, add_pseudofunc, missing_expr_is_zero, exp_cutoff, PC) {
   
   ################################
   # unit tests
@@ -128,7 +128,7 @@ clean_exp_and_pseudo <- function(exp_path, dups, normalization_type, add_pseudof
   
   if (add_pseudofunc == TRUE) {
     
-    if (missing_expr_is_pseudo == TRUE) {
+    if (missing_expr_is_zero == TRUE) {
       colnames(all_expression)[1] <- 'dup_1'
       dups <- left_join(dups, all_expression, by = 'dup_1')
       
@@ -136,7 +136,7 @@ clean_exp_and_pseudo <- function(exp_path, dups, normalization_type, add_pseudof
       colnames(all_expression) <- paste0(colnames(all_expression), "_2")
       dups <- left_join(dups, all_expression, by = 'dup_2')
     }
-    if (missing_expr_is_pseudo == FALSE) { # duplicates with missing expression are removed 
+    if (missing_expr_is_zero == FALSE) { # duplicates with missing expression are removed 
       colnames(all_expression)[1] <- 'dup_1'
       dups <- merge(dups, all_expression, by = 'dup_1')
       
@@ -291,7 +291,7 @@ get_exp_df_for_copy <- function(copy, dups_anc, clean_expression) {
 
 
 
-main_get_dups_anc_exp_from_OF <- function(OF_dir_path, exp_path = NA, normalization_type = NA, add_pseudofunc = NA, missing_expr_is_pseudo = NA, rm_exp_lower_than = NA) {
+main_get_dups_anc_exp_from_OF <- function(OF_dir_path, exp_path = NA, normalization_type = NA, add_pseudofunc = NA, missing_expr_is_zero = NA, rm_exp_lower_than = NA) {
   
   OF_dir_path <- paste0(OF_dir_path, '/')
   
@@ -301,7 +301,7 @@ main_get_dups_anc_exp_from_OF <- function(OF_dir_path, exp_path = NA, normalizat
   
   
   if (!is.na(exp_path)) {
-    clean_expression <- clean_exp_and_pseudo(exp_path, dups, normalization_type, add_pseudofunc, missing_expr_is_pseudo, rm_exp_lower_than, PC = F)
+    clean_expression <- clean_exp_and_pseudo(exp_path, dups, normalization_type, add_pseudofunc, missing_expr_is_zero, rm_exp_lower_than, PC = F)
     
     }
   if (is.na(exp_path)) {
@@ -457,6 +457,34 @@ generate_file_organism_table <- function(prot_output_dir, selected_organisms) {
   )
   
   return(file_organism_table)
+  
+}
+
+
+
+
+
+cat_all_in_dir <- function(dir, file_type = 'delim') {
+  
+  output_file <- data.frame()
+  for (file in list.files(dir, full.names = T)) {
+    
+    if(file_type == 'delim'){output_file_one <- read.delim(file)}
+    if(file_type == 'aa_fasta'){
+      output_file_one <- readAAStringSet(file)
+      output_file_one <- as.data.frame(output_file_one)
+    }
+    
+    if(file_type == 'nuc_fasta'){
+      output_file_one <- readDNAStringSet(file)
+      output_file_one <- as.data.frame(output_file_one)
+    }
+    
+
+    output_file <- rbind(output_file, output_file_one)
+  }
+  
+  return(output_file)
   
 }
 

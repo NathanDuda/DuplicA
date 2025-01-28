@@ -1,5 +1,7 @@
 
-source('./app/Scripts/setup.R') # CHANGE PATH 
+source(paste0(prefix, '/Users/17735/Downloads/DuplicA/app/Scripts/setup.R')) # CHANGE PATH 
+here_duplica <- paste0(prefix, '/Users/17735/Downloads/DuplicA') # for sourcing this script in wsl  
+
 source(paste0(here_duplica, '/app/Scripts/multispecies_functions.R'))
 
 source(paste0(here_duplica, '/app/Scripts/model_Public_Datasets.R'))
@@ -11,7 +13,8 @@ source(paste0(here_duplica, '/app/Scripts/model_alphafold_db.R'))
 source(paste0(here_duplica, '/app/Scripts/model_postduplication_fates.R'))
 source(paste0(here_duplica, '/app/Scripts/model_Exon_Datasets.R'))
 source(paste0(here_duplica, '/app/Scripts/model_duplication_mechanism.R'))
-source(paste0(here_duplica, '/app/Scripts/model_GO.R'))
+#source(paste0(here_duplica, '/app/Scripts/model_GO.R'))
+source(paste0(here_duplica, '/app/Scripts/model_misc.R'))
 
 source(paste0(here_duplica, '/app/Scripts/tool_ID_conversion.R'))
 
@@ -37,17 +40,21 @@ input <- list()
 input$exp_path <- 'C:/Users/17735/Downloads/AAAAA_Expression_Input_Example/dana_dmel_dmoj_exp.tsv'
 input$normalization_type <- NA
 input$add_pseudofunc <- T
-input$missing_expr_is_pseudo <- F
+input$missing_expr_is_zero <- F
 input$rm_exp_lower_than <- 1
 input$min_dups_per_species_pair_custom <- 10
 
 input$use_absolute_exp = T
 input$PC = F
 
-input$selected_organisms <- c('Drosophila melanogaster', 'Drosophila ananassae', 'Drosophila mojavensis')
+####input$selected_organisms <- 'Drosophila melanogaster, Drosophila ananassae, Drosophila mojavensis'
+input$selected_organisms <- 'Homo sapien, Drosophila melanogaster'
+input$exp_path <- NULL
 
 # for expression shift
-input$dup_species_list <- c('Drosophila_melanogaster_prot', 'Drosophila_ananassae_prot', 'Drosophila_mojavensis_prot')
+####input$dup_species_list <- 'Drosophila_melanogaster_prot, Drosophila_ananassae_prot, Drosophila_mojavensis_prot'
+input$dup_species_list <- 'Homo sapien, Drosophila melanogaster'
+
 input$copy_amount = 2
 input$tissue_list = 'All Tissues'
 input$use_gene_trees = T
@@ -110,10 +117,33 @@ input$allow_two_to_twos <- F
 # for eve
 input$nondup_species_need_onecopy = F
 
+
 ###
 selected_models <- list('Public Datasets', 'OrthoFinder')
+input$get_public_exon_data <- T
+
 
 main_run_workflow <- function(selected_models, input) {
+  
+  if(input$get_public_exon_data) {selected_models <- c(selected_models, 'exon_datasets')}
+  
+  #if('Public Datasets' %in% selected_models) {selected_models <- c(selected_models, 'OrthoFinder')}
+    
+    
+  if (!is.null(input$selected_organisms)) {
+    input$selected_organisms <- strsplit(input$selected_organisms, ',')[[1]]
+    input$selected_organisms <- trimws(input$selected_organisms) # remove extra space from each element
+  }
+  
+  if (!is.null(input$dup_species_list)) {
+    input$dup_species_list <- strsplit(input$dup_species_list, ',')[[1]]
+    input$dup_species_list <- trimws(input$dup_species_list)
+  }
+  
+  if(!is.null(input$tissue_list)) {
+    input$tissue_list <- strsplit(input$tissue_list, ',')[[1]]
+    input$tissue_list <- trimws(input$tissue_list)
+  }
   
   if('Public Datasets' %in% selected_models) {
     
@@ -166,19 +196,20 @@ main_run_workflow <- function(selected_models, input) {
     of_output_dir <- input$ortho_dir
   }
   
+  
   # get dups from OrthoFinder and format expression (if expression file path exists)
   if (is.null(input$exp_path)) {
     input$exp_path <- NA
     input$normalization_type <- NA
-    input$add_pseudofunc <- NA
-    input$missing_expr_is_pseudo <- NA
+    input$add_pseudofunc <- F
+    input$missing_expr_is_zero <- NA
     input$rm_exp_lower_than <- NA
   }
   out <- main_get_dups_anc_exp_from_OF(OF_dir_path = of_output_dir, 
                                        exp_path = input$exp_path, 
                                        normalization_type = input$normalization_type, 
                                        add_pseudofunc = input$add_pseudofunc, 
-                                       missing_expr_is_pseudo = input$missing_expr_is_pseudo, 
+                                       missing_expr_is_zero = input$missing_expr_is_zero, 
                                        rm_exp_lower_than = input$rm_exp_lower_than)
   dups_anc <- out$dups_anc
   dups <- out$dups
@@ -193,7 +224,7 @@ main_run_workflow <- function(selected_models, input) {
                clean_expression = clean_expression, 
                OF_dir_path = OF_dir_path,
                add_pseudofunc = input$add_pseudofunc,
-               missing_expr_is_pseudo = input$missing_expr_is_pseudo,
+               missing_expr_is_zero = input$missing_expr_is_zero,
                PC = input$PC,
                min_dups_per_species_pair = input$min_dups_per_species_pair_custom,
                useAbsExpr = input$use_absolute_exp,
@@ -205,7 +236,7 @@ main_run_workflow <- function(selected_models, input) {
     main_DnDs_output <- main_multispecies_dnds(OF_dir_path = of_output_dir, 
                            dups = dups, 
                            allow_two_to_twos = input$allow_two_to_twos,
-                           nuc_file_path = list.files(nuc_output_dir, full.names = T)[1], 
+                           nuc_file_path = list.files(nuc_output_dir, full.names = T)[1], # works bc. gets all fastas in dir by default
                            prot_file_path = list.files(prot_output_dir, full.names = T)[1],
                            aligner = 'muscle')
   }
@@ -237,17 +268,10 @@ main_run_workflow <- function(selected_models, input) {
   # format chosen organisms (get file_organism_table) and format_dups_for_db_search
   if(('alphafold_db' %in% selected_models) | ('go' %in% selected_models)) {
     
-    if ('Public Datasets' %in% selected_models) {
-      file_organism_table <- data.frame(protein_file_name = list.files(prot_output_dir, full.names = T),
-                                        organism_scientific_name = gsub('_prot.fasta', '', list.files(prot_output_dir)))
-    }
-    
-    if (!'Public Datasets' %in% selected_models) {
-      # match: prot_output_dir
-      # to: listGenomes() 
-      file_organism_table <- as.data.frame(input$file_organism_table)
-      colnames(file_organism_table) <- c('protein_file_name', 'organism_scientific_name')
-    }
+    # get file_organism_table 
+    selected_organisms <- colnames(read.delim(paste0(of_output_dir, '/Comparative_Genomics_Statistics/Statistics_PerSpecies.tsv'), nrows = 0))[-1]
+    file_organism_table <- data.frame(protein_file_name = sort(list.files(prot_output_dir, full.names = T)),
+                                      organism_names = sort(selected_organisms))
     
 
     all_copies <- format_dups_for_db_search(dups_anc)
@@ -278,18 +302,20 @@ main_run_workflow <- function(selected_models, input) {
                        must_be_reference = input$must_be_reference,
                        id_type_of_gene_ids = 'ensembl',
                        kept_transcript_dir = kept_transcript_dir) # remove last '/'
-    exon_output_dir <- paste0(here_results, '/Exon_Counts/')
+    gn_exons_dir <- paste0(here_results, '/Exon_Counts/')
     
   }
   
   if(!('exon_datasets' %in% selected_models) & ('duplication_mechanism' %in% selected_models)) {
-    exon_output_dir <- user_provided_path_to_exon_output_dir
-    # species names need to match up 
-    
+    gn_exons_dir <- input$exons_folder
+    # file names do not need to match up, all files are combined. merged by gene (genes cant be shared across species)
   }
   
   if('duplication_mechanism' %in% selected_models) {
-    main_dup_mechanism_output <- main_dup_mechanism(exon_output_dir, dups_anc, input$mech_type, input$selected_organisms)
+    main_dup_mechanism_output <- main_dup_mechanism(gn_exons_dir = gn_exons_dir, 
+                                                    dups_anc = dups_anc, 
+                                                    mech_type = input$mech_type, 
+                                                    selected_organisms = input$selected_organisms)
   }
   
   if('go' %in% selected_models) {
@@ -298,15 +324,43 @@ main_run_workflow <- function(selected_models, input) {
   
   if('pathway' %in% selected_models) {}
   
+  main_get_misc_results(dups, prot_output_dir, nuc_output_dir, 
+                        raw_dup_mechanism_output_file_path = paste0(here_results, '/raw_dup_mechanism_output.tsv'))
+  
+  
+  # read in all results from the (default input) Results directory
+  all_data <- get_all_results()
+  write.table(all_data, paste0(here_results, '/All_data.tsv'))
+  
+  # make json file for visualization 
+  make_visualization_json_file(all_data)
   
   write.table(dups, paste0(here_results, '/Duplicates.tsv'))
 }
 
 
 
+
+selected_models <- "OrthoFinder, CDROM, Public Datasets" 
+
+selected_models <- list('Public Datasets', 'OrthoFinder', 'CDROM')
+
+
 #selected_models <- list('Public Datasets', 'OrthoFinder', 'CDROM', 'dnds', 'expression_shift', 'diversity_divergence', 'alphafold_db', 'postduplication_fates', 'duplication_mechanism')
 
 main_get_button_list <- function(selected_models, input) {
+  
+  print(selected_models)
+  print(input)
+  
+  print(input[1])
+  print(input$missing_expr_is_zero)
+  print(input$CDROM)
+  
+    
+  selected_models <- strsplit(selected_models, ',')[[1]]
+  selected_models <- trimws(selected_models)
+  
   
   # NOTE: if 'Public Datasets' in selected_models, 'OrthoFinder' must be chosen
   
@@ -352,8 +406,10 @@ main_get_button_list <- function(selected_models, input) {
   
   
   if('duplication_mechanism' %in% selected_models) {
-    if(is.null(input$exons_file) & isFALSE(input$get_public_exon_data)) {
-      required_button_list <- c(required_button_list, 'exons_file')
+    required_button_list <- c(required_button_list, 'get_public_exon_data')
+    
+    if(isFALSE(input$get_public_exon_data)) { 
+      required_button_list <- c(required_button_list, 'exons_folder')
     }
     additional_button_list <- c(additional_button_list, 'mech_type')
   }
@@ -395,32 +451,20 @@ main_get_button_list <- function(selected_models, input) {
 
 
 
-
-# selected_organisms, tissue_list, and  is now text, separated by , or , and space 
-# change missing_expr_is_pseudo to take in missing_expr_is_zero 
-# change dnds requirement 'nuc_seqs_file' to nuc_folder in json and multispecies workflow 
-# for duplication mechanism, add if(is.null(input$exons_file) & isFALSE(input$get_public_exon_data), maybe change to exons_folder everywhere
-# change to code and inputs to protein_folder
-# deal with file_organism_table - make each folder name have to start with species name 
-# removed use_all_fastas_in_dir
-
-
-
 # removed nuc_not_prot - deal with detecting if aa or dna and translate when dna
 
-# add gene length and gc content to miscellaneous results 
-# add option for exon datasets into duplication mechanism,
-# only then add exon counts to miscellaneous
 
 
 
 
 
-selected_organisms <- c('Drosophila melanogaster', 'Drosophila ananassae', 'Drosophila mojavensis')
+#selected_organisms <- c('Drosophila melanogaster', 'Drosophila ananassae', 'Drosophila mojavensis')
 # selected_organisms is already split up 
-prot_output_dir <- 'C:/Users/17735/Downloads/AAAAA_Protein_Folder'
+#prot_output_dir <- 'C:/Users/17735/Downloads/AAAAA_Protein_Folder'
 
-generate_file_organism_table(prot_output_dir, selected_organisms)
+#generate_file_organism_table(prot_output_dir, selected_organisms)
 
+
+# its assumed that no gene ids are the same across species 
 
 

@@ -19,7 +19,7 @@ get_all_ids <- function(chosen_organism, from_to) {
   chosen_mart <- avail_data$mart[1]
   chosen_dataset <- avail_data$dataset[1]
   
-  #if(!chosen_dataset %in% listDatasets(mart = useMart('ENSEMBL_MART_ENSEMBL'))) {stop(paste0('There is no exon data publicly available for ', chosen_organism, '.'))}
+  if(!chosen_dataset %in% listDatasets(mart = useMart('ENSEMBL_MART_ENSEMBL'))) {stop(paste0('There is no exon data publicly available for ', chosen_organism, '.'))}
   
   chosen_data <- useDataset(dataset = chosen_dataset, 
                             mart = useMart(chosen_mart))

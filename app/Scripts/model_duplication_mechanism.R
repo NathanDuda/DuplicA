@@ -65,12 +65,17 @@ get_dup_mechanism <- function(dups_anc, gn_exons, mech_type) {
     }
   
   
+  write.table(dup_mech, file = paste0(here_results, '/raw_dup_mechanism_output.tsv'))
+  
   dup_mech <- dup_mech %>% select(Orthogroup, mech)
   
   return(dup_mech)
 }
 
-main_dup_mechanism <- function(gn_exons, dups_anc, mech_type, selected_organisms) {
+
+main_dup_mechanism <- function(gn_exons_dir, dups_anc, mech_type, selected_organisms) {
+  
+  gn_exons <- cat_all_in_dir(gn_exons_dir)
   
   mech <- get_dup_mechanism(dups_anc, gn_exons, mech_type)
   

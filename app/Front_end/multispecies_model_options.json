@@ -8,7 +8,7 @@
     "label": "Database for protein data",
     "choices": ["refseq", "genbank", "ensembl"],
     "default": ["refseq"],
-    "multiple": false,
+    "multiple": false
   },
   "selected_database_cds": {
     "type": "select",
@@ -187,5 +187,9 @@
     "type": "boolean",
     "label": "Missing expression means expression level of 0",
     "default": false
+  },
+  "expression_directory": {
+    "type": "directory",
+    "label": "Folder of Expression Data"
   }
 }

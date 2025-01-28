@@ -3,28 +3,6 @@
 source(paste0(here_duplica, '/app/Scripts/Visualization_functions.R'))
 
 
-# run multispecies workflow 
-main_run_workflow(selected_models, input) 
-
-# read in all results from the (default input) Results directory
-all_data <- get_all_results()
-
-# get options for visualization page 
-vis_options <- get_visualization_button_options_lists(all_data)
-
-x = vis_options$x_and_y_axis_options
-y = vis_options$x_and_y_axis_options
-
-color_groups = vis_options$group_options
-separate_figure = vis_options$group_options
-
-
-# all other visualization options are CONSTANT
-figure_type = c('scatterplot', 'boxplot', 'violin') # default: 'scatterplot'
-custom_theme = c('classic', 'bw', 'minimal', 'linedraw') # default: 'classic'
-color_set = c('Spectral', 'Accent', 'Pastel1', 'Paired', 'Dark2') # default: 'Spectral'
-
-
 # every time an input is changed by the user, rerun the function
 generate_figure(
   data = all_data,
@@ -64,7 +42,7 @@ generate_figure(
   custom_theme = 'bw', 
   y_log = F,
   x_log = F,
-  color_set = 'Accent',
+  color_set = 'Accent'
 )
 
 

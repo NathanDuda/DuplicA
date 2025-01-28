@@ -1,4 +1,5 @@
 library(RColorBrewer)
+library(jsonlite)
 
 
 import_if_exists <- function(file_name) {
@@ -33,12 +34,12 @@ get_all_results <- function(results_directory = here_results) {
   colnames(dups)[1] <- 'Orthogroup'
   
   # list all of the files available for visualization
-  files_for_visualization <- c("main_CDROM_output.tsv", "main_DiversityDivergence_output.tsv", "main_ExpressionShift_output.tsv", "main_postduplication_fates_output.tsv")
+  files_for_visualization <- c("main_CDROM_output.tsv", "main_DiversityDivergence_output.tsv", "main_ExpressionShift_output.tsv", "main_postduplication_fates_output.tsv", 'Expression.tsv')
   
   file_names <- list.files(results_directory, full.names = F)
   file_names <- intersect(file_names, files_for_visualization)
   file_names <- paste0(results_directory, '/', file_names)
-  
+
   
   # get expression per gene 
   if('Expression.tsv' %in% basename(file_names)) {
@@ -50,6 +51,8 @@ get_all_results <- function(results_directory = here_results) {
   avail_results <- lapply(file_names, import_if_exists)
   names(avail_results) <- basename(file_names)
   names_avail_results <- names(avail_results)
+  
+  names_avail_results <- setdiff(names_avail_results, 'Expression.tsv') # remove Expression.tsv from file names
   
   
   #orthogroup_based_files <- c("main_DiversityDivergence_output.tsv", "main_ExpressionShift_output.tsv", "main_postduplication_fates_output.tsv")
@@ -102,7 +105,7 @@ get_visualization_button_options_lists <- function(all_data) {
   x_and_y_axis_options <- intersect(cols, cols_for_axes)
   group_options <- intersect(cols, cols_for_groups)
   
-  return(x_and_y_axis_options = x_and_y_axis_options, group_options = group_options)
+  return(list(x_and_y_axis_options = x_and_y_axis_options, group_options = group_options))
 }
 
 
@@ -148,10 +151,10 @@ generate_figure <- function(data,
   data <- data %>% filter(if_any(c(x, y), ~ !is.na(.)))
   
   # start building the plot
-  p <- ggplot(data, aes_string(x = x, y = y, color = color, size = size))
+  p <- ggplot(data, aes_string(x = x, y = y, color = color_groups))
   
   # add plot type
-  if (figure_type == "scatterplot") {p <- p + geom_point(size = point_size, ...)}
+  if (figure_type == "scatterplot") {p <- p + geom_point(size = point_size)}
   if (figure_type == "boxplot") {p <- p + geom_boxplot(...)}
   if (figure_type == "violin") {p <- p + geom_violin(...)}
   
@@ -185,6 +188,31 @@ generate_figure <- function(data,
   }
   return(p)
 }
+
+
+
+
+
+make_visualization_json_file <- function(all_data) {
+  
+  # get options for visualization page 
+  vis_options <- get_visualization_button_options_lists(all_data)
+
+  # read in json file
+  json <- fromJSON(paste0(here_duplica, '/app/Front_end/blank_visualization_options.json'))
+  
+  # update json file with parameters
+  json$x_axis$options <- vis_options$x_and_y_axis_options
+  json$y_axis$options <- vis_options$x_and_y_axis_options
+  
+  json$color_groups$options <- vis_options$group_options
+  json$separate_figure$options <- vis_options$group_options
+  
+  json <- toJSON(json, pretty = T)
+  write(json, file = paste0(here_duplica, '/app/Front_end/visualization_options.json'))
+  
+}
+
 
 
 

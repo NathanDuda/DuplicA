@@ -2,7 +2,7 @@
 library(data.table)
 library(R.utils)
 library(biomartr)
-source('./app/Scripts/multispecies_functions.R')
+#source('./app/Scripts/multispecies_functions.R')
 
 #library(conflicted)
 #conflicts_prefer(dplyr::select)
@@ -74,7 +74,7 @@ write_exon_tsv <- function(gn_exon_counts, selected_organism) {
 
 main_exon_datasets <- function(selected_organisms, selected_database_exon, must_be_reference, id_type_of_gene_ids, kept_transcript_dir) {
   
-  selected_organisms <- gsub(' ', '_', selected_organisms)
+  #selected_organisms <- gsub(' ', '_', selected_organisms)
   
   for (selected_organism in selected_organisms) {
     # get the gff file for the given organism

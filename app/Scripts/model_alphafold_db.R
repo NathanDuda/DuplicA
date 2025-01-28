@@ -210,20 +210,20 @@ main_alphafold <- function(all_copies, file_organism_table) {
 
 
 
-accession <- 'AF-Q5MK24-F1'
-url <- paste0("https://alphafold.ebi.ac.uk/files/", accession, "-model_v3.pdb")
-response1 <- GET(url)
-dup1_pdb <- read.pdb(response1$url)
+#accession <- 'AF-Q5MK24-F1'
+#url <- paste0("https://alphafold.ebi.ac.uk/files/", accession, "-model_v3.pdb")
+#response1 <- GET(url)
+#dup1_pdb <- read.pdb(response1$url)
 
-accession <- 'AF-Q5MK23-F1'
-url <- paste0("https://alphafold.ebi.ac.uk/files/", accession, "-model_v3.pdb")
-response2 <- GET(url)
-dup2_pdb <- read.pdb(response2$url)
+#accession <- 'AF-Q5MK23-F1'
+#url <- paste0("https://alphafold.ebi.ac.uk/files/", accession, "-model_v3.pdb")
+#response2 <- GET(url)
+#dup2_pdb <- read.pdb(response2$url)
 
-accession <- 'AF-Q8SYH1-F1'
-url <- paste0("https://alphafold.ebi.ac.uk/files/", accession, "-model_v3.pdb")
-responsea <- GET(url)
-anc_pdb <- read.pdb(responsea$url)
+#accession <- 'AF-Q8SYH1-F1'
+#url <- paste0("https://alphafold.ebi.ac.uk/files/", accession, "-model_v3.pdb")
+#responsea <- GET(url)
+#anc_pdb <- read.pdb(responsea$url)
 
 
 
