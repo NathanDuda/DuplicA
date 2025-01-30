@@ -75,7 +75,7 @@
   "color_set": {
     "type": "select",
     "label": "Color set",
-    "options": ["Spectral", "Accent", "Pastel1", "Paired", "Dark2"],
-    "default": ["Spectral"]
+    "options": ["Accent", "Spectral", "Pastel1", "Paired", "Dark2"],
+    "default": ["Accent"]
   }
 }

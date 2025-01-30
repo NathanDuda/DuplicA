@@ -128,22 +128,13 @@ main_run_workflow <- function(selected_models, input) {
   if(input$get_public_exon_data) {selected_models <- c(selected_models, 'exon_datasets')}
   
   #if('Public Datasets' %in% selected_models) {selected_models <- c(selected_models, 'OrthoFinder')}
-    
-    
-  if (!is.null(input$selected_organisms)) {
-    input$selected_organisms <- strsplit(input$selected_organisms, ',')[[1]]
-    input$selected_organisms <- trimws(input$selected_organisms) # remove extra space from each element
-  }
   
-  if (!is.null(input$dup_species_list)) {
-    input$dup_species_list <- strsplit(input$dup_species_list, ',')[[1]]
-    input$dup_species_list <- trimws(input$dup_species_list)
-  }
+  # split strings into lists 
+  if (!is.null(input$selected_organisms)) {input$selected_organisms <- split_into_list(input$selected_organisms)}
+  if (!is.null(input$dup_species_list)) {input$dup_species_list <- split_into_list(input$dup_species_list)}
+  if(!is.null(input$tissue_list)) {input$tissue_list <- split_into_list(input$tissue_list)}
   
-  if(!is.null(input$tissue_list)) {
-    input$tissue_list <- strsplit(input$tissue_list, ',')[[1]]
-    input$tissue_list <- trimws(input$tissue_list)
-  }
+  
   
   if('Public Datasets' %in% selected_models) {
     
@@ -341,12 +332,19 @@ main_run_workflow <- function(selected_models, input) {
 
 
 
+all_models <- list('Public Datasets', 'OrthoFinder', 'CDROM', 'dnds', 'expression_shift', 'diversity_divergence', 'alphafold_db', 'postduplication_fates', 'duplication_mechanism')
+
+sequential_models <- list('Public Datasets', 'OrthoFinder')
+parallel_models <- list('CDROM', 'dnds', 'expression_shift', 'diversity_divergence', 'alphafold_db', 'postduplication_fates', 'duplication_mechanism')
+
+
+
+
+
+
 selected_models <- "OrthoFinder, CDROM, Public Datasets" 
 
 selected_models <- list('Public Datasets', 'OrthoFinder', 'CDROM')
-
-
-#selected_models <- list('Public Datasets', 'OrthoFinder', 'CDROM', 'dnds', 'expression_shift', 'diversity_divergence', 'alphafold_db', 'postduplication_fates', 'duplication_mechanism')
 
 main_get_button_list <- function(selected_models, input) {
   

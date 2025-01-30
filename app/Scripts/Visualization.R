@@ -28,21 +28,23 @@ generate_figure(
   data = all_data,
   
   figure_type = "scatterplot",
-  x = "PS_dup_1",
-  y = "N_dup_1",
-  color_groups = NULL, 
+  x = "cpg_count_dup_1",
+  y = "cpg_count_dup_2",
+  color_groups = 'Functional_Category', 
   separate_figure = NULL,
   
   title = "title title",
-  x_label = 'x label',
-  y_label = 'y label',
-  legend_label = 'legend label',
+  x_label = NULL,
+  y_label = NULL,
+  legend_label = NULL,
   point_size = 2,
   
   custom_theme = 'bw', 
-  y_log = F,
-  x_log = F,
+  y_log = T,
+  x_log = T,
   color_set = 'Accent'
 )
+
+
 
 

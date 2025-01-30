@@ -34,7 +34,7 @@ get_all_results <- function(results_directory = here_results) {
   colnames(dups)[1] <- 'Orthogroup'
   
   # list all of the files available for visualization
-  files_for_visualization <- c("main_CDROM_output.tsv", "main_DiversityDivergence_output.tsv", "main_ExpressionShift_output.tsv", "main_postduplication_fates_output.tsv", 'Expression.tsv')
+  files_for_visualization <- c("main_CDROM_output.tsv", "main_DiversityDivergence_output.tsv", "main_ExpressionShift_output.tsv", "main_postduplication_fates_output.tsv", 'Expression.tsv', 'misc_results.tsv')
   
   file_names <- list.files(results_directory, full.names = F)
   file_names <- intersect(file_names, files_for_visualization)
@@ -61,13 +61,15 @@ get_all_results <- function(results_directory = here_results) {
     'main_CDROM_output.tsv' = c('dup_1', 'dup_2'),
     'main_DiversityDivergence_output.tsv' = 'Orthogroup',
     'main_ExpressionShift_output.tsv' = 'Orthogroup',
-    'main_postduplication_fates_output.tsv' = 'Orthogroup'
+    'main_postduplication_fates_output.tsv' = 'Orthogroup',
+    'misc_results.tsv' = c('Orthogroup', 'dup_1', 'dup_2')
   )
   new_colnames_list <- list(
     'main_CDROM_output.tsv' = c('dup_1', 'dup_2', 'ancestral_copy', 'Functional_Category'),
     'main_DiversityDivergence_output.tsv' = c('Orthogroup', 'Tissue', 'LRT_Diversity_Divergence'),
     'main_ExpressionShift_output.tsv' = c('Orthogroup', 'Tissue', 'LRT_ExpressionShift')
     #  'main_postduplication_fates_output.tsv' = NA
+    #  'misc_results.tsv' = NA
   )
   
   if('main_DiversityDivergence_output.tsv' %in% names_avail_results &
@@ -90,6 +92,15 @@ get_all_results <- function(results_directory = here_results) {
     
   }
   
+  
+  # misc_results adds another duplicate_pair_species
+  if ('duplicate_pair_species.x' %in% colnames(all_dups)) {
+    all_data <- all_data %>%
+      dplyr::select(-duplicate_pair_species.x) %>%
+      dplyr::select(duplicate_pair_species = duplicate_pair_species.y, everything())
+    
+  }
+  
   return(all_data)
 }
 
@@ -99,7 +110,11 @@ get_visualization_button_options_lists <- function(all_data) {
   
   # UPDATE THESE LISTS 
   cols_for_axes <- c('Functional_Category', 'Tissue', 'duplicate_pair_species', 
-                     'PS_dup_1', 'PS_dup_2', 'N_dup_1', 'N_dup_2', 'DN', 'C', 'SB', 'SP', 'LRT_Diversity_Divergence', 'LRT_ExpressionShift') 
+                     'PS_dup_1', 'PS_dup_2', 'N_dup_1', 'N_dup_2', 'DN', 'C', 'SB', 'SP', 
+                     'LRT_Diversity_Divergence', 'LRT_ExpressionShift', 
+                     'prot_length_dup_1', 'prot_length_dup_2', 
+                     'gc_content_dup_1', 'gc_content_dup_2',
+                     'cpg_count_dup_1', 'cpg_count_dup_2') 
   cols_for_groups <- c('Functional_Category', 'Tissue', 'duplicate_pair_species')
 
   x_and_y_axis_options <- intersect(cols, cols_for_axes)
@@ -149,14 +164,16 @@ generate_figure <- function(data,
   
   # remove NA values for x and y
   data <- data %>% filter(if_any(c(x, y), ~ !is.na(.)))
+  if (!is.null(color_groups)) {data <- data %>% filter(if_any(c(color_groups), ~ !is.na(.)))}
+  if (!is.null(separate_figure)) {data <- data %>% filter(if_any(c(separate_figure), ~ !is.na(.)))}
   
   # start building the plot
   p <- ggplot(data, aes_string(x = x, y = y, color = color_groups))
   
   # add plot type
   if (figure_type == "scatterplot") {p <- p + geom_point(size = point_size)}
-  if (figure_type == "boxplot") {p <- p + geom_boxplot(...)}
-  if (figure_type == "violin") {p <- p + geom_violin(...)}
+  if (figure_type == "boxplot") {p <- p + geom_boxplot()}
+  if (figure_type == "violin") {p <- p + geom_violin()}
   
   # apply log scaling if chosen
   if (x_log) {p <- p + scale_x_log10()}
@@ -164,7 +181,7 @@ generate_figure <- function(data,
   
   # add custom color set 
   if (!is.null(color_set)) {
-    p <- p + scale_color_manual(values = brewer.pal(2, color_set)
+    p <- p + scale_color_manual(values = brewer.pal(length(unique(data[[color_groups]])), color_set)
     )
   }
   

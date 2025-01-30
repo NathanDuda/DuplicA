@@ -489,6 +489,13 @@ cat_all_in_dir <- function(dir, file_type = 'delim') {
 }
 
 
+split_into_list <- function(string) {
+  string <- strsplit(string, ',')[[1]]
+  list <- trimws(string) # remove extra space from each element
+  
+  return(list)
+}
+
 
 
 
