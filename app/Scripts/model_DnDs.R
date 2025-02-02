@@ -113,10 +113,8 @@ get_paired_fastas <- function(pairs, nuc_file_path, prot_file_path, use_all_fast
 
 get_prot_alignments <- function(aligner) {
   if (aligner == 'muscle') {
-    
     muscle_path <- paste0(here_linux_dep, '/MUSCLE/muscle-linux-x86.v5.2')
     
-    # mkdirs if don't exist 
     # align proteins of groups of pairs 
     muscle_command <- paste0(
       'for file in ', here_linux_temp, '/Connected_Eq_Protein_Sequences/*; do ',
@@ -212,21 +210,20 @@ main_pop_dnds <- function(cnvs_path, nuc_file_path, prot_file_path = NA, aligner
 
 main_multispecies_dnds <- function(OF_dir_path, dups, allow_two_to_twos, nuc_file_path, prot_file_path, aligner) {
   
-  replace_dirs = T
-  temp_dir_list <- c('/Connected_Eq_Protein_Sequences', '/Connected_Eq_Protein_Alignments', '/Connected_Eq_Nucleotide_Sequences', '/Connected_Eq_Codon_Alignments')
-  make_temp_dirs(replace_dirs, temp_dir_list)
-  
-  
-  if (allow_two_to_twos == T) {dups <- get_two_to_two_pairs_from_OF(OF_dir_path)}
+  # make temp directories
+  temp_dir_list <- c('/Connected_Eq_Protein_Sequences', '/Connected_Eq_Nucleotide_Sequences',
+                     '/Connected_Eq_Protein_Alignments', '/Connected_Eq_Codon_Alignments')
+  make_temp_dirs(replace_dirs = T, temp_dir_list)
   
   # empty out temp directories
   unlink(paste0(here_temp, '/Connected_Eq_Nucleotide_Sequences/*'))
   unlink(paste0(here_temp, '/Connected_Eq_Protein_Sequences/*'))
   
+  # overwrite dups to include two_to_twos if chosen 
+  if (allow_two_to_twos == T) {dups <- get_two_to_two_pairs_from_OF(OF_dir_path)}
   
-  pairs <- dups 
-  
-  get_paired_fastas(pairs, nuc_file_path, prot_file_path, use_all_fastas_in_dir = TRUE)
+  # calculate dnds
+  get_paired_fastas(dups, nuc_file_path, prot_file_path, use_all_fastas_in_dir = TRUE)
   get_prot_alignments(aligner)
   get_codon_alignments()
   dnds_results <- get_dnds()
