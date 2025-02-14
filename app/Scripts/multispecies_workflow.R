@@ -50,12 +50,12 @@ parameters$use_absolute_exp = T
 parameters$PC = F
 
 ####parameters$selected_organisms <- 'Drosophila melanogaster, Drosophila ananassae, Drosophila mojavensis'
-parameters$selected_organisms <- 'Homo sapien, Drosophila melanogaster'
+parameters$selected_organisms <- 'Drosophila ananassae, Drosophila melanogaster'
 parameters$exp_path <- NULL
 
 # for expression shift
 ####parameters$dup_species_list <- 'Drosophila_melanogaster_prot, Drosophila_ananassae_prot, Drosophila_mojavensis_prot'
-parameters$dup_species_list <- 'Homo sapien, Drosophila melanogaster'
+parameters$dup_species_list <- 'Drosophila ananassae, Drosophila melanogaster'
 
 parameters$copy_amount = 2
 parameters$tissue_list = 'All Tissues'
@@ -122,7 +122,7 @@ parameters$nondup_species_need_onecopy = F
 
 
 ###
-selected_models <- list('Public Datasets', 'OrthoFinder')
+selected_models <- list('Public Datasets', 'OrthoFinder', 'expression_shift', 'diversity_divergence')
 parameters$get_public_exon_data <- T
 
 

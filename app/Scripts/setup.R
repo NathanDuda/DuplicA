@@ -16,6 +16,8 @@ library(seqinr)
 library(evemodel)
 library(igraph)
 
+prefix <- 'C:'
+
 here_duplica <- paste0(fs::path_home(), '/Downloads/DuplicA')
 here_duplica <- paste0(prefix, '/Users/17735/Downloads/DuplicA') # for sourcing this script in wsl  
 

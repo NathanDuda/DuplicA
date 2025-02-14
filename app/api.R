@@ -1,7 +1,7 @@
 
 library(plumber)
 
-
+prefix <- 'C:'
 source(paste0(prefix, '/Users/17735/Downloads/DuplicA/app/Scripts/multispecies_workflow.R'))
 
 
@@ -25,14 +25,9 @@ cors <- function(req, res) {
 function(req, selected_models, parameters) {
 
   selected_models <- as.character(unlist(selected_models))
-
-  parameters
-  
-  parameters[1]
-  
     
   # get buttons
-  input <- main_get_button_list(selected_models, parameters)
+  input <- main_get_relevant_parameter_list(selected_models, parameters)
   
   # Return the result as JSON
   return(input)

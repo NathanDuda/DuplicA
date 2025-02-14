@@ -9,22 +9,22 @@
   "x_axis": {
     "type": ["select"],
     "label": ["x-axis"],
-    "options": ["duplicate_pair_species", "Functional_Category", "Tissue", "LRT_Diversity_Divergence", "LRT_ExpressionShift", "PS_dup_1", "PS_dup_2", "N_dup_1", "N_dup_2", "DN", "C", "SB", "SP"]
+    "options": ["Functional_Category", "Tissue", "LRT_Diversity_Divergence", "LRT_ExpressionShift", "PS_dup_1", "PS_dup_2", "N_dup_1", "N_dup_2", "DN", "C", "SB", "SP", "prot_length_dup_1", "prot_length_dup_2", "gc_content_dup_1", "gc_content_dup_2", "cpg_count_dup_1", "cpg_count_dup_2"]
   },
   "y_axis": {
     "type": ["select"],
     "label": ["y-axis"],
-    "options": ["duplicate_pair_species", "Functional_Category", "Tissue", "LRT_Diversity_Divergence", "LRT_ExpressionShift", "PS_dup_1", "PS_dup_2", "N_dup_1", "N_dup_2", "DN", "C", "SB", "SP"]
+    "options": ["Functional_Category", "Tissue", "LRT_Diversity_Divergence", "LRT_ExpressionShift", "PS_dup_1", "PS_dup_2", "N_dup_1", "N_dup_2", "DN", "C", "SB", "SP", "prot_length_dup_1", "prot_length_dup_2", "gc_content_dup_1", "gc_content_dup_2", "cpg_count_dup_1", "cpg_count_dup_2"]
   },
   "color_groups": {
     "type": ["select"],
     "label": ["Color by group"],
-    "options": ["duplicate_pair_species", "Functional_Category", "Tissue"]
+    "options": ["Functional_Category", "Tissue"]
   },
   "separate_figure": {
     "type": ["select"],
     "label": ["Separate figure"],
-    "options": ["duplicate_pair_species", "Functional_Category", "Tissue"]
+    "options": ["Functional_Category", "Tissue"]
   },
   "title": {
     "type": ["text"],
