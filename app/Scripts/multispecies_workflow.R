@@ -346,29 +346,29 @@ parallel_models <- list('CDROM', 'dnds', 'expression_shift', 'diversity_divergen
 
 
 
-future_map()
+#future_map()
 
 
 
 
 
-selected_models <- "OrthoFinder, CDROM, Public Datasets" 
+#selected_models <- "OrthoFinder, CDROM, Public Datasets" 
 
-selected_models <- list('Public Datasets', 'OrthoFinder', 'CDROM')
+#selected_models <- list('Public Datasets', 'OrthoFinder', 'CDROM')
 
 main_get_relevant_parameter_list <- function(selected_models, parameters) {
   
   print(selected_models)
-  print(parameters)
+  #print(parameters)
   
-  print(parameters[1])
-  print(parameters$missing_expr_is_zero)
-  print(parameters$CDROM)
+  #print(parameters[["missing_exp_is_zero"]])
+  #print('CDROM' %in% selected_models)
   
     
-  selected_models <- strsplit(selected_models, ',')[[1]]
-  selected_models <- trimws(selected_models)
+  ######selected_models <- strsplit(selected_models, ',')[[1]]
+  #######selected_models <- trimws(selected_models)
   
+
   
   # NOTE: if 'Public Datasets' in selected_models, 'OrthoFinder' must be chosen
   
@@ -380,15 +380,15 @@ main_get_relevant_parameter_list <- function(selected_models, parameters) {
     additional_parameter_list <- c(additional_parameter_list, 'data_types', 'must_be_reference', 'keep_which_transcript')
     
     
-    if('Proteomes' %in% parameters$data_types) {additional_parameter_list <- c(additional_parameter_list, 'selected_database_protein')}
-    if('CDS' %in% parameters$data_types) {additional_parameter_list <- c(additional_parameter_list, 'selected_database_cds')}
-    if('Genomes' %in% parameters$data_types) {additional_parameter_list <- c(additional_parameter_list, 'selected_database_genome')}
+    if('Proteomes' %in% parameters[['data_types']]) {additional_parameter_list <- c(additional_parameter_list, 'selected_database_protein')}
+    if('CDS' %in% parameters[['data_types']]) {additional_parameter_list <- c(additional_parameter_list, 'selected_database_cds')}
+    if('Genomes' %in% parameters[['data_types']]) {additional_parameter_list <- c(additional_parameter_list, 'selected_database_genome')}
     
     
     if('OrthoFinder' %in% selected_models) {
-      if(!'Proteomes' %in% parameters$data_types) {required_parameter_list <- c(required_parameter_list, 'protein_folder')}
+      if(!'Proteomes' %in% parameters[['data_types']]) {required_parameter_list <- c(required_parameter_list, 'protein_folder')}
       additional_parameter_list <- c(additional_parameter_list, 'custom_species_tree', 'sequence_search_method', 'gene_tree_inference_method', 'mcl_inflation', 'split_hogs', 'nuc_not_prot')
-      if(parameters$gene_tree_inference_method == 'msa') {additional_parameter_list <- c(additional_parameter_list, 'msa_method', 'tree_method', 'msa_trim')}
+      if(parameters[['gene_tree_inference_method']] == 'msa') {additional_parameter_list <- c(additional_parameter_list, 'msa_method', 'tree_method', 'msa_trim')}
     }
   }
   
@@ -416,7 +416,7 @@ main_get_relevant_parameter_list <- function(selected_models, parameters) {
   if('duplication_mechanism' %in% selected_models) {
     required_parameter_list <- c(required_parameter_list, 'get_public_exon_data')
     
-    if(isFALSE(parameters$get_public_exon_data)) { 
+    if(isFALSE(parameters[['get_public_exon_data']])) { 
       required_parameter_list <- c(required_parameter_list, 'exons_folder')
     }
     additional_parameter_list <- c(additional_parameter_list, 'mech_type')
@@ -427,7 +427,7 @@ main_get_relevant_parameter_list <- function(selected_models, parameters) {
   }
   
   if('dnds' %in% selected_models) {
-    if(!'CDS' %in% parameters$data_types) {required_parameter_list <- c(required_parameter_list, 'nuc_folder')}
+    if(!'CDS' %in% parameters[['data_types']]) {required_parameter_list <- c(required_parameter_list, 'nuc_folder')}
     additional_parameter_list <- c(additional_parameter_list, 'dnds_aligner')
   }
 
@@ -436,6 +436,8 @@ main_get_relevant_parameter_list <- function(selected_models, parameters) {
     
   }
 
+  print('returning :D')
+  print(required_parameter_list)
   return(list(additional_parameter_list = additional_parameter_list,
               required_parameter_list = required_parameter_list))
 }

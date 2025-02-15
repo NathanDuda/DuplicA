@@ -1,28 +1,24 @@
 import React from "react";
-import { BrowserRouter as Router, Route, Routes, NavLink } from "react-router-dom";
+import Home from "./Home";
 import Workflow from "./Workflow";
+import Visualization from "./Visualization";
 import "./App.css";
 
 function App() {
   return (
-    <Router>
-      <div className="app">
-        <header className="header">
-          <div className="logo">DuplicA</div>
-          <nav className="nav">
-            <NavLink to="/" className="nav-link">Home</NavLink>
-            <NavLink to="/workflow" className="nav-link">WorkFlow</NavLink>
-            <NavLink to="/visualization" className="nav-link">Visualization</NavLink>
-            <NavLink to="/hypothesis-testing" className="nav-link">Hypothesis Testing</NavLink>
-            <NavLink to="/about" className="nav-link">About</NavLink>
-          </nav>
-        </header>
-        <Routes>
-          <Route path="/workflow" element={<Workflow />} />
-          {/* Other routes can be added here */}
-        </Routes>
-      </div>
-    </Router>
+    <div className="App">
+      <header className="header">
+        <h1 className="logo">DuplicA</h1>
+        <nav className="nav">
+          <a href="#home" className="nav-link">Home</a>
+          <a href="#workflow" className="nav-link">WorkFlow</a>
+          <a href="#visualization" className="nav-link">Visualization</a>
+          <a href="#hypothesis" className="nav-link">Hypothesis Testing</a>
+          <a href="#about" className="nav-link">About</a>
+        </nav>
+      </header>
+      <Visualization />
+    </div>
   );
 }
 

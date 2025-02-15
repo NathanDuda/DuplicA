@@ -3,6 +3,7 @@ library(plumber)
 
 prefix <- 'C:'
 source(paste0(prefix, '/Users/17735/Downloads/DuplicA/app/Scripts/multispecies_workflow.R'))
+source(paste0(prefix, '/Users/17735/Downloads/DuplicA/app/Scripts/Visualization.R'))
 
 
 #* Enable Cross-origin Resource Sharing
@@ -31,6 +32,25 @@ function(req, selected_models, parameters) {
   
   # Return the result as JSON
   return(input)
+}
+
+
+
+
+# generate figure image 
+#* @post /makeImage
+function(req) {
+  # Parse incoming JSON request body
+  parameters <- fromJSON(req$postBody)
+  
+  # Debugging: Print received parameters
+  print("Received request:")
+  print(parameters)
+  
+  # Call function with extracted parameters
+  main_generate_figure(parameters)
+  
+  return(list(status = "success"))
 }
 
 

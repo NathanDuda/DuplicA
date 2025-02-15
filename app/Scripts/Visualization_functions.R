@@ -43,7 +43,7 @@ get_all_results <- function(results_directory = here_results) {
   
   # get expression per gene 
   if('Expression.tsv' %in% basename(file_names)) {
-    exp <- read.delim(paste0(here_results, '/Expression.tsv'), sep = ' ')
+    exp <- read.delim(paste0(results_directory, '/Expression.tsv'), sep = ' ')
     dups <- merge_by_gene(dups, data_to_add = exp, prefix = 'exp', merge_by_each = c('dup_1', 'dup_2'))
   }
   
@@ -94,7 +94,7 @@ get_all_results <- function(results_directory = here_results) {
   
   
   # misc_results adds another duplicate_pair_species
-  if ('duplicate_pair_species.x' %in% colnames(all_dups)) {
+  if ('duplicate_pair_species.x' %in% colnames(all_data)) {
     all_data <- all_data %>%
       dplyr::select(-duplicate_pair_species.x) %>%
       dplyr::select(duplicate_pair_species = duplicate_pair_species.y, everything())
@@ -124,92 +124,6 @@ get_visualization_button_options_lists <- function(all_data) {
 }
 
 
-# main function to make the figure 
-generate_figure <- function(data,
-                            
-                            figure_type = NULL,
-                            x = NULL,
-                            y = NULL,
-                            color_groups = NULL,
-                            separate_figure = NULL,
-                            
-                            title = NULL,
-                            x_label = NULL,
-                            y_label = NULL,
-                            legend_label = NULL,
-                            point_size = 3,
-                            
-                            custom_theme = NULL,
-                            x_log = FALSE,
-                            y_log = FALSE,
-                            color_set = NULL
-) {
-  
-  
-  # test for proper inputs 
-  if (x_log && !is.numeric(data[[x]])) {
-    stop("Log scale can only be applied to numeric variables for x.")
-  }
-  if (y_log && !is.numeric(data[[y]])) {
-    stop("Log scale can only be applied to numeric variables for y.")
-  }
-  
-  # Ensure plot type matches the variable types
-  if (figure_type == "boxplot" | figure_type == 'violin') {
-    if (!is.factor(data[[x]]) && !is.character(data[[x]]) &&
-        !is.factor(data[[y]]) && !is.character(data[[y]])) {
-      stop("Boxplot requires at least one of x or y to be categorical.")
-    }
-  }
-  
-  # remove NA values for x and y
-  data <- data %>% filter(if_any(c(x, y), ~ !is.na(.)))
-  if (!is.null(color_groups)) {data <- data %>% filter(if_any(c(color_groups), ~ !is.na(.)))}
-  if (!is.null(separate_figure)) {data <- data %>% filter(if_any(c(separate_figure), ~ !is.na(.)))}
-  
-  # start building the plot
-  p <- ggplot(data, aes_string(x = x, y = y, color = color_groups))
-  
-  # add plot type
-  if (figure_type == "scatterplot") {p <- p + geom_point(size = point_size)}
-  if (figure_type == "boxplot") {p <- p + geom_boxplot()}
-  if (figure_type == "violin") {p <- p + geom_violin()}
-  
-  # apply log scaling if chosen
-  if (x_log) {p <- p + scale_x_log10()}
-  if (y_log) {p <- p + scale_y_log10()}
-  
-  # add custom color set 
-  if (!is.null(color_set)) {
-    p <- p + scale_color_manual(values = brewer.pal(length(unique(data[[color_groups]])), color_set)
-    )
-  }
-  
-  # add faceting if chosen
-  if (!is.null(separate_figure)) {
-    p <- p + facet_wrap(as.formula(paste("~", separate_figure)))
-  }
-  
-  # add custom labels
-  if (!is.null(title)) {p <- p + ggtitle(title)}
-  if (!is.null(x_label)) {p <- p + xlab(x_label)}
-  if (!is.null(y_label)) {p <- p + ylab(y_label)}
-  
-  # add custom theme
-  if(is.null(custom_theme)) {p <- p + theme_classic()}
-  if(!is.null(custom_theme)) {
-    if(custom_theme == 'classic') {p <- p + theme_classic()}
-    if(custom_theme == 'bw') {p <- p + theme_bw()}
-    if(custom_theme == 'minimal') {p <- p + theme_minimal()}
-    if(custom_theme == 'linedraw') {p <- p + theme_linedraw()}
-  }
-  return(p)
-}
-
-
-
-
-
 make_visualization_json_file <- function(all_data) {
   
   # get options for visualization page 
@@ -226,10 +140,10 @@ make_visualization_json_file <- function(all_data) {
   json$separate_figure$options <- vis_options$group_options
   
   json <- toJSON(json, pretty = T)
-  write(json, file = paste0(here_duplica, '/app/Front_end/visualization_options.json'))
+  write(json, file = paste0(here_duplica, '/app/Front_end/vite-project/public/visualization_options.json')) # CHANGE VITE 
   
 }
-
+# Downloads/DuplicA/app/Front_end/vite-project$
 
 
 
