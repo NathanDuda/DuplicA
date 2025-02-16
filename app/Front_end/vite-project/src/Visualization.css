@@ -77,3 +77,43 @@
     background-color: #524cb7;
   }
   
+  /* Ensure additional options are properly aligned */
+.additional-options-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  width: 100%;
+  max-width: 600px;
+  margin-top: 10px;
+}
+
+/* Each column gets half the space */
+.additional-options-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Style the labels for better readability */
+label {
+  font-weight: bold;
+  color: black;
+  font-size: 14px;
+}
+
+/* Style input boxes */
+input, select {
+  width: 100%;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: white;
+  color: black;
+}
+
+/* Style checkboxes separately */
+input[type="checkbox"] {
+  width: auto;
+  margin-left: 5px;
+}

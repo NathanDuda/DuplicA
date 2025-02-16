@@ -17,7 +17,7 @@ function App() {
           <a href="#about" className="nav-link">About</a>
         </nav>
       </header>
-      <Visualization />
+      <Home />
     </div>
   );
 }

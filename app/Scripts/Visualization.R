@@ -100,7 +100,7 @@ generate_figure <- function(data,
     if(custom_theme == 'linedraw') {p <- p + theme_linedraw()}
   }
   
-  ggsave(p, filename = paste0(here_duplica, '/app/Front_end/vite-project/public/Figure.png'), height = 4, width = 4, dpi = 400)
+  ggsave(p, filename = paste0(here_duplica, '/app/Front_end/vite-project/public/Figure.png'), height = 5, width = 7, dpi = 400)
   
   return(p)
 }
@@ -180,8 +180,8 @@ main_generate_figure <- function(parameters) {
     color_groups = parameters$color_groups,
     separate_figure = parameters$separate_plot,
     title = parameters$title,
-    x_label = parameters$x_label,
-    y_label = parameters$y_label,
+    x_label = parameters$x_axis_label,
+    y_label = parameters$y_axis_label,
     custom_theme = parameters$custom_theme, 
     y_log = parameters$log_scale_y,
     x_log = parameters$log_scale_x,
