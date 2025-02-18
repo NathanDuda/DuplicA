@@ -1,23 +1,21 @@
+source(paste0("/Users/stellawang/Documents/dupA/DuplicA/app/Scripts/setup.R")) # CHANGE PATH
+here_duplica <- paste0("/Users/stellawang/Documents/dupA/DuplicA") # for sourcing this script in wsl
 
-source(paste0(prefix, '/Users/17735/Downloads/DuplicA/app/Scripts/setup.R')) # CHANGE PATH 
-here_duplica <- paste0(prefix, '/Users/17735/Downloads/DuplicA') # for sourcing this script in wsl  
+source(paste0(here_duplica, "/app/Scripts/multispecies_functions.R"))
 
-source(paste0(here_duplica, '/app/Scripts/multispecies_functions.R'))
+source(paste0(here_duplica, "/app/Scripts/model_Public_Datasets.R"))
+source(paste0(here_duplica, "/app/Scripts/model_OrthoFinder.R"))
+source(paste0(here_duplica, "/app/Scripts/model_CDROM.R"))
+source(paste0(here_duplica, "/app/Scripts/model_EVE.R"))
+source(paste0(here_duplica, "/app/Scripts/model_DnDs.R"))
+source(paste0(here_duplica, "/app/Scripts/model_alphafold_db.R"))
+source(paste0(here_duplica, "/app/Scripts/model_postduplication_fates.R"))
+source(paste0(here_duplica, "/app/Scripts/model_Exon_Datasets.R"))
+source(paste0(here_duplica, "/app/Scripts/model_duplication_mechanism.R"))
+# source(paste0(here_duplica, '/app/Scripts/model_GO.R'))
+source(paste0(here_duplica, "/app/Scripts/model_misc.R"))
 
-source(paste0(here_duplica, '/app/Scripts/model_Public_Datasets.R'))
-source(paste0(here_duplica, '/app/Scripts/model_OrthoFinder.R'))
-source(paste0(here_duplica, '/app/Scripts/model_CDROM.R'))
-source(paste0(here_duplica, '/app/Scripts/model_EVE.R'))
-source(paste0(here_duplica, '/app/Scripts/model_DnDs.R'))
-source(paste0(here_duplica, '/app/Scripts/model_alphafold_db.R'))
-source(paste0(here_duplica, '/app/Scripts/model_postduplication_fates.R'))
-source(paste0(here_duplica, '/app/Scripts/model_Exon_Datasets.R'))
-source(paste0(here_duplica, '/app/Scripts/model_duplication_mechanism.R'))
-#source(paste0(here_duplica, '/app/Scripts/model_GO.R'))
-source(paste0(here_duplica, '/app/Scripts/model_misc.R'))
-
-source(paste0(here_duplica, '/app/Scripts/tool_ID_conversion.R'))
-
+source(paste0(here_duplica, "/app/Scripts/tool_ID_conversion.R"))
 
 
 
@@ -25,8 +23,9 @@ source(paste0(here_duplica, '/app/Scripts/tool_ID_conversion.R'))
 
 
 
-# allow no ancestral copy 
-# fix proper finding of ancestral copy data since different species 
+
+# allow no ancestral copy
+# fix proper finding of ancestral copy data since different species
 # deal with error when data does not exist
 
 
@@ -37,157 +36,173 @@ source(paste0(here_duplica, '/app/Scripts/tool_ID_conversion.R'))
 # example inputs
 input <- list()
 
-input$exp_path <- 'C:/Users/17735/Downloads/AAAAA_Expression_Input_Example/dana_dmel_dmoj_exp.tsv'
+input$exp_path <- "C:/Users/17735/Downloads/AAAAA_Expression_Input_Example/dana_dmel_dmoj_exp.tsv"
 input$normalization_type <- NA
 input$add_pseudofunc <- T
 input$missing_expr_is_zero <- F
 input$rm_exp_lower_than <- 1
 input$min_dups_per_species_pair_custom <- 10
 
-input$use_absolute_exp = T
-input$PC = F
+input$use_absolute_exp <- T
+input$PC <- F
 
-####input$selected_organisms <- 'Drosophila melanogaster, Drosophila ananassae, Drosophila mojavensis'
-input$selected_organisms <- 'Homo sapien, Drosophila melanogaster'
+#### input$selected_organisms <- 'Drosophila melanogaster, Drosophila ananassae, Drosophila mojavensis'
+input$selected_organisms <- "Homo sapien, Drosophila melanogaster"
 input$exp_path <- NULL
 
 # for expression shift
-####input$dup_species_list <- 'Drosophila_melanogaster_prot, Drosophila_ananassae_prot, Drosophila_mojavensis_prot'
-input$dup_species_list <- 'Homo sapien, Drosophila melanogaster'
+#### input$dup_species_list <- 'Drosophila_melanogaster_prot, Drosophila_ananassae_prot, Drosophila_mojavensis_prot'
+input$dup_species_list <- "Homo sapien, Drosophila melanogaster"
 
-input$copy_amount = 2
-input$tissue_list = 'All Tissues'
-input$use_gene_trees = T
+input$copy_amount <- 2
+input$tissue_list <- "All Tissues"
+input$use_gene_trees <- T
 # for diversity divergence
-input$lower_beta_lim = 1 # guess
-input$upper_beta_lim = 10 # guess
+input$lower_beta_lim <- 1 # guess
+input$upper_beta_lim <- 10 # guess
 
 # for postduplication fates
-input$v = 0.2
-input$p = 0.05
+input$v <- 0.2
+input$p <- 0.05
 
 # for main_public_datasets
-#input$selected_organisms <- c('Drosophila melanogaster', 'Arabidopsis thaliana', 'Saccharomyces cerevisiae')
+# input$selected_organisms <- c('Drosophila melanogaster', 'Arabidopsis thaliana', 'Saccharomyces cerevisiae')
 
 
 ## additional for main_public_datasets
-input$selected_database_protein <- 'ensembl'
+input$selected_database_protein <- "ensembl"
 
-if(input$selected_database_protein == 'ensembl') {input$id_type_of_gene_ids <- 'ensembl'} # will convert exon datasets id to this format  
+if (input$selected_database_protein == "ensembl") {
+  input$id_type_of_gene_ids <- "ensembl"
+} # will convert exon datasets id to this format
 
 
-input$selected_database_cds <- 'ensembl'
-input$selected_database_genome <- 'ensembl'
-input$data_types <- c('Proteomes', 'CDS')
-input$keep_which_transcript <- 'longest'
+input$selected_database_cds <- "ensembl"
+input$selected_database_genome <- "ensembl"
+input$data_types <- c("Proteomes", "CDS")
+input$keep_which_transcript <- "longest"
 input$must_be_reference <- F
 
 # for main_orthofinder
 
 
 
-#user_provided_path_to_protein_directory # If Public Datasets not selected 
-#nuc_output_dir <- user_provided_path_to_nucleotide_directory # If Public Datasets not selected 
+# user_provided_path_to_protein_directory # If Public Datasets not selected
+# nuc_output_dir <- user_provided_path_to_nucleotide_directory # If Public Datasets not selected
 
 ## additional
-input$nuc_not_prot = F
-input$gene_tree_inference_method = 'dendroblast'
-input$sequence_search_method = 'diamond'
-input$msa_method = NA
-input$tree_method = NA
-input$species_tree_path = NULL
-input$mcl_inflation = 1.5
-input$split_hogs = F
-input$msa_trim = F
-
-# 
-#user_provided_path_to_orthofinder_output # If OrthoFinder not selected
-
-#user_provided_path_to_exon_output_dir # If no exon_datasets but yes duplication_mechanism
+input$nuc_not_prot <- F
+input$gene_tree_inference_method <- "dendroblast"
+input$sequence_search_method <- "diamond"
+input$msa_method <- NA
+input$tree_method <- NA
+input$species_tree_path <- NULL
+input$mcl_inflation <- 1.5
+input$split_hogs <- F
+input$msa_trim <- F
 
 #
-input$selected_database_exon = 'refseq'
+# user_provided_path_to_orthofinder_output # If OrthoFinder not selected
+
+# user_provided_path_to_exon_output_dir # If no exon_datasets but yes duplication_mechanism
+
+#
+input$selected_database_exon <- "refseq"
 
 # duplciation mechanism
-input$mech_type <- 'standard'
+input$mech_type <- "standard"
 
 # for dnds
 input$allow_two_to_twos <- F
 
 # for eve
-input$nondup_species_need_onecopy = F
+input$nondup_species_need_onecopy <- F
 
 
 ###
-selected_models <- list('Public Datasets', 'OrthoFinder')
+selected_models <- list("Public Datasets", "OrthoFinder")
 input$get_public_exon_data <- T
 
 
 main_run_workflow <- function(selected_models, input) {
-  
-  if(input$get_public_exon_data) {selected_models <- c(selected_models, 'exon_datasets')}
-  
-  #if('Public Datasets' %in% selected_models) {selected_models <- c(selected_models, 'OrthoFinder')}
-  
-  # split strings into lists 
-  if (!is.null(input$selected_organisms)) {input$selected_organisms <- split_into_list(input$selected_organisms)}
-  if (!is.null(input$dup_species_list)) {input$dup_species_list <- split_into_list(input$dup_species_list)}
-  if(!is.null(input$tissue_list)) {input$tissue_list <- split_into_list(input$tissue_list)}
-  
-  
-  
-  if('Public Datasets' %in% selected_models) {
-    
-    result_dir <- paste0(here_results, '/Fastas/')
-    if(dir.exists(result_dir)) {dir_delete(result_dir)}
-    
-    kept_transcript_dir <- paste0(here_results, '/Fastas/kept_transcript/')
+  if (input$get_public_exon_data) {
+    selected_models <- c(selected_models, "exon_datasets")
+  }
+
+  # if('Public Datasets' %in% selected_models) {selected_models <- c(selected_models, 'OrthoFinder')}
+
+  # split strings into lists
+  if (!is.null(input$selected_organisms)) {
+    input$selected_organisms <- split_into_list(input$selected_organisms)
+  }
+  if (!is.null(input$dup_species_list)) {
+    input$dup_species_list <- split_into_list(input$dup_species_list)
+  }
+  if (!is.null(input$tissue_list)) {
+    input$tissue_list <- split_into_list(input$tissue_list)
+  }
+
+
+
+  if ("Public Datasets" %in% selected_models) {
+    result_dir <- paste0(here_results, "/Fastas/")
+    if (dir.exists(result_dir)) {
+      dir_delete(result_dir)
+    }
+
+    kept_transcript_dir <- paste0(here_results, "/Fastas/kept_transcript/")
     dir.create(dirname(kept_transcript_dir))
     dir.create(kept_transcript_dir)
-    
-    main_public_datasets(selected_organisms = input$selected_organisms, 
-                         data_types = input$data_types, 
-                         selected_database_protein = input$selected_database_protein, 
-                         selected_database_cds = input$selected_database_cds, 
-                         selected_database_genome = input$selected_database_genome, 
-                         keep_which_transcript = input$keep_which_transcript, 
-                         must_be_reference = input$must_be_reference)
-    prot_output_dir <- paste0(here_results, '/Fastas/Protein_Fastas/')
-    nuc_output_dir <- paste0(here_results, '/Fastas/Nucleotide_Fastas/')
+
+    main_public_datasets(
+      selected_organisms = input$selected_organisms,
+      data_types = input$data_types,
+      selected_database_protein = input$selected_database_protein,
+      selected_database_cds = input$selected_database_cds,
+      selected_database_genome = input$selected_database_genome,
+      keep_which_transcript = input$keep_which_transcript,
+      must_be_reference = input$must_be_reference
+    )
+    prot_output_dir <- paste0(here_results, "/Fastas/Protein_Fastas/")
+    nuc_output_dir <- paste0(here_results, "/Fastas/Nucleotide_Fastas/")
   }
   # get protein folder path when public datasets not chosen
-  if(!('Public Datasets' %in% selected_models) & ('OrthoFinder' %in% selected_models)) {
-    prot_output_dir <- input$protein_folder 
-    if ('dnds' %in% selected_models) {nuc_output_dir <- input$nuc_folder}
+  if (!("Public Datasets" %in% selected_models) & ("OrthoFinder" %in% selected_models)) {
+    prot_output_dir <- input$protein_folder
+    if ("dnds" %in% selected_models) {
+      nuc_output_dir <- input$nuc_folder
+    }
   }
-  
-  if('OrthoFinder' %in% selected_models) {
-    
-    result_dir <- paste0(here_results, '/OrthoFinder/')
-    if(dir.exists(result_dir)) {dir_delete(result_dir)} # delete result directory if exists already
-    
-    main_OrthoFinder(protein_folder = prot_output_dir,
-                     is_dna = input$nuc_not_prot, 
-                     method = input$gene_tree_inference_method,
-                     sequence_search = input$sequence_search_method, 
-                     msa_program = input$msa_method,
-                     tree_method = input$tree_method,
-                     species_tree = input$species_tree_path, 
-                     mcl_inflation = input$mcl_inflation,
-                     split_hogs = input$split_hogs, 
-                     no_msa_trim = input$msa_trim,
-                     result_dir = gsub('C:/', '/mnt/c/', result_dir),
-                     result_name = 'Results')
-    
-    of_output_dir <- paste0(here_results, '/OrthoFinder/Results_Results')
-    
+
+  if ("OrthoFinder" %in% selected_models) {
+    result_dir <- paste0(here_results, "/OrthoFinder/")
+    if (dir.exists(result_dir)) {
+      dir_delete(result_dir)
+    } # delete result directory if exists already
+
+    main_OrthoFinder(
+      protein_folder = prot_output_dir,
+      is_dna = input$nuc_not_prot,
+      method = input$gene_tree_inference_method,
+      sequence_search = input$sequence_search_method,
+      msa_program = input$msa_method,
+      tree_method = input$tree_method,
+      species_tree = input$species_tree_path,
+      mcl_inflation = input$mcl_inflation,
+      split_hogs = input$split_hogs,
+      no_msa_trim = input$msa_trim,
+      result_dir = gsub("C:/", "/mnt/c/", result_dir),
+      result_name = "Results"
+    )
+
+    of_output_dir <- paste0(here_results, "/OrthoFinder/Results_Results")
   }
   # get OrthoFinder output path when OrthoFinder not selected
-  if(!('OrthoFinder' %in% selected_models)) {
+  if (!("OrthoFinder" %in% selected_models)) {
     of_output_dir <- input$ortho_dir
   }
-  
-  
+
+
   # get dups from OrthoFinder and format expression (if expression file path exists)
   if (is.null(input$exp_path)) {
     input$exp_path <- NA
@@ -196,238 +211,271 @@ main_run_workflow <- function(selected_models, input) {
     input$missing_expr_is_zero <- NA
     input$rm_exp_lower_than <- NA
   }
-  out <- main_get_dups_anc_exp_from_OF(OF_dir_path = of_output_dir, 
-                                       exp_path = input$exp_path, 
-                                       normalization_type = input$normalization_type, 
-                                       add_pseudofunc = input$add_pseudofunc, 
-                                       missing_expr_is_zero = input$missing_expr_is_zero, 
-                                       rm_exp_lower_than = input$rm_exp_lower_than)
+  out <- main_get_dups_anc_exp_from_OF(
+    OF_dir_path = of_output_dir,
+    exp_path = input$exp_path,
+    normalization_type = input$normalization_type,
+    add_pseudofunc = input$add_pseudofunc,
+    missing_expr_is_zero = input$missing_expr_is_zero,
+    rm_exp_lower_than = input$rm_exp_lower_than
+  )
   dups_anc <- out$dups_anc
   dups <- out$dups
-  
-  if(input$add_pseudo == T) {pseudo = out$pseudo}
+
+  if (input$add_pseudo == T) {
+    pseudo <- out$pseudo
+  }
   clean_expression <- out$clean_expression
-  
-  
-  if ('CDROM' %in% selected_models) {
-    main_CDROM_output <- main_CDROM(dups = dups, 
-               dups_anc = dups_anc, 
-               clean_expression = clean_expression, 
-               OF_dir_path = OF_dir_path,
-               add_pseudofunc = input$add_pseudofunc,
-               missing_expr_is_zero = input$missing_expr_is_zero,
-               PC = input$PC,
-               min_dups_per_species_pair = input$min_dups_per_species_pair_custom,
-               useAbsExpr = input$use_absolute_exp,
-               pseudo = pseudo
+
+
+  if ("CDROM" %in% selected_models) {
+    main_CDROM_output <- main_CDROM(
+      dups = dups,
+      dups_anc = dups_anc,
+      clean_expression = clean_expression,
+      OF_dir_path = OF_dir_path,
+      add_pseudofunc = input$add_pseudofunc,
+      missing_expr_is_zero = input$missing_expr_is_zero,
+      PC = input$PC,
+      min_dups_per_species_pair = input$min_dups_per_species_pair_custom,
+      useAbsExpr = input$use_absolute_exp,
+      pseudo = pseudo
     )
   }
-  
-  if ('dnds' %in% selected_models) {
-    main_DnDs_output <- main_multispecies_dnds(OF_dir_path = of_output_dir, 
-                           dups = dups, 
-                           allow_two_to_twos = input$allow_two_to_twos,
-                           nuc_file_path = list.files(nuc_output_dir, full.names = T)[1], # works bc. gets all fastas in dir by default
-                           prot_file_path = list.files(prot_output_dir, full.names = T)[1],
-                           aligner = 'muscle')
-  }
-  
-  if ('expression_shift' %in% selected_models) {
-    main_ExpressionShift_output <- main_Expression_Shift(OF_dir_path = of_output_dir, 
-                          clean_expression = clean_expression, 
-                          dup_species_list = input$dup_species_list, 
-                          tissue_list = input$tissue_list,
-                          copy_amount = input$copy_amount, 
-                          nondup_species_need_onecopy = input$nondup_species_need_onecopy, 
-                          use_gene_trees = input$use_gene_trees
+
+  if ("dnds" %in% selected_models) {
+    main_DnDs_output <- main_multispecies_dnds(
+      OF_dir_path = of_output_dir,
+      dups = dups,
+      allow_two_to_twos = input$allow_two_to_twos,
+      nuc_file_path = list.files(nuc_output_dir, full.names = T)[1], # works bc. gets all fastas in dir by default
+      prot_file_path = list.files(prot_output_dir, full.names = T)[1],
+      aligner = "muscle"
     )
   }
-  
-  if ('diversity_divergence' %in% selected_models) {
-    main_DiversityDivergence_output <- main_DiversityDivergence(OF_dir_path = of_output_dir,
-                             clean_expression = clean_expression, 
-                             copy_amount = input$copy_amount,
-                             dup_species_list = input$dup_species_list, 
-                             tissue_list = input$tissue_list, 
-                             nondup_species_need_onecopy = input$nondup_species_need_onecopy, 
-                             use_gene_trees = input$use_gene_trees, 
-                             lower_beta_lim = input$lower_beta_lim, 
-                             upper_beta_lim = input$upper_beta_lim
+
+  if ("expression_shift" %in% selected_models) {
+    main_ExpressionShift_output <- main_Expression_Shift(
+      OF_dir_path = of_output_dir,
+      clean_expression = clean_expression,
+      dup_species_list = input$dup_species_list,
+      tissue_list = input$tissue_list,
+      copy_amount = input$copy_amount,
+      nondup_species_need_onecopy = input$nondup_species_need_onecopy,
+      use_gene_trees = input$use_gene_trees
     )
   }
-  
+
+  if ("diversity_divergence" %in% selected_models) {
+    main_DiversityDivergence_output <- main_DiversityDivergence(
+      OF_dir_path = of_output_dir,
+      clean_expression = clean_expression,
+      copy_amount = input$copy_amount,
+      dup_species_list = input$dup_species_list,
+      tissue_list = input$tissue_list,
+      nondup_species_need_onecopy = input$nondup_species_need_onecopy,
+      use_gene_trees = input$use_gene_trees,
+      lower_beta_lim = input$lower_beta_lim,
+      upper_beta_lim = input$upper_beta_lim
+    )
+  }
+
   # format chosen organisms (get file_organism_table) and format_dups_for_db_search
-  if(('alphafold_db' %in% selected_models) | ('go' %in% selected_models)) {
-    
-    # get file_organism_table 
-    selected_organisms <- colnames(read.delim(paste0(of_output_dir, '/Comparative_Genomics_Statistics/Statistics_PerSpecies.tsv'), nrows = 0))[-1]
-    file_organism_table <- data.frame(protein_file_name = sort(list.files(prot_output_dir, full.names = T)),
-                                      organism_names = sort(selected_organisms))
-    
+  if (("alphafold_db" %in% selected_models) | ("go" %in% selected_models)) {
+    # get file_organism_table
+    selected_organisms <- colnames(read.delim(paste0(of_output_dir, "/Comparative_Genomics_Statistics/Statistics_PerSpecies.tsv"), nrows = 0))[-1]
+    file_organism_table <- data.frame(
+      protein_file_name = sort(list.files(prot_output_dir, full.names = T)),
+      organism_names = sort(selected_organisms)
+    )
+
 
     all_copies <- format_dups_for_db_search(dups_anc)
   }
-  
-  if ('alphafold_db' %in% selected_models) {
-    main_alphafold(all_copies = all_copies,
-                   file_organism_table = file_organism_table)
+
+  if ("alphafold_db" %in% selected_models) {
+    main_alphafold(
+      all_copies = all_copies,
+      file_organism_table = file_organism_table
+    )
   }
-  
-  if('postduplication_fates' %in% selected_models) {
-    main_postduplication_fates_output <- main_postduplication_fates(dups_anc = dups_anc, 
-                                                                    clean_expression = clean_expression, 
-                                                                    v = input$v, 
-                                                                    p = input$p)
+
+  if ("postduplication_fates" %in% selected_models) {
+    main_postduplication_fates_output <- main_postduplication_fates(
+      dups_anc = dups_anc,
+      clean_expression = clean_expression,
+      v = input$v,
+      p = input$p
+    )
   }
-  
-  if(('exon_datasets' %in% selected_models) & ('Public Datasets' %in% selected_models)) {
-    
-    result_dir <- paste0(here_results, '/Exon_Counts/')
-    if(dir.exists(result_dir)) {dir_delete(result_dir)}
-    
-    result_dir <- paste0(here_results, '/public_datasets_output/')
-    if(dir.exists(result_dir)) {dir_delete(result_dir)}
-    
-    main_exon_datasets(selected_organisms = input$selected_organisms, 
-                       selected_database_exon = input$selected_database_exon, 
-                       must_be_reference = input$must_be_reference,
-                       id_type_of_gene_ids = 'ensembl',
-                       kept_transcript_dir = kept_transcript_dir) # remove last '/'
-    gn_exons_dir <- paste0(here_results, '/Exon_Counts/')
-    
+
+  if (("exon_datasets" %in% selected_models) & ("Public Datasets" %in% selected_models)) {
+    result_dir <- paste0(here_results, "/Exon_Counts/")
+    if (dir.exists(result_dir)) {
+      dir_delete(result_dir)
+    }
+
+    result_dir <- paste0(here_results, "/public_datasets_output/")
+    if (dir.exists(result_dir)) {
+      dir_delete(result_dir)
+    }
+
+    main_exon_datasets(
+      selected_organisms = input$selected_organisms,
+      selected_database_exon = input$selected_database_exon,
+      must_be_reference = input$must_be_reference,
+      id_type_of_gene_ids = "ensembl",
+      kept_transcript_dir = kept_transcript_dir
+    ) # remove last '/'
+    gn_exons_dir <- paste0(here_results, "/Exon_Counts/")
   }
-  
-  if(!('exon_datasets' %in% selected_models) & ('duplication_mechanism' %in% selected_models)) {
+
+  if (!("exon_datasets" %in% selected_models) & ("duplication_mechanism" %in% selected_models)) {
     gn_exons_dir <- input$exons_folder
     # file names do not need to match up, all files are combined. merged by gene (genes cant be shared across species)
   }
-  
-  if('duplication_mechanism' %in% selected_models) {
-    main_dup_mechanism_output <- main_dup_mechanism(gn_exons_dir = gn_exons_dir, 
-                                                    dups_anc = dups_anc, 
-                                                    mech_type = input$mech_type, 
-                                                    selected_organisms = input$selected_organisms)
+
+  if ("duplication_mechanism" %in% selected_models) {
+    main_dup_mechanism_output <- main_dup_mechanism(
+      gn_exons_dir = gn_exons_dir,
+      dups_anc = dups_anc,
+      mech_type = input$mech_type,
+      selected_organisms = input$selected_organisms
+    )
   }
-  
-  if('go' %in% selected_models) {
+
+  if ("go" %in% selected_models) {
     main_go(all_copies, file_organism_table)
   }
-  
-  if('pathway' %in% selected_models) {}
-  
-  main_get_misc_results(dups, prot_output_dir, nuc_output_dir, 
-                        raw_dup_mechanism_output_file_path = paste0(here_results, '/raw_dup_mechanism_output.tsv'))
-  
-  
+
+  if ("pathway" %in% selected_models) {}
+
+  main_get_misc_results(dups, prot_output_dir, nuc_output_dir,
+    raw_dup_mechanism_output_file_path = paste0(here_results, "/raw_dup_mechanism_output.tsv")
+  )
+
+
   # read in all results from the (default input) Results directory
   all_data <- get_all_results()
-  write.table(all_data, paste0(here_results, '/All_data.tsv'))
-  
-  # make json file for visualization 
+  write.table(all_data, paste0(here_results, "/All_data.tsv"))
+
+  # make json file for visualization
   make_visualization_json_file(all_data)
-  
-  write.table(dups, paste0(here_results, '/Duplicates.tsv'))
+
+  write.table(dups, paste0(here_results, "/Duplicates.tsv"))
 }
 
 
 
 
-all_models <- list('Public Datasets', 'OrthoFinder', 'CDROM', 'dnds', 'expression_shift', 'diversity_divergence', 'alphafold_db', 'postduplication_fates', 'duplication_mechanism')
+all_models <- list("Public Datasets", "OrthoFinder", "CDROM", "dnds", "expression_shift", "diversity_divergence", "alphafold_db", "postduplication_fates", "duplication_mechanism")
 
-sequential_models <- list('Public Datasets', 'OrthoFinder')
-parallel_models <- list('CDROM', 'dnds', 'expression_shift', 'diversity_divergence', 'alphafold_db', 'postduplication_fates', 'duplication_mechanism')
-
-
+sequential_models <- list("Public Datasets", "OrthoFinder")
+parallel_models <- list("CDROM", "dnds", "expression_shift", "diversity_divergence", "alphafold_db", "postduplication_fates", "duplication_mechanism")
 
 
 
 
-selected_models <- "OrthoFinder, CDROM, Public Datasets" 
 
-selected_models <- list('Public Datasets', 'OrthoFinder', 'CDROM')
+
+selected_models <- "OrthoFinder, CDROM, Public Datasets"
+
+selected_models <- list("Public Datasets", "OrthoFinder", "CDROM")
 
 main_get_button_list <- function(selected_models, input) {
-  
   print(selected_models)
   print(input)
-  
+
   print(input[1])
   print(input$missing_expr_is_zero)
   print(input$CDROM)
-  
-    
-  selected_models <- strsplit(selected_models, ',')[[1]]
-  selected_models <- trimws(selected_models)
-  
-  
-  # NOTE: if 'Public Datasets' in selected_models, 'OrthoFinder' must be chosen
-  
-  required_button_list <- list() 
-  additional_button_list <- list() 
 
-  if('Public Datasets' %in% selected_models) {
-    required_button_list <- c(required_button_list, 'selected_organisms')
-    additional_button_list <- c(additional_button_list, 'data_types', 'must_be_reference', 'keep_which_transcript')
-    
-    
-    if('Proteomes' %in% input$data_types) {additional_button_list <- c(additional_button_list, 'selected_database_protein')}
-    if('CDS' %in% input$data_types) {additional_button_list <- c(additional_button_list, 'selected_database_cds')}
-    if('Genomes' %in% input$data_types) {additional_button_list <- c(additional_button_list, 'selected_database_genome')}
-    
-    
-    if('OrthoFinder' %in% selected_models) {
-      if(!'Proteomes' %in% input$data_types) {required_button_list <- c(required_button_list, 'protein_folder')}
-      additional_button_list <- c(additional_button_list, 'custom_species_tree', 'sequence_search_method', 'gene_tree_inference_method', 'mcl_inflation', 'split_hogs', 'nuc_not_prot')
-      if(input$gene_tree_inference_method == 'msa') {additional_button_list <- c(additional_button_list, 'msa_method', 'tree_method', 'msa_trim')}
+
+  selected_models <- strsplit(selected_models, ",")[[1]]
+  selected_models <- trimws(selected_models)
+
+
+  # NOTE: if 'Public Datasets' in selected_models, 'OrthoFinder' must be chosen
+
+  required_button_list <- list()
+  additional_button_list <- list()
+
+  if ("Public Datasets" %in% selected_models) {
+    required_button_list <- c(required_button_list, "selected_organisms")
+    additional_button_list <- c(additional_button_list, "data_types", "must_be_reference", "keep_which_transcript")
+
+
+    if ("Proteomes" %in% input$data_types) {
+      additional_button_list <- c(additional_button_list, "selected_database_protein")
+    }
+    if ("CDS" %in% input$data_types) {
+      additional_button_list <- c(additional_button_list, "selected_database_cds")
+    }
+    if ("Genomes" %in% input$data_types) {
+      additional_button_list <- c(additional_button_list, "selected_database_genome")
+    }
+
+
+    if ("OrthoFinder" %in% selected_models) {
+      if (!"Proteomes" %in% input$data_types) {
+        required_button_list <- c(required_button_list, "protein_folder")
+      }
+      additional_button_list <- c(additional_button_list, "custom_species_tree", "sequence_search_method", "gene_tree_inference_method", "mcl_inflation", "split_hogs", "nuc_not_prot")
+      if (input$gene_tree_inference_method == "msa") {
+        additional_button_list <- c(additional_button_list, "msa_method", "tree_method", "msa_trim")
+      }
     }
   }
-  
-  if(!'Public Datasets' %in% selected_models) {
-    if('OrthoFinder' %in% selected_models) {
-      required_button_list <- c(required_button_list, 'protein_folder')
-      additional_button_list <- c(additional_button_list, 'custom_species_tree', 'sequence_search_method', 'gene_tree_inference_method', 'mcl_inflation', 'split_hogs', 'nuc_not_prot')
+
+  if (!"Public Datasets" %in% selected_models) {
+    if ("OrthoFinder" %in% selected_models) {
+      required_button_list <- c(required_button_list, "protein_folder")
+      additional_button_list <- c(additional_button_list, "custom_species_tree", "sequence_search_method", "gene_tree_inference_method", "mcl_inflation", "split_hogs", "nuc_not_prot")
     }
-    if(!'OrthoFinder' %in% selected_models) {
-      required_button_list <- c(required_button_list, 'ortho_dir')
+    if (!"OrthoFinder" %in% selected_models) {
+      required_button_list <- c(required_button_list, "ortho_dir")
     }
   }
 
   # get expression, if expression models selected
-  if(any(c('CDROM', 'expression_shift', 'diversity_divergence', 'postduplication_fates') %in% selected_models)) {
-    required_button_list <- c(required_button_list, 'expression_directory')
-    additional_button_list <- c(additional_button_list, 'exp_cutoff', 'missing_expr_is_zero')
+  if (any(c("CDROM", "expression_shift", "diversity_divergence", "postduplication_fates") %in% selected_models)) {
+    required_button_list <- c(required_button_list, "expression_directory")
+    additional_button_list <- c(additional_button_list, "exp_cutoff", "missing_expr_is_zero")
   }
-  
-  if('CDROM' %in% selected_models) {
-    additional_button_list <- c(additional_button_list, 'min_dups_per_species_pair', 'add_pseudofunc', 'use_absolute_exp')
+
+  if ("CDROM" %in% selected_models) {
+    additional_button_list <- c(additional_button_list, "min_dups_per_species_pair", "add_pseudofunc", "use_absolute_exp")
   }
-  
-  
-  if('duplication_mechanism' %in% selected_models) {
-    required_button_list <- c(required_button_list, 'get_public_exon_data')
-    
-    if(isFALSE(input$get_public_exon_data)) { 
-      required_button_list <- c(required_button_list, 'exons_folder')
+
+
+  if ("duplication_mechanism" %in% selected_models) {
+    required_button_list <- c(required_button_list, "get_public_exon_data")
+
+    if (isFALSE(input$get_public_exon_data)) {
+      required_button_list <- c(required_button_list, "exons_folder")
     }
-    additional_button_list <- c(additional_button_list, 'mech_type')
-  }
-  
-  if('postduplication_fates' %in% selected_models) {
-    additional_button_list <- c(additional_button_list, 'v', 'p')
-  }
-  
-  if('dnds' %in% selected_models) {
-    if(!'CDS' %in% input$data_types) {required_button_list <- c(required_button_list, 'nuc_folder')}
-    additional_button_list <- c(additional_button_list, 'dnds_aligner')
+    additional_button_list <- c(additional_button_list, "mech_type")
   }
 
-  if(any(c('expression_shift', 'diversity_divergence') %in% selected_models)) {
-    additional_button_list <- c(additional_button_list, 'dup_species_list', 'use_gene_trees', 'tissue_list', 'copy_amount', 'nondup_species_need_onecopy')
-    
+  if ("postduplication_fates" %in% selected_models) {
+    additional_button_list <- c(additional_button_list, "v", "p")
   }
 
-  return(list(additional_button_list = additional_button_list,
-              required_button_list = required_button_list))
+  if ("dnds" %in% selected_models) {
+    if (!"CDS" %in% input$data_types) {
+      required_button_list <- c(required_button_list, "nuc_folder")
+    }
+    additional_button_list <- c(additional_button_list, "dnds_aligner")
+  }
+
+  if (any(c("expression_shift", "diversity_divergence") %in% selected_models)) {
+    additional_button_list <- c(additional_button_list, "dup_species_list", "use_gene_trees", "tissue_list", "copy_amount", "nondup_species_need_onecopy")
+  }
+
+  return(list(
+    additional_button_list = additional_button_list,
+    required_button_list = required_button_list
+  ))
 }
 
 
@@ -435,17 +483,17 @@ main_get_button_list <- function(selected_models, input) {
 # Example main_get_button_list usage:
 
 # necessary options to test
-#input <- list()
-#input$data_types <- NULL
-#input$gene_tree_inference_method <- 'dendroblast'
+# input <- list()
+# input$data_types <- NULL
+# input$gene_tree_inference_method <- 'dendroblast'
 
 # custom options added to test
-#input$data_types <- 'Proteomes'
+# input$data_types <- 'Proteomes'
 
 
-#l <- main_get_button_list(c('OrthoFinder', 'alphafold_db', 'CDROM'), input)
-#l$required_button_list
-#l$additional_button_list
+# l <- main_get_button_list(c('OrthoFinder', 'alphafold_db', 'CDROM'), input)
+# l$required_button_list
+# l$additional_button_list
 
 
 
@@ -456,13 +504,11 @@ main_get_button_list <- function(selected_models, input) {
 
 
 
-#selected_organisms <- c('Drosophila melanogaster', 'Drosophila ananassae', 'Drosophila mojavensis')
-# selected_organisms is already split up 
-#prot_output_dir <- 'C:/Users/17735/Downloads/AAAAA_Protein_Folder'
+# selected_organisms <- c('Drosophila melanogaster', 'Drosophila ananassae', 'Drosophila mojavensis')
+# selected_organisms is already split up
+# prot_output_dir <- 'C:/Users/17735/Downloads/AAAAA_Protein_Folder'
 
-#generate_file_organism_table(prot_output_dir, selected_organisms)
-
-
-# its assumed that no gene ids are the same across species 
+# generate_file_organism_table(prot_output_dir, selected_organisms)
 
 
+# its assumed that no gene ids are the same across species

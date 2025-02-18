@@ -1,9 +1,9 @@
+install.packages("plumber", repos = "http://cran.us.r-project.org")
 library(plumber)
 
 
-prefix <- '/mnt/c'
-prefix <- 'C:'
+prefix <- ""
 
-r <- plumb(paste0(prefix, "/Users/17735/Downloads/DuplicA/app/api.R"))
+
+r <- plumb(paste0(prefix, "/Users/stellawang/Documents/dupA/DuplicA/app/api.R"))
 r$run(host = "0.0.0.0", port = 8000)
-
