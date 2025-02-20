@@ -2,10 +2,17 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import buttonJson from './multispecies_model_options.json';
+import { Route,Routes,Link } from 'react-router-dom';
+import Visualization from './Visualization.jsx';
+import Workflow from './Workflow';
+import About from './About';
 
 import "./App.css";
-
-const ToggleButton = ({ label }) => {
+import HypothesisTesting from './HypothesisTesting';
+interface ToggleButtonProps{
+  label: string;
+}
+const ToggleButton: React.FC<ToggleButtonProps> = ({ label }) => {
   const [active, setActive] = useState(false);
 
   return (
@@ -18,20 +25,30 @@ const ToggleButton = ({ label }) => {
   );
 };
 
-const Workflow = () => {
+const App = () => {
   return (
-    <div className="workflow-container">
+    //<div className="workflow-container">
+
+    <div className="navBar">
       <header>
-        <h1>DuplicA</h1>
+        <h1>DuplicAA</h1>
+        <Routes>
+          <Route path="/">Home</Route>
+          <Route path="/Workflow" element="{Workflow />}" />
+          <Route path="/Visualization" element="{<Vizualisation />}" />
+          <Route path="/hypothesis" element="{<HypothesisTesting />}" />
+          <Route path="/about" element="{<About />}" />
+        </Routes>
         <nav>
-          <a href="#home">Home</a>
-          <a href="#workflow" className="active">WorkFlow</a>
-          <a href="#visualization">Visualization</a>
-          <a href="#hypothesis">Hypothesis Testing</a>
-          <a href="#about">About</a>
+          <Link to="/">Home</Link>
+          <Link to="/Workflow">Work Flow</Link>
+          <Link to="/Visualization">Visualization</Link>
+          <Link to="/hypothesis">Hypothesis Testing</Link>
+          <Link to="/about">About</Link>
         </nav>
       </header>
-      <main className="workflow">
+    </div>
+      /*<main className="workflow">
         <div className="box">
           <h3>Get Public Data</h3>
           <ToggleButton label="Public Datasets" />
@@ -59,9 +76,8 @@ const Workflow = () => {
           <ToggleButton label="EVE Diversity/Divergence" />
         </div>
       </main>
-    </div>
+    </div>*/
   );
 };
 
-export default Workflow;
-
+export default App;
