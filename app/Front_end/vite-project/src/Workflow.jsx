@@ -132,7 +132,7 @@ const Workflow = () => {
 
   return (
     <div className="workflow-container">
-      <header className="header">
+    {/* <header className="header">
         <h1 className="logo">DuplicA</h1>
         <nav className="nav">
           <a href="#home" className="nav-link">Home</a>
@@ -141,7 +141,7 @@ const Workflow = () => {
           <a href="#hypothesis" className="nav-link">Hypothesis Testing</a>
           <a href="#about" className="nav-link">About</a>
         </nav>
-      </header>
+      </header> */}
 
       <div className="workflow">
         <div className="workflow-content">
