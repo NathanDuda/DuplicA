@@ -1,11 +1,13 @@
 
 library(plumber)
 
-prefix <- 'C:'
-source(paste0(prefix, '/Users/17735/Downloads/DuplicA/app/Scripts/multispecies_workflow.R'))
-source(paste0(prefix, '/Users/17735/Downloads/DuplicA/app/Scripts/Visualization.R'))
+curDir <- getwd()
+curDir<- dirname(curDir)
 
+source(paste0(curDir, '/app/Scripts/multispecies_workflow.R'))
+source(paste0(curDir, '/app/Scripts/Visualization.R'))
 
+print("THIS PART RUNS ATLEAST")
 #* Enable Cross-origin Resource Sharing
 #* @filter cors
 cors <- function(req, res) {

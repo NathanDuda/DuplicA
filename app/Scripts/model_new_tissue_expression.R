@@ -1,6 +1,8 @@
 
-
-source('C:/Users/17735/Downloads/DuplicA/app/Scripts/multispecies_functions.R')
+curDir <- getwd()
+curDir <- dirname(curDir)
+curDir <- dirname(curDir)
+source(paste0(curDir, '/app/Scripts/multispecies_functions.R'))
 
 
 find_new_expressed_tissues <- function(dups_anc, clean_expression, tissue_list, neo_exp_threshold) {

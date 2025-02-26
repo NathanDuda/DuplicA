@@ -1,0 +1,4 @@
+2025-02-26 13:27:00 : Started OrthoFinder version 2.5.5
+Command Line: OrthoFinder/orthofinder -f OrthoFinder/ExampleData/
+
+WorkingDirectory_Base: /home/alivali/code/NateWebsiteStuff/DuplicA/app/Dependencies/OrthoFinder/ExampleData/OrthoFinder/Results_Feb26/WorkingDirectory/

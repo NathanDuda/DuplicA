@@ -11,6 +11,7 @@ const Visualization = () => {
   const [showAdditionalOptions, setShowAdditionalOptions] = useState(false);
   const [imageSrc, setImageSrc] = useState("");
 
+  //console.log("Visualization runs");
   // Load JSON options dynamically
   useEffect(() => {
     fetch(jsonFilePath)

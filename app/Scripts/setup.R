@@ -16,11 +16,12 @@ library(seqinr)
 library(evemodel)
 library(igraph)
 
-prefix <- 'C:'
 
-here_duplica <- paste0(fs::path_home(), '/Downloads/DuplicA')
-here_duplica <- paste0(prefix, '/Users/17735/Downloads/DuplicA') # for sourcing this script in wsl  
 
+here_duplica <- getwd()
+here_duplica <- dirname(here_duplica)
+here_duplica <- dirname(here_duplica)
+#print(here_duplica)
 source(paste0(here_duplica, '/app/Scripts/multispecies_functions.R'))
 source(paste0(here_duplica, '/app/Scripts/model_OrthoFinder.R'))
 source(paste0(here_duplica, '/app/Scripts/model_DnDs.R'))
@@ -29,21 +30,9 @@ source(paste0(here_duplica, '/app/Scripts/model_EVE.R'))
 source(paste0(here_duplica, '/app/Scripts/model_Blat_Blast.R'))
 
 
-here <- fs::path_home()
-here <- '/mnt/c/Users/17735' # for sourcing this script in wsl  
+here <- here_duplica
 
-
-here <- paste0(here, '/Downloads')
-here_temp <- paste0(here, '/Downloads/DuplicA/app/Temp')
-here_results <- paste0(here, '/Downloads/DuplicA/app/Results')
-here_static_images <- paste0(here, '/Downloads/DuplicA/app/Static/Images')
-
-here_linux <- paste0(prefix, '/Users/17735/Downloads')
-here_linux_temp <- paste0(here_linux, '/DuplicA/app/Temp')
-here_linux_dep <- paste0(here_linux, '/DuplicA/app/Dependencies')
-here_linux_results <- paste0(here_linux, '/DuplicA/app/Results')
-
-# wsl is required 
-# chmod +x /mnt/c/Users/17735/Downloads/DuplicA/app/Dependencies/MUSCLE/muscle-linux-x86.v5.2
-
-
+here <- paste0(here)
+here_temp <- paste0(here,'/app/temp')
+here_results <- paste0(here, '/app/Results')
+here_static_images <- paste0(here, '/app/Static/Images')

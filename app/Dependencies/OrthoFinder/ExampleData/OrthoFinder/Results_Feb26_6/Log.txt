@@ -1,0 +1,14 @@
+2025-02-26 14:39:15 : Started OrthoFinder version 2.5.5
+Command Line: ./orthofinder -f ExampleData/
+
+WorkingDirectory_Base: /home/alivali/code/NateWebsiteStuff/DuplicA/app/Dependencies/OrthoFinder/ExampleData/OrthoFinder/Results_Feb26_6/WorkingDirectory/
+
+Species used: 
+0: Mycoplasma_agalactiae.faa
+1: Mycoplasma_gallisepticum.faa
+2: Mycoplasma_genitalium.faa
+3: Mycoplasma_hyopneumoniae.faa
+
+FN_Orthogroups: /home/alivali/code/NateWebsiteStuff/DuplicA/app/Dependencies/OrthoFinder/ExampleData/OrthoFinder/Results_Feb26_6/WorkingDirectory/clusters_OrthoFinder_I1.5.txt_id_pairs.txt
+WorkingDirectory_Trees: /home/alivali/code/NateWebsiteStuff/DuplicA/app/Dependencies/OrthoFinder/ExampleData/OrthoFinder/Results_Feb26_6/WorkingDirectory/
+2025-02-26 14:39:29 : OrthoFinder run completed

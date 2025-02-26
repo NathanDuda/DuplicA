@@ -1,8 +1,14 @@
+library(fs)
 
-prefix <- 'C:'
-
-source(paste0(prefix, '/Users/17735/Downloads/DuplicA/app/Scripts/setup.R')) # CHANGE PATH 
-here_duplica <- paste0(prefix, '/Users/17735/Downloads/DuplicA') # for sourcing this script in wsl  
+curDir <- getwd()
+#source(paste0(curDir,'/Scripts/setup.R')) # CHANGE PATH
+#curDir <- dirname(curDir)
+#curDir <- dirname(curDir)
+here_duplica <- curDir # for sourcing this script in wsl
+here_duplica <- dirname(here_duplica)
+#here_duplica <- dirname(here_duplica)
+here_results <- paste0(here_duplica, '/app/Results')
+#print(here_results)
 
 source(paste0(here_duplica, '/app/Scripts/multispecies_functions.R'))
 
@@ -39,7 +45,7 @@ source(paste0(here_duplica, '/app/Scripts/tool_ID_conversion.R'))
 # example parameterss
 parameters <- list()
 
-parameters$exp_path <- 'C:/Users/17735/Downloads/AAAAA_Expression_Input_Example/dana_dmel_dmoj_exp.tsv'
+parameters$exp_path <- paste0(curDir, '/AAAAA_Expression_Input_Example/dana_dmel_dmoj_exp.tsv')
 parameters$normalization_type <- NA
 parameters$add_pseudofunc <- T
 parameters$missing_expr_is_zero <- F
@@ -142,7 +148,7 @@ main_run_workflow <- function(selected_models, parameters) {
   if('Public Datasets' %in% selected_models) {
     
     result_dir <- paste0(here_results, '/Fastas/')
-    if(dir.exists(result_dir)) {dir_delete(result_dir)}
+    #if(dir.exists(result_dir)) {dir_delete(result_dir)}
     
     kept_transcript_dir <- paste0(here_results, '/Fastas/kept_transcript/')
     dir.create(dirname(kept_transcript_dir))
@@ -167,7 +173,7 @@ main_run_workflow <- function(selected_models, parameters) {
   if('OrthoFinder' %in% selected_models) {
     
     result_dir <- paste0(here_results, '/OrthoFinder/')
-    if(dir.exists(result_dir)) {dir_delete(result_dir)} # delete result directory if exists already
+    #if(dir.exists(result_dir)) {dir_delete(result_dir)} # delete result directory if exists already
     
     main_OrthoFinder(protein_folder = prot_output_dir,
                      is_dna = parameters$nuc_not_prot, 
@@ -286,10 +292,10 @@ main_run_workflow <- function(selected_models, parameters) {
   if(('exon_datasets' %in% selected_models) & ('Public Datasets' %in% selected_models)) {
     
     result_dir <- paste0(here_results, '/Exon_Counts/')
-    if(dir.exists(result_dir)) {dir_delete(result_dir)}
+    #if(dir.exists(result_dir)) {dir_delete(result_dir)}
     
     result_dir <- paste0(here_results, '/public_datasets_output/')
-    if(dir.exists(result_dir)) {dir_delete(result_dir)}
+    #if(dir.exists(result_dir)) {dir_delete(result_dir)}
     
     main_exon_datasets(selected_organisms = parameters$selected_organisms, 
                        selected_database_exon = parameters$selected_database_exon, 
@@ -477,4 +483,7 @@ main_get_relevant_parameter_list <- function(selected_models, parameters) {
 
 # its assumed that no gene ids are the same across species 
 
+
+# Define selected_models (choose which analyses to run)
+#selected_models <- c('Public Datasets', 'OrthoFinder', 'dnds', 'expression_shift')
 

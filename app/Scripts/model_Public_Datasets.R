@@ -2,7 +2,10 @@
 library(Biostrings)
 library(biomartr)
 
-
+here<-getwd()
+#here<-dirname(here)
+here_results<-paste0(here,'/Results')
+#print(here_results)
 # the possible inputs 
 available_databases <- c('refseq', 'genbank', 'ensembl') # for prot and cds
 available_organisms <- listGenomes()
@@ -191,9 +194,9 @@ main_public_datasets <- function(selected_organisms, data_types, selected_databa
     }
     
   }
-  
+  #print(here_results)
   # delete the public_datasets_output directory
-  unlink(paste0(here_results, '/public_datasets_output'), recursive = T)
+  #unlink(paste0(here_results, '/public_datasets_output'), recursive = T)
   
 }
 
