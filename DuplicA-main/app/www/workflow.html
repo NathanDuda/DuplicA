@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workflow Selection</title>
+    
+    <!-- jQuery and jQuery UI CSS (CDN) -->
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <link rel="stylesheet" href="workflow_style.css">
+</head>
+<body>
+
+<div class="container">
+    <h1>Workflow Creation</h1>
+
+    <!-- SVG Container for arrows -->
+    <div class="svg-overlay">
+        <svg id="arrows"></svg>
+    </div>
+    
+    <!-- Main container for workflow steps in columns -->
+    <div class="workflow-container">
+        
+        <!-- First column (Model selection buttons) -->
+        <div class="column model_button">
+            <button id="multiSpeciesButton" disabled>Multi-Species</button>
+            <button id="oneSpeciesButton" disabled>One-Species</button>
+        </div>
+
+        <!-- Second column (Step 1 buttons) -->
+        <div class="column step1">
+            <button id="orthofinder_button" disabled>OrthoFinder</button>
+            <button id="blat_button" disabled>BLAT</button>
+            <button id="blast_button" disabled>BLAST</button>
+        </div>
+
+        <!-- Third column (Step 2 buttons) -->
+        <div class="column step2">
+            <button id="dnds_button" disabled>Dn/Ds</button>
+            <button id="eve_expression_shift_button" disabled>EVE Expression Shift</button>
+            <button id="eve_diversity_divergence_button" disabled>EVE Diversity/Divergence</button>
+            <button id="segregating_duplicates_button" disabled>Segregating Duplicates</button>
+        </div>
+
+        <!-- Fourth column (Step 3 buttons) -->
+        <div class="column step3">
+            <button id="analysis_button" disabled>Analysis</button>
+            <button id="report_button" disabled>Report</button>
+        </div>
+    </div>
+</div>
+
+<!-- jQuery and jQuery UI JavaScript (CDN) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+
+<!-- Initialize the selectable buttons -->
+<script>
+    $(function() {
+        // Hide the workflow diagrams initially
+        $("#oneSpeciesWorkflow").hide();
+        $("#multiSpeciesWorkflow").hide();
+
+        // Define dependencies
+        function updateButtonStates() {
+            // Check dependencies for Multi-Species workflow buttons
+            if ($("#multiSpeciesButton").hasClass("ui-selected")) {
+                $("#dnds_button, #eve_expression_shift_button, #eve_diversity_divergence_button").prop("disabled", false);
+            } else {
+                $("#dnds_button, #eve_expression_shift_button, #eve_diversity_divergence_button").prop("disabled", true).removeClass("ui-selected");
+            }
+            
+            // Check dependencies for One-Species workflow buttons
+            if ($("#oneSpeciesButton").hasClass("ui-selected")) {
+                $("#dnds_button, #segregating_duplicates_button").prop("disabled", false);
+            } else {
+                $("#dnds_button, #segregating_duplicates_button").prop("disabled", true).removeClass("ui-selected");
+            }
+        }
+
+        // Make workflow options selectable
+        $(".model_button button").on("click", function() {
+            // Toggle selection for the clicked button
+            $(this).toggleClass("ui-selected");
+            updateButtonStates();
+        });
+
+        // Toggle between workflow diagrams
+        $("#multiSpeciesButton").on("click", function() {
+            $("#multiSpeciesWorkflow").show();
+            $("#oneSpeciesWorkflow").hide();
+            // Reset all selections and update button states
+            $("#orthofinder_button").prop("disabled", false);
+            updateButtonStates();
+        });
+
+        $("#oneSpeciesButton").on("click", function() {
+            $("#oneSpeciesWorkflow").show();
+            $("#multiSpeciesWorkflow").hide();
+            // Reset all selections and update button states
+            $("#blat_button, #blast_button").prop("disabled", false);
+            updateButtonStates();
+        });
+
+        // Initial setup: Disable dependent buttons
+        $(".model_button button").prop("disabled", true);
+        $("#multiSpeciesButton, #oneSpeciesButton").prop("disabled", false);  // Enable top-level buttons to select workflows
+    });
+
+    /* function to draw lines between selected models */
+    $(function() {
+        const svg = document.getElementById("arrows");
+
+        // Function to draw an arrow between two elements
+        function drawArrow(startEl, endEl) {
+            const startRect = startEl.getBoundingClientRect();
+            const endRect = endEl.getBoundingClientRect();
+
+            // Calculate the start and end points for the arrow
+            const startX = startRect.left + startRect.width;
+            const startY = startRect.top + startRect.height / 2;
+            const endX = endRect.left;
+            const endY = endRect.top + endRect.height / 2;
+
+            // Create an SVG line element
+            const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            line.setAttribute("x1", startX);
+            line.setAttribute("y1", startY);
+            line.setAttribute("x2", endX);
+            line.setAttribute("y2", endY);
+            line.setAttribute("stroke", "#337ab7"); // Arrow color
+            line.setAttribute("stroke-width", "2");
+
+            // Optionally add a marker to make it look like an arrow
+            line.setAttribute("marker-end", "url(#arrowhead)");
+
+            svg.appendChild(line);
+        }
+
+        // Clear existing arrows
+        function clearArrows() {
+            while (svg.firstChild) {
+                svg.removeChild(svg.firstChild);
+            }
+        }
+
+        // Monitor button clicks to connect selected buttons
+        $(".model_button button, .step1 button, .step2 button, .step3 button").on("click", function() {
+            // Toggle selection
+            $(this).toggleClass("ui-selected");
+
+            // Clear previous arrows
+            clearArrows();
+
+            // Get selected buttons in each step (neighboring columns)
+            const selectedButtons = [
+                $(".model_button button.ui-selected"),  // Column 1
+                $(".step1 button.ui-selected"),         // Column 2
+                $(".step2 button.ui-selected"),         // Column 3
+                $(".step3 button.ui-selected")          // Column 4
+            ];
+
+            // Loop through neighboring columns
+            for (let i = 0; i < selectedButtons.length - 1; i++) {
+                const currentColumnButtons = selectedButtons[i];
+                const nextColumnButtons = selectedButtons[i + 1];
+
+                // Loop through selected buttons in the current column
+                currentColumnButtons.each(function() {
+                    const currentButton = this;
+
+                    // Loop through selected buttons in the next column and draw arrows
+                    nextColumnButtons.each(function() {
+                        const nextButton = this;
+                        drawArrow(currentButton, nextButton); // Connect current column button to next column button
+                    });
+                });
+            }
+        });
+
+        // Add an arrow marker to the SVG for end-of-line arrows
+        const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+        const marker = document.createElementNS("http://www.w3.org/2000/svg", "marker");
+        marker.setAttribute("id", "arrowhead");
+        marker.setAttribute("markerWidth", "10");
+        marker.setAttribute("markerHeight", "7");
+        marker.setAttribute("refX", "10");
+        marker.setAttribute("refY", "3.5");
+        marker.setAttribute("orient", "auto");
+        const arrowhead = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+        arrowhead.setAttribute("points", "0 0, 10 3.5, 0 7");
+        arrowhead.setAttribute("fill", "#337ab7"); // Arrow color
+        marker.appendChild(arrowhead);
+        defs.appendChild(marker);
+        svg.appendChild(defs);
+    });
+</script>
+
+</body>
+</html>

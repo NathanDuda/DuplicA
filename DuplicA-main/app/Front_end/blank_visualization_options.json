@@ -1,0 +1,81 @@
+{
+  "figure_type": {
+    "type": "select",
+    "label": "Figure type",
+    "options": ["scatterplot", "boxplot", "violin"],
+    "default": ["scatterplot"],
+    "multiple": false
+  },
+
+
+
+
+  "x_axis": {
+    "type": "select",
+    "label": "x-axis",
+    "options": []
+  },
+  "y_axis": {
+    "type": "select",
+    "label": "y-axis",
+    "options": []
+  },
+  "color_groups": {
+    "type": "select",
+    "label": "Color by group",
+    "options": []
+  },
+  "separate_figure": {
+    "type": "select",
+    "label": "Separate figure",
+    "options": []
+  },
+
+
+
+
+
+  "title": {
+    "type": "text",
+    "label": "Title"
+  },
+  "x_axis_label": {
+    "type": "text",
+    "label": "x-axis label"
+  },
+  "y_axis_label": {
+    "type": "text",
+    "label": "y-axis label"
+  },
+  "legend_label": {
+    "type": "text",
+    "label": "Legend label"
+  },
+  "point_size": {
+    "type": "number",
+    "label": "Point size",
+    "default": 3
+  },
+  "custom_theme": {
+    "type": "select",
+    "label": "Point size",
+    "options": ["classic", "bw", "minimal", "linedraw"],
+    "default": ["classic"]
+  },
+  "log_scale_x": {
+    "type": "boolean",
+    "label": "log-scale x",
+    "default": false
+  },
+  "log_scale_y": {
+    "type": "boolean",
+    "label": "log-scale y",
+    "default": false
+  },
+  "color_set": {
+    "type": "select",
+    "label": "Color set",
+    "options": ["Accent", "Spectral", "Pastel1", "Paired", "Dark2"],
+    "default": ["Accent"]
+  }
+}
