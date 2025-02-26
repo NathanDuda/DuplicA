@@ -1,5 +1,7 @@
-
-source('./app/Scripts/multispecies_functions.R')
+curDir<-getwd()
+curDir<-dirname(curDir)
+curDir<-dirname(curDir)
+source(paste0(curDir,'/multispecies_functions.R'))
 
 
 

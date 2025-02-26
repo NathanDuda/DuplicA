@@ -21,40 +21,43 @@ main_OrthoFinder <- function(protein_folder, is_dna = FALSE, method = "dendrobla
   
   #protein_folder <- gsub('C:/Users/17735/Downloads', '/mnt/c/Users/17735/Downloads', protein_folder)
   #protein_folder <- as.character(dirname(protein_folder))
-  protein_folder <- gsub(here, here_linux, protein_folder)
+  #protein_folder <- gsub(here, protein_folder)
 
-  path_to_orthofinder <- paste0(here_linux, '/DuplicA/app/Dependencies/OrthoFinder/orthofinder')
+  path_to_orthofinder <- paste0(here, '/Dependencies/OrthoFinder/orthofinder')
   results_dir <- here_results
-  
-  # base command
+#ALI: I commented out some of the params alisvali fix later
+                                        # base command
+  #print(protein_folder)
   command <- paste(path_to_orthofinder, "-f", shQuote(protein_folder))
+  #print(command)
+  #print(is_dna)
+  if (!is.null(is_dna) && is_dna) {command <- paste(command, "-d")}
   
-  if (is_dna) {command <- paste(command, "-d")}
+  #command <- paste(command, "-M", method)
+  #command <- paste(command, "-S", sequence_search)
   
-  command <- paste(command, "-M", method)
-  command <- paste(command, "-S", sequence_search)
-  
-  if (method == "msa") {
+  if (!is.null(method) && method == "msa") {
     command <- paste(command, "-A", msa_program)
     command <- paste(command, "-T", tree_method)
   }
   
   if (!is.null(species_tree)) {command <- paste(command, "-s", shQuote(species_tree))}
   
-  command <- paste(command, "-I", mcl_inflation)
+  #command <- paste(command, "-I", mcl_inflation)
 
-  if (split_hogs) {command <- paste(command, "-y")}
-  if (no_msa_trim) {command <- paste(command, "-z")}
+  if (!is.null(split_hogs) && split_hogs) {command <- paste(command, "-y")}
+  if (!is.null(no_msa_trim) && no_msa_trim) {command <- paste(command, "-z")}
   if (!is.null(result_name)) {command <- paste(command, "-n", shQuote(result_name))}
   if (!is.null(result_dir)) {command <- paste(command, "-o", shQuote(result_dir))}
   if (!is.null(stop_stage)) {command <- paste(command, "-", stop_stage)}
   
   # Run the command in WSL
-  wsl_command <- paste("wsl", command)
+  #wsl_command <- paste("wsl", command)
 
   
-  system(wsl_command)
-  
+  #system(wsl_command)
+  #print(command)
+  system(command)
 }
 
 

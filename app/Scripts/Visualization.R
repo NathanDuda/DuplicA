@@ -1,16 +1,16 @@
 
+curDir <- getwd()
+curDir <- dirname(curDir)
+#curDir <- dirname(curDir)
+source(paste0(curDir, '/app/Scripts/Visualization_functions.R'))
 
-source(paste0(here_duplica, '/app/Scripts/Visualization_functions.R'))
+here_results <- paste0(curDir, "/app/Results")
 
-prefix <- 'C:'
-
-here_results <- "C:/Users/17735/Downloads/DuplicA/app/Results"
-
-all_data <- get_all_results(here_results)
-all_data <- all_data %>%
-  mutate(Functional_Category = gsub('pseudo_dup_1', 'Pseudo(Dup1)', Functional_Category),
-         Functional_Category = gsub('pseudo_dup_2', 'Pseudo(Dup2)', Functional_Category),
-         Functional_Category = gsub('pseudo_both', 'Pseudo(both)', Functional_Category))
+#all_data <- get_all_results(here_results)
+#all_data <- all_data %>%
+#  mutate(Functional_Category = gsub('pseudo_dup_1', 'Pseudo(Dup1)', Functional_Category),
+#         Functional_Category = gsub('pseudo_dup_2', 'Pseudo(Dup2)', Functional_Category),
+#         Functional_Category = gsub('pseudo_both', 'Pseudo(both)', Functional_Category))
 
 
 
@@ -112,26 +112,6 @@ generate_figure <- function(data,
 
 
 # example usage
-generate_figure(
-  data = all_data,
-  
-  figure_type = "boxplot",
-  x = "Functional_Category",
-  y = "prot_length_dup_1",
-  color_groups = 'Functional_Category', 
-  separate_figure = NULL,
-  
-  title = NULL,
-  x_label = NULL,
-  y_label = NULL,
-  legend_label = NULL,
-  point_size = 2,
-  
-  custom_theme = 'bw', 
-  y_log = T,
-  x_log = F,
-  color_set = 'Dark2'
-)
 
 
 
@@ -144,26 +124,8 @@ generate_figure(
 
 
 
-generate_figure(
-  data = all_data,
-  
-  figure_type = "boxplot",
-  x = "Functional_Category",
-  y = "cpg_count_dup_1",
-  color_groups = 'Functional_Category', 
-  separate_figure = NULL,
-  
-  title = NULL,
-  x_label = NULL,
-  y_label = NULL,
-  legend_label = NULL,
-  point_size = 2,
-  
-  custom_theme = 'bw', 
-  y_log = F,
-  x_log = F,
-  color_set = 'Accent'
-)
+
+
 
 
 
