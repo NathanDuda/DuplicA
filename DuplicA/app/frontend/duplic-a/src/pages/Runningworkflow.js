@@ -16,7 +16,7 @@ const Runningworkfkow = () => {
                         <p>Completed</p>
                         <h3>Workflow Progress</h3>
                         <p>kEY</p>
-                        <h3>Messages</h3>
+                        <h3>Results</h3>
 
                     </div>
 
