@@ -2,14 +2,21 @@ import * as React from "react"
 import Layout from "../components/Layout"
 import "../styles/index.css"
 import Home from "../components/Home"
+import { Link } from "gatsby"
 
 
 
 const IndexPage = () => {
   return (
     <Layout>
+      <div className="header">
+        <p className="header-title">DuplicA</p>
+        <Link to="/Homeextended" className="header-btn">
+          View Model Information &gt;
+        </Link>
 
-      <h2>DuplicA</h2>
+      </div>
+
       <Home></Home>
 
     </Layout>

@@ -4,3 +4,52 @@ body {
     font-family: 'DM Sans', sans-serif;
     background-color: #F3F4F8;
 }
+
+/* Header container: Flexbox for left-right alignment */
+.header {
+    display: flex;
+    justify-content: space-between;
+    /* Pushes items to opposite ends */
+    align-items: center;
+
+    padding: 23px;
+}
+
+/* Left-aligned title */
+.header-title {
+    font-size: 24px;
+    font-weight: bold;
+    margin: 0;
+    padding-left: 200px;
+}
+
+/* Right-aligned button */
+.header-btn {
+    font-size: 24px;
+    font-weight: bold;
+    color: black;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding-right: 50px;
+    position: relative;
+
+}
+
+
+.header-btn::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -3px;
+    width: 0;
+    height: 4px;
+    background-color: #5051F9;
+    transition: width 0.3s ease-in-out;
+}
+
+
+.header-btn:hover::after {
+    width: 85%;
+}

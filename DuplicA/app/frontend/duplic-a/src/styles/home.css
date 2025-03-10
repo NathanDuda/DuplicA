@@ -4,6 +4,7 @@
      max-width: 900px;
      margin: auto;
      padding: 20px;
+     margin-left: 350px;
  }
 
 
@@ -12,16 +13,27 @@
  }
 
  h3 {
-     font-size: 18px;
+     font-size: 20px;
      font-weight: bold;
      margin-bottom: 10px;
+     color: #232360;
+
+ }
+
+
+ .model-info-btn {
+     text-decoration: none;
+     font-weight: bold;
+     font-size: 24px;
  }
 
  /* Checkbox List */
  .data-type-list {
      display: flex;
      flex-direction: column;
-     gap: 10px;
+     gap: 15px;
+     padding-top: 25px;
+
  }
 
 
@@ -33,45 +45,63 @@
  .model-list {
      display: flex;
      flex-direction: column;
-     gap: 10px;
+     gap: 20px;
+     padding-top: 25px;
  }
 
  .model-item {
      padding: 10px;
      border-radius: 6px;
-     text-align: center;
+     text-align: left;
      font-weight: bold;
+     display: inline-block;
+     width: fit-content;
+     font-size: 17px;
+
+
  }
 
  /* Enabled Models */
  .enabled {
      background-color: white;
-     border: 2px solid black;
-     color: black;
+
+     color: #232360;
  }
 
  /* Disabled Models */
  .disabled {
-     background-color: #ddd;
+     background-color: rgba(255, 255, 255, 0.4);
      color: #aaa;
-     border: 2px solid #ccc;
+
      cursor: not-allowed;
  }
 
-
- .checkbox-label {
+ .checkbox-wrapper {
      display: flex;
      align-items: center;
      gap: 10px;
-     font-size: 14px;
-     cursor: pointer;
+
+     margin-bottom: 8px;
+ }
+
+ .checkbox-label {
+     padding: 10px;
+     border-radius: 6px;
+
+     font-weight: bold;
+     display: flex;
+     width: fit-content;
+     font-size: 17px;
+     color: #232360;
+     background-color: white;
+
  }
 
 
- .checkbox-label input[type="checkbox"] {
+ .checkbox-input[type="checkbox"] {
      appearance: none;
-     width: 20px;
-     height: 20px;
+     width: 28px;
+     height: 28px;
      border: 2px solid #5051F9;
      ;
      border-radius: 4px;
@@ -81,12 +111,12 @@
  }
 
  /* Hover effect */
- .checkbox-label input[type="checkbox"]:hover {
+ .checkbox-input[type="checkbox"]:hover {
      border-color: #4338CA;
  }
 
  /* Checked state */
- .checkbox-label input[type="checkbox"]:checked {
+ .checkbox-input[type="checkbox"]:checked {
      background-color: #5051F9;
      ;
      border-color: #5051F9;
@@ -94,7 +124,7 @@
  }
 
  /* Custom checkmark */
- .checkbox-label input[type="checkbox"]::after {
+ .checkbox-input[type="checkbox"]::after {
      content: "✓";
      font-size: 14px;
      color: white;
@@ -106,6 +136,6 @@
  }
 
  /* Show checkmark when checked */
- .checkbox-label input[type="checkbox"]:checked::after {
+ .checkbox-input[type="checkbox"]:checked::after {
      display: block;
  }

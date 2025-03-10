@@ -165,7 +165,9 @@ const Workflowcomponent = () => {
 
 
         <div >
-            <div style={{ width: "100%", height: "700px", background: "#f9f9f9", padding: "20px" }}>
+            <div style={{
+                width: "100%", height: "700px", background: "#F3F4F8"
+            }}>
                 <ReactFlow
                     nodes={nodes}
                     edges={edges}

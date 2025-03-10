@@ -94,7 +94,7 @@
 
 .card:hover .card-title::after {
     width: 100%;
-    /* Expands on hover */
+
 }
 
 .card-sub {
