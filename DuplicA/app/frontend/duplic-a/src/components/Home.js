@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import "../styles/home.css";
 
+
 const dataTypes = [
     { data: "Species Names", models: ["Public Datasets", "OrthoFinder", "CDROM", "Dn/Ds", "Expression Shift", "Diversity / Divergence", "AlphaFold", "Post-Duplication Fates", "Duplication Mechanism", "Pathway", "Gene Ontology"] },
     { data: "Protein Sequences", models: ["OrthoFinder", "CDROM", "Dn/Ds", "Expression Shift", "Diversity / Divergence", "AlphaFold", "Post-Duplication Fates", "Pathway", "Gene Ontology"] },

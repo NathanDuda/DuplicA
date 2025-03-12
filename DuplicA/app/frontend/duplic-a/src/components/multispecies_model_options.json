@@ -1,41 +1,74 @@
 {
   "selected_organisms": {
     "type": "text",
-    "label": "Organisms (comma separated)"
+    "label": "Organisms (comma separated)",
+    "default": [
+      " "
+    ]
   },
   "selected_database_protein": {
     "type": "select",
     "label": "Database for protein data",
-    "choices": ["refseq", "genbank", "ensembl"],
-    "default": ["refseq"],
+    "choices": [
+      "refseq",
+      "genbank",
+      "ensembl"
+    ],
+    "default": [
+      "refseq"
+    ],
     "multiple": false
   },
   "selected_database_cds": {
     "type": "select",
     "label": "Database for CDS data",
-    "choices": ["refseq", "genbank", "ensembl"],
-    "default": ["refseq"],
+    "choices": [
+      "refseq",
+      "genbank",
+      "ensembl"
+    ],
+    "default": [
+      "refseq"
+    ],
     "multiple": false
   },
   "selected_database_genome": {
     "type": "select",
     "label": "Database for genome data",
-    "choices": ["refseq", "genbank", "ensembl"],
-    "default": ["refseq"],
+    "choices": [
+      "refseq",
+      "genbank",
+      "ensembl"
+    ],
+    "default": [
+      "refseq"
+    ],
     "multiple": false
   },
   "data_types": {
     "type": "select",
     "label": "Get which data types",
-    "choices": ["Proteomes", "CDS", "Genomes"],
+    "choices": [
+      "Proteomes",
+      "CDS",
+      "Genomes"
+    ],
     "multiple": true,
-    "default": ["Proteomes", "CDS"]
+    "default": [
+      "Proteomes",
+      "CDS"
+    ]
   },
   "keep_which_transcript": {
     "type": "select",
     "label": "Keep which transcript",
-    "choices": ["longest", "first"],
-    "default": ["longest"],
+    "choices": [
+      "longest",
+      "first"
+    ],
+    "default": [
+      "longest"
+    ],
     "multiple": false
   },
   "must_be_reference": {
@@ -55,14 +88,25 @@
   "sequence_search_method": {
     "type": "select",
     "label": "Sequence Search Method",
-    "choices": ["diamond", "blast", "mmseqs2"],
-    "default": ["diamond"]
+    "choices": [
+      "diamond",
+      "blast",
+      "mmseqs2"
+    ],
+    "default": [
+      "diamond"
+    ]
   },
   "gene_tree_inference_method": {
     "type": "select",
     "label": "Gene Tree Inference Method",
-    "choices": ["dendroblast", "msa"],
-    "default": ["dendroblast"]
+    "choices": [
+      "dendroblast",
+      "msa"
+    ],
+    "default": [
+      "dendroblast"
+    ]
   },
   "mcl_inflation": {
     "type": "number",
@@ -79,14 +123,24 @@
   "msa_method": {
     "type": "select",
     "label": "MSA Method",
-    "choices": ["mafft", "muscle"],
-    "default": ["mafft"]
+    "choices": [
+      "mafft",
+      "muscle"
+    ],
+    "default": [
+      "mafft"
+    ]
   },
   "tree_method": {
     "type": "select",
     "label": "MSA Tree Inference Method",
-    "choices": ["fasttree", "raxml"],
-    "default": ["fasttree"]
+    "choices": [
+      "fasttree",
+      "raxml"
+    ],
+    "default": [
+      "fasttree"
+    ]
   },
   "msa_trim": {
     "type": "boolean",
@@ -106,8 +160,14 @@
   "mech_type": {
     "type": "select",
     "label": "Mechanism model",
-    "choices": ["standard", "conservative", "ultra-conservative"],
-    "default": ["standard"],
+    "choices": [
+      "standard",
+      "conservative",
+      "ultra-conservative"
+    ],
+    "default": [
+      "standard"
+    ],
     "multiple": false
   },
   "v": {
@@ -155,7 +215,9 @@
   "dnds_aligner": {
     "type": "select",
     "label": "Protein Alignment Program",
-    "choices": ["muscle"]
+    "choices": [
+      "muscle"
+    ]
   },
   "dup_species_list": {
     "type": "text",

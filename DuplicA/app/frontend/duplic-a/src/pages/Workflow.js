@@ -11,7 +11,7 @@ const WorkflowPage = () => {
     return (
         <Layout>
 
-            <div style={{ position: 'relative', width: '100%', height: '500px', background: '#f9f9f9', padding: '20px' }}>
+            <div style={{ position: 'relative', width: '100%', height: '500px', background: '#f9f9f9', }}>
 
 
 

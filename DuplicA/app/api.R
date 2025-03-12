@@ -1,8 +1,8 @@
 library(plumber)
 
-
 source(paste0("/Users/stellawang/Documents/new_dup/Untitled/DuplicA/app/Scripts/multispecies_workflow.R"))
 source(paste0("/Users/stellawang/Documents/new_dup/Untitled/DuplicA/app/Scripts/Visualization.R"))
+
 
 
 #* Enable Cross-origin Resource Sharing
@@ -63,4 +63,14 @@ function(req, selected_models, parameters) {
 
   # Return the result as JSON
   return(result)
+}
+
+
+
+#* @post /runWorkflow
+function(req, selected_models, parameters) {
+  selected_models <- req$body$selected_models
+  parameters <- req$body$parameters
+
+  main_run_workflow(selected_models, parameters)
 }
