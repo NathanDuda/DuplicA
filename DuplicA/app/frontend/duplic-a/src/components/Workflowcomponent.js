@@ -5,6 +5,7 @@ import "reactflow/dist/style.css";
 import CustomNode from "./CustomNode";
 import parameterOptions from "../components/multispecies_model_options.json"
 import axios from "axios";
+import { ResizableBox } from 'react-resizable';
 
 
 const API_BASE_URL = "http://127.0.0.1:8001";
@@ -15,7 +16,7 @@ const initialNodes = [
     {
         id: "1",
         type: "custom",
-        position: { x: -900, y: 450 },
+        position: { x: -900, y: 380 },
         data: {
             title: "Get Public Data",
             buttonLabel: "Public Datasets",
@@ -26,7 +27,7 @@ const initialNodes = [
     {
         id: "2",
         type: "custom",
-        position: { x: -300, y: 450 },
+        position: { x: -300, y: 380 },
         data: {
             title: "Detect Duplications",
             buttonLabel: "OrthoFinder",
@@ -261,11 +262,14 @@ const Workflowcomponent = () => {
         }
     };
 
+    const [sidebarWidth, setSidebarWidth] = useState(600);
 
 
     return (
-        <div>
-            <div style={{ width: "100%", height: "700px", background: "#F3F4F8" }}>
+
+
+        <div style={{ display: 'flex', height: '100vh' }}>
+            <div style={{ minwidth: "100px", flex: "1", background: "#F3F4F8" }}>
                 <ReactFlow
                     nodes={nodes}
                     edges={edges}
@@ -292,122 +296,126 @@ const Workflowcomponent = () => {
             )}
 
             {Object.keys(availableOptions).length > 0 && (
-                <div className="param-section">
-                    <h3 >Additional Parameters</h3>
-                    <div className="param-types" >
-                        {Object.keys(availableOptions).map((key) => {
-                            const param = availableOptions[key];
+                <ResizableBox width={sidebarWidth} height={Infinity} axis="x" minConstraints={[150, Infinity]} maxConstraints={[600, Infinity]} resizeHandles={['w']} onResizeStop={(e, data) => setSidebarWidth(data.size.width)}>
+                    <div className="param-section" style={{ height: "100%" }} >
+                        <h3 >Additional Parameters</h3>
+                        <div className="param-types" >
+                            {Object.keys(availableOptions).map((key) => {
+                                const param = availableOptions[key];
 
-                            if (param.type === "text") {
-                                return (
-                                    <div key={key} className="text-param" >
-                                        <p>{param.label}:</p>
-                                        <input
-                                            type="text"
-                                            value={parameters[key] || ""}
-                                            onChange={(e) => handleInputChange(key, e.target.value)}
+                                if (param.type === "text") {
+                                    return (
+                                        <div key={key} className="text-param" >
+                                            <p>{param.label}:</p>
+                                            <input
+                                                type="text"
+                                                value={parameters[key] || ""}
+                                                onChange={(e) => handleInputChange(key, e.target.value)}
 
-                                        />
-                                    </div>
-                                );
-                            }
+                                            />
+                                        </div>
+                                    );
+                                }
 
-                            if (param.type === "select") {
-                                return (
-                                    <div key={key} className="select-param">
-                                        <p>{param.label}:</p>
-                                        <select
-                                            value={parameters[key] || ""}
-                                            onChange={(e) => handleInputChange(key, e.target.value)}
+                                if (param.type === "select") {
+                                    return (
+                                        <div key={key} className="select-param">
+                                            <p>{param.label}:</p>
+                                            <select
+                                                value={parameters[key] || ""}
+                                                onChange={(e) => handleInputChange(key, e.target.value)}
 
-                                            multiple={param.multiple}
-                                        >
-                                            {param.choices.map((choice) => (
-                                                <option key={choice} value={choice}>{choice}</option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                );
-                            }
+                                                multiple={param.multiple}
+                                            >
+                                                {param.choices.map((choice) => (
+                                                    <option key={choice} value={choice}>{choice}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    );
+                                }
 
-                            if (param.type === "number") {
-                                return (
-                                    <div key={key} className="number-param">
-                                        <p>{param.label}:</p>
-                                        <input
-                                            type="number"
-                                            value={parameters[key] || 0}
-                                            min={param.min || 0}
-                                            max={param.max || undefined}
-                                            step={param.step || 1}
-                                            onChange={(e) => handleInputChange(key, parseFloat(e.target.value))}
+                                if (param.type === "number") {
+                                    return (
+                                        <div key={key} className="number-param">
+                                            <p>{param.label}:</p>
+                                            <input
+                                                type="number"
+                                                value={parameters[key] || 0}
+                                                min={param.min || 0}
+                                                max={param.max || undefined}
+                                                step={param.step || 1}
+                                                onChange={(e) => handleInputChange(key, parseFloat(e.target.value))}
 
-                                        />
-                                    </div>
-                                );
-                            }
+                                            />
+                                        </div>
+                                    );
+                                }
 
-                            if (param.type === "boolean") {
-                                return (
-                                    <div key={key} className="boolean-param">
-                                        <p>{param.label}:</p>
-                                        <input
-                                            type="checkbox"
-                                            checked={parameters[key] || false}
-                                            onChange={(e) => handleInputChange(key, e.target.checked)}
-                                        />
-                                    </div>
-                                );
-                            }
+                                if (param.type === "boolean") {
+                                    return (
+                                        <div key={key} className="boolean-param">
+                                            <p>{param.label}:</p>
+                                            <input
+                                                type="checkbox"
+                                                checked={parameters[key] || false}
+                                                onChange={(e) => handleInputChange(key, e.target.checked)}
+                                            />
+                                        </div>
+                                    );
+                                }
 
-                            if (param.type === "file" || param.type === "directory") {
-                                return (
-                                    <div key={key} className="file-param" >
-                                        <p>{param.label}:</p>
-                                        <input
-                                            type="file"
-                                            onChange={(e) => handleFileChange(key, e)}
-                                            style={{ width: "100%" }}
-                                            multiple={param.multiple}
-                                        />
-                                        {parameters[key] && (
-                                            <p style={{ fontSize: "0.8em", marginTop: "5px" }}>
-                                                Selected: {parameters[key].name}
-                                            </p>
-                                        )}
-                                    </div>
-                                );
-                            }
+                                if (param.type === "file" || param.type === "directory") {
+                                    return (
+                                        <div key={key} className="file-param" >
+                                            <p>{param.label}:</p>
+                                            <input
+                                                type="file"
+                                                onChange={(e) => handleFileChange(key, e)}
+                                                style={{ width: "100%" }}
+                                                multiple={param.multiple}
+                                            />
+                                            {parameters[key] && (
+                                                <p style={{ fontSize: "0.8em", marginTop: "5px" }}>
+                                                    Selected: {parameters[key].name}
+                                                </p>
+                                            )}
+                                        </div>
+                                    );
+                                }
 
-                            return null;
-                        })}
+                                return null;
+                            })}
+                        </div>
+                        <div style={{ marginTop: "20px", display: "flex", gap: "10px" }}>
+                            <button
+                                onClick={runWorkflow}
+                                style={{
+                                    padding: "10px",
+                                    background: "#007bff",
+                                    color: "#fff",
+                                    border: "none",
+                                    borderRadius: "5px",
+                                    cursor: "pointer",
+                                }}
+                                disabled={selectedModels.length === 0 || isLoading}
+                            >
+                                Run Workflow
+                            </button>
+
+
+                        </div>
                     </div>
-                    <div style={{ marginTop: "20px", display: "flex", gap: "10px" }}>
-                        <button
-                            onClick={runWorkflow}
-                            style={{
-                                padding: "10px",
-                                background: "#007bff",
-                                color: "#fff",
-                                border: "none",
-                                borderRadius: "5px",
-                                cursor: "pointer",
-                            }}
-                            disabled={selectedModels.length === 0 || isLoading}
-                        >
-                            Run Workflow
-                        </button>
-
-
-                    </div>
-                </div>
-            )}
+                </ResizableBox>
+            )
+            }
 
 
 
 
 
-        </div>
+
+        </div >
     );
 };
 

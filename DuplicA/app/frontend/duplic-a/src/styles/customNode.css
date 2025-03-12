@@ -54,6 +54,7 @@
 .node-button:hover {
     background: #4338ca;
     color: white;
+    transition: width 0.3s ease-in-out;
 }
 
 
