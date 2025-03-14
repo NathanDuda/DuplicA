@@ -59,9 +59,5 @@ main_OrthoFinder <- function(protein_folder, is_dna = FALSE, method = "dendrobla
 
 
 
-#command <- generate_orthofinder_command_wsl(protein_folder = "/mnt/c/Users/17735/Downloads/Eight_Species/Protein_Fastas", is_dna = F)
-
-
-
 
 

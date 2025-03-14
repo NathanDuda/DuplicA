@@ -1,7 +1,4 @@
 
-
-#source('./app/Scripts/tool_ID_conversion.R')
-
 get_dups_from_OF <- function(OF_dir_path) {
   
   ################################
@@ -75,8 +72,6 @@ get_dups_from_OF <- function(OF_dir_path) {
   
   return(list(dups = dups, dup_pair_orthologs = two_to_ones))
 }
-
-
 
 
 clean_exp_and_pseudo <- function(exp_path, dups, normalization_type, add_pseudofunc, missing_expr_is_zero, exp_cutoff, PC) {
@@ -290,7 +285,6 @@ get_exp_df_for_copy <- function(copy, dups_anc, clean_expression) {
 }
 
 
-
 main_get_dups_anc_exp_from_OF <- function(OF_dir_path, exp_path = NA, normalization_type = NA, add_pseudofunc = NA, missing_expr_is_zero = NA, rm_exp_lower_than = NA) {
   
   OF_dir_path <- paste0(OF_dir_path, '/')
@@ -322,8 +316,6 @@ main_get_dups_anc_exp_from_OF <- function(OF_dir_path, exp_path = NA, normalizat
 }
 
 
-
-
 format_dups_for_db_search <- function(dups_anc) {
   
   #dups <- dups %>%
@@ -349,6 +341,7 @@ format_dups_for_db_search <- function(dups_anc) {
   return(all_copies)
 }
 
+
 get_protein_file_name <- function(chosen_organism, file_organism_table) {
   
   chosen_protein_file_name <- file_organism_table %>%
@@ -358,13 +351,12 @@ get_protein_file_name <- function(chosen_organism, file_organism_table) {
   return(chosen_protein_file_name)
 }
 
+
 get_genes_for_organism <- function(chosen_protein_file_name) {
   species_name <- gsub('.fasta', '', basename(chosen_protein_file_name))
   genes <- all_copies %>% filter(protein_file_name == species_name)
   return(genes)
 }
-
-
 
 
 get_avail_data_for_organism <- function(chosen_organism, topic) {
@@ -381,15 +373,6 @@ get_avail_data_for_organism <- function(chosen_organism, topic) {
 }
 
 
-
-
-
-any_gene_ids_overlap_across_species <- function() {
-  
-  
-  
-}
-
 get_kept_transcript_ids_list <- function(selected_organism, kept_transcript_dir) {
   gn_tr <- read.delim(paste0(kept_transcript_dir, '/', selected_organism, "_transcript_kept_per_gene.tsv"))
   colnames(gn_tr) <- c('gene_id', 'transcript_id')
@@ -401,7 +384,6 @@ get_kept_transcript_ids_list <- function(selected_organism, kept_transcript_dir)
   
   return(kept_transcript_ids_list)
 }
-
 
 
 get_exon_counts_per_copy <- function(dups_anc, selected_organisms, exon_output_dir, kept_transcript_dir) {
@@ -422,9 +404,6 @@ get_exon_counts_per_copy <- function(dups_anc, selected_organisms, exon_output_d
 }
 
 
-
-
-
 # FOR generate_file_organism_table()
 # function to check if both genus and species are in the protein file name
 match_protein_file <- function(organism_name, protein_files) {
@@ -437,7 +416,6 @@ match_protein_file <- function(organism_name, protein_files) {
   # Return the first match (or NA if no match)
   if (length(matched_file) > 0) matched_file[1] else NA
 }
-
 
 
 generate_file_organism_table <- function(prot_output_dir, selected_organisms) {
@@ -459,9 +437,6 @@ generate_file_organism_table <- function(prot_output_dir, selected_organisms) {
   return(file_organism_table)
   
 }
-
-
-
 
 
 cat_all_in_dir <- function(dir, file_type = 'delim') {
@@ -497,6 +472,13 @@ split_into_list <- function(string) {
 }
 
 
-
-
+format_list <- function(words) {
+  if (length(words) == 1) {
+    return(words)  # Single word, no need for "and"
+  } else if (length(words) == 2) {
+    return(paste(words, collapse = " and "))  # Just join with "and"
+  } else {
+    return(paste(paste(words[-length(words)], collapse = ", "), "and", words[length(words)]))
+  }
+}
 

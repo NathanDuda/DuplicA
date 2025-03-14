@@ -1,18 +1,5 @@
 
 
-#OF_dir_path <- 'C:/Users/17735/Downloads/Eight_Species/OrthoFinder_Output/Results_Jan01/'
-#exp_path <- 'C:/Users/17735/Downloads/Eight_Species/All_Expression_Data.tsv'
-#exp_cutoff <- 1
-#PC <- T
-
-### simulate a random gn_exons dataset 
-#gn_exons <- dups_anc %>% 
-#  select(dup_1, dup_2, ancestral_copy) %>%
-#  pivot_longer(everything(), values_to = 'id') %>% 
-#  select(id) %>%
-#  mutate(exon_count = sample(1:20, n(), replace = TRUE))
-
-
 get_dup_mechanism <- function(dups_anc, gn_exons, mech_type) {
   
   # unit test the gn_exons input
@@ -84,10 +71,5 @@ main_dup_mechanism <- function(gn_exons_dir, dups_anc, mech_type, selected_organ
   
   return(mech)
 }
-
-
-
-
-
 
 

@@ -4,20 +4,6 @@
 # when different gene trees are used for each row (orthogroup) in the gene.data df 
 
 
-
-# species tree
-#species_tree <- read.tree(file = paste0(OF_dir_path, "Species_Tree/SpeciesTree_rooted_node_labels.txt"))
-#tree = species_tree
-#gene.data = all_orthogroups_tissueexp
-#colSpecies = colnames(all_orthogroups_tissueexp)
-
-# og
-#row <- 2
-#gene.data = all_orthogroups_tissueexp[row,] 
-#tree = orthogroup_tree
-#colSpecies = colnames(all_orthogroups_tissueexp)
-#sharedBetaInterval = c(0.0001,100)
-
 initParamsOneTheta_gene_tree <- function(gene.data, colSpecies) 
 {
   colSpeciesIndices <- split(seq_along(colSpecies), f = colSpecies)
@@ -35,6 +21,7 @@ initParamsOneTheta_gene_tree <- function(gene.data, colSpecies)
   
   return(cbind(theta,sigma2,alpha,beta))
 }
+
 
 fitOneTheta_gene_tree <- function( tree, gene.data, colSpecies = colnames(gene.data), 
                                    extra.var = NULL, initPar = NULL,
@@ -262,7 +249,5 @@ betaSharedTest_gene_tree <- function(tree, gene.data, colSpecies = colnames(gene
                sharedBeta = sharedBeta,
                LRT = LRT) )
 }
-
-
 
 

@@ -1,6 +1,3 @@
-source(paste0(here_duplica, '/app/Scripts/Visualization_functions.R'))
-
-
 
 get_prot_length <- function(dups, prot_output_dir) {
   
@@ -17,6 +14,7 @@ get_prot_length <- function(dups, prot_output_dir) {
   
   return(prot_lengths)
 }
+
 
 get_gc_content_AND_cpg_count <- function(dups, nuc_output_dir) {
   
@@ -37,6 +35,7 @@ get_gc_content_AND_cpg_count <- function(dups, nuc_output_dir) {
   
   return(dups)
 }
+
 
 get_misc_exon_counts <- function(dups, raw_dup_mechanism_output_file_path) {
   
@@ -62,7 +61,5 @@ main_get_misc_results <- function(dups, prot_output_dir, nuc_output_dir = NULL, 
   
   write.table(dups, file = paste0(here_results, '/misc_results.tsv'))
 }
-
-
 
 

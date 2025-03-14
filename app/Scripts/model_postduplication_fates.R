@@ -1,7 +1,4 @@
 
-#source('./app/Scripts/multispecies_functions.R')
-
-
 get_exp_df_for_all_copies <- function(dups_anc, clean_expression) {
   
   # get expression dataframe for each copy 
@@ -22,19 +19,21 @@ get_exp_df_for_all_copies <- function(dups_anc, clean_expression) {
 }
 
 
-# general functions
 contrib <- function(g) {
   return(sum(g))
 }
+
 
 contrib_intersection <- function(g, h) {
   return(sum(pmin(g, h)))
 }
 
+
 i <- function(g, h) {
   if (contrib(g) == 0) {return(1)}
   return(contrib_intersection(g, h) / contrib(g))
 }
+
 
 delta <- function(x, v) {
   first_term <- x - v
@@ -49,6 +48,7 @@ P_x <- function(a, x, p) {
   return(i(a, x) * (1 - (i(x, a) / p)))
 }
 
+
 # neofunctionalization term function
 N <- function(a, b, g, v) {
   first_term <- 1 - i(a, g)
@@ -56,6 +56,7 @@ N <- function(a, b, g, v) {
   
   return(first_term * second_term * i(g, b))
 }
+
 
 # all classification functions
 pseudo_prob <- function(a, b, g, p) {
@@ -66,6 +67,7 @@ pseudo_prob <- function(a, b, g, p) {
   #term <- max(0, P_a, P_b)
   return(term)
 }
+
 
 neo_prob <- function(a, b, g, v, p) {
   N_a <- N(a, b, g, v)
@@ -78,6 +80,7 @@ neo_prob <- function(a, b, g, v, p) {
   return(first_term * second_term)
 }
 
+
 double_neo_prob <- function(a, b, g, p) {
   a_plus_b <- a + b
   
@@ -88,6 +91,7 @@ double_neo_prob <- function(a, b, g, p) {
   
   return(first_term * second_term * third_term * fourth_term)
 }
+
 
 conserv_prob <- function(a, b, g, v, p) {
   a_plus_b <- a + b
@@ -102,6 +106,7 @@ conserv_prob <- function(a, b, g, v, p) {
   return(first_term * second_term * third_term * fourth_term * fifth_term)
 }
 
+
 subfun_prob <- function(a, b, g, v, p) {
   a_plus_b <- a + b
   
@@ -113,6 +118,7 @@ subfun_prob <- function(a, b, g, v, p) {
   
   return(first_term * second_term * third_term * fourth_term * fifth_term)
 }
+
 
 specializ_prob <- function(a, b, g, v, p) {
   a_plus_b <- a + b
@@ -152,7 +158,6 @@ get_func_probs <- function(dups_anc_exp, v, p) {
 }
 
 
-
 main_postduplication_fates <- function(dups_anc, clean_expression, v, p) {
   
   dups_anc_exp <- get_exp_df_for_all_copies(dups_anc, clean_expression)
@@ -162,15 +167,4 @@ main_postduplication_fates <- function(dups_anc, clean_expression, v, p) {
   write.table(func_probs, paste0(here_results, '/main_postduplication_fates_output.tsv'))
   return(func_probs)
 }
-
-
-#OF_dir_path <- 'C:/Users/17735/Downloads/Eight_Species/OrthoFinder_Output/Results_Jan01/'
-#exp_path <- 'C:/Users/17735/Downloads/Eight_Species/All_Expression_Data.tsv'
-#exp_cutoff <- 1
-#PC <- F
-#v <- 0.2
-#p <- 0.05
-#main_postduplication_fates('C:/Users/17735/Downloads/Eight_Species/OrthoFinder_Output/Results_Jan01/',
- #                          'C:/Users/17735/Downloads/Eight_Species/All_Expression_Data.tsv',
-  #                         1, F, 0.2, 0.05)
 

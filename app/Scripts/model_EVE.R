@@ -1,26 +1,4 @@
 
-library(evemodel)
-library(tidyverse)
-library(ape)
-
-
-source(paste0(here_duplica, '/app/Dependencies/EVE/initParamsTwoTheta_gene_tree.R'))
-source(paste0(here_duplica, '/app/Dependencies/EVE/initParamsBetaShared_gene_tree.R'))
-
-
-#OF_dir_path <- "C:/Users/17735/Downloads/AAAAA_Results_Jan01/"
-#exp_path <- "C:/Users/17735/Downloads/AAAAA___EXAMPLE_Expression.tsv"
-#dup_species_list <- c('dyak_prot', 'dmel_prot')
-#rm_exp_lower_than <- 1
-#nondup_species_need_onecopy = T
-#copy_amount = 2
-#use_gene_trees = T
-#missing_exp_is_zero = F
-#tissue_list <- 'All Tissues'
-
-
-
-
 get_orthogroups <- function(OF_dir_path, dup_species_list, copy_amount, nondup_species_need_onecopy) {
   
   orthogroup_gene_count <- read.delim(paste0(OF_dir_path, "Orthogroups/Orthogroups.GeneCount.tsv"))
@@ -57,16 +35,6 @@ get_orthogroups <- function(OF_dir_path, dup_species_list, copy_amount, nondup_s
   
 }
 
-#get_exp <- function(exp_path) {
-  
-  # import expression data 
-#  all_exp <- read.delim(exp_path, sep = ' ')
-#  all_exp[all_exp < rm_exp_lower_than] <- 0 
-  
-#  colnames(all_exp)[1] <- 'id'
-  
-#  return(all_exp)
-#}
 
 get_tissueexp <- function(all_exp, tissue) {
   
@@ -75,6 +43,7 @@ get_tissueexp <- function(all_exp, tissue) {
   
   return(all_tissue_exp)
 }
+
 
 add_tissueexp_to_orthogroups <- function(tissue, all_orthogroups, all_tissueexp, missing_exp_is_zero, copy_amount, dup_species_list) {
   
@@ -132,6 +101,7 @@ add_tissueexp_to_orthogroups <- function(tissue, all_orthogroups, all_tissueexp,
   return(all_orthogroups_exp)
 }
 
+
 get_orthogroup_tree <- function(orthogroup, OF_dir_path, species_gn_key) {
   orthogroup_tree <- read.tree(file = paste0(OF_dir_path, "Gene_Trees/", orthogroup, "_tree.txt"))
   
@@ -149,6 +119,7 @@ get_orthogroup_tree <- function(orthogroup, OF_dir_path, species_gn_key) {
   return(orthogroup_tree)
 }
 
+
 get_is_theta2_edge <- function(tree, dup_species_list) {
   
   # remove root from node labels
@@ -164,6 +135,7 @@ get_is_theta2_edge <- function(tree, dup_species_list) {
   
   return(is_theta2_edge)
 }
+
 
 get_species_gn_key <- function(all_orthogroups, all_orthogroups_tissueexp, dup_species_list) {
   

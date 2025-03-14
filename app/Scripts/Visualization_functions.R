@@ -1,6 +1,3 @@
-library(RColorBrewer)
-library(jsonlite)
-
 
 import_if_exists <- function(file_name) {
   if (file.exists(file_name)) {read.delim(file_name, sep = ' ')}
@@ -143,7 +140,7 @@ make_visualization_json_file <- function(all_data) {
   write(json, file = paste0(here_duplica, '/app/Front_end/vite-project/public/visualization_options.json')) # CHANGE VITE 
   
 }
-# Downloads/DuplicA/app/Front_end/vite-project$
+
 
 
 

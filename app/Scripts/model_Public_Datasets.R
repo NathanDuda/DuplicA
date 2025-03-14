@@ -1,18 +1,4 @@
 
-library(Biostrings)
-library(biomartr)
-
-
-# the possible inputs 
-available_databases <- c('refseq', 'genbank', 'ensembl') # for prot and cds
-available_organisms <- listGenomes()
-data_types <- c('Proteomes', 'CDS', 'Genomes') # need prot + cds, genomes is optional
-keep_which_transcript <- c('longest', 'first')
-
-
-
-###
-
 get_data_for_organisms <- function(selected_organisms, data_types, selected_database_protein, selected_database_cds, selected_database_genome, prot_data_dir, cds_data_dir, genome_data_dir, must_be_reference) {
   
   if ('Proteomes' %in% data_types){
@@ -30,12 +16,15 @@ get_data_for_organisms <- function(selected_organisms, data_types, selected_data
   
 }
 
+
 get_organisms_prot_fasta_data <- function(selected_organism, prot_files) {
   prot_file <- prot_files[grepl(selected_organism, prot_files) & grepl("\\.pep\\.", prot_files)]
   prot_fasta_data <- readAAStringSet(prot_file)
   
   return(prot_fasta_data)
 }
+
+
 get_organisms_cds_fasta_data <- function(selected_organism, cds_files) {
   cds_file <- cds_files[grepl(selected_organism, cds_files) & grepl("\\.cds\\.", cds_files)]
   cds_fasta_data <- readDNAStringSet(cds_file)
@@ -43,6 +32,7 @@ get_organisms_cds_fasta_data <- function(selected_organism, cds_files) {
   return(cds_fasta_data)
   
 }
+
 
 get_prot_transcript_seq <- function(prot_fasta_data, keep_which_transcript, selected_organism) {
   prot_seqs_df <- as.data.frame(prot_fasta_data) %>%
@@ -81,6 +71,8 @@ get_prot_transcript_seq <- function(prot_fasta_data, keep_which_transcript, sele
   
   return(prot_seqs_df)
 }
+
+
 add_cds_transcript_seq <- function(cds_fasta_data, prot_seqs_df) {
   
   cds_seqs_df <- as.data.frame(cds_fasta_data) %>%
@@ -95,6 +87,7 @@ add_cds_transcript_seq <- function(cds_fasta_data, prot_seqs_df) {
   return(seqs_df)
 }
 
+
 create_output_dirs <- function() {
   prot_output_dir <- paste0(here_results, '/Fastas/Protein_Fastas/')
   dir.create(prot_output_dir, recursive = T)
@@ -103,6 +96,8 @@ create_output_dirs <- function() {
   
   return(list(prot_output_dir = prot_output_dir, cds_output_dir = cds_output_dir))
 }
+
+
 seq_df_to_fasta_files <- function(seqs_df, prot_output_dir, cds_output_dir, selected_organism) {
   
   prot_output_file <- paste0(prot_output_dir, selected_organism, '_prot.fasta')
@@ -118,6 +113,7 @@ seq_df_to_fasta_files <- function(seqs_df, prot_output_dir, cds_output_dir, sele
     pull(fasta) %>%
     writeLines(con = cds_output_file)
 }
+
 
 move_genome_files <- function(selected_organism, genome_files) {
   
@@ -152,6 +148,7 @@ move_genome_files <- function(selected_organism, genome_files) {
   
   
 }
+
 
 main_public_datasets <- function(selected_organisms, data_types, selected_database_protein, selected_database_cds, selected_database_genome, keep_which_transcript, must_be_reference) {
   
@@ -199,17 +196,6 @@ main_public_datasets <- function(selected_organisms, data_types, selected_databa
 
 
 
-# example input
-#selected_database_protein <- 'ensembl'
-#selected_database_cds <- 'ensembl'
-#selected_database_genome <- 'ensembl'
-
-#selected_organisms <- c('Homo sapiens', 'Pan troglodytes')
-#data_types <- c('Proteomes', 'CDS')
-#keep_which_transcript <- 'longest'
-#must_be_reference <- F
-
-#main_public_datasets(selected_organisms, data_types, selected_database_protein, selected_database_cds, selected_database_genome, keep_which_transcript, must_be_reference)
 
 
 # deal with errors from when data can not be found

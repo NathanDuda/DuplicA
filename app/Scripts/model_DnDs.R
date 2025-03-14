@@ -1,7 +1,4 @@
 
-
-#source('C:/Users/17735/Downloads/DuplicA/app/Scripts/pop_functions.R') ######## CHANGE
-
 # this function allows two to two to twos
 get_two_to_two_pairs_from_OF <- function(OF_dir_path) {
 
@@ -145,7 +142,6 @@ get_codon_alignments <- function() { # pal2nal
 }
 
 
-# change this to paml or something in the cl 
 get_dnds <- function() {
   dnds_results <- data.frame()
   
@@ -170,8 +166,6 @@ get_dnds <- function() {
 }
 
 
-#####
-# prot_file_path IS NOT ALLOWED TO BE PROVIDED BY THE USER (because cant make the file optional)
 main_pop_dnds <- function(cnvs_path, nuc_file_path, prot_file_path = NA, aligner = 'muscle', replace_dirs, use_all_fastas_in_dir) {
   replace_dirs <- F ############## remove 
   temp_dir_list <- c('/Connected_Eq_Protein_Sequences', '/Connected_Eq_Protein_Alignments', '/Connected_Eq_Nucleotide_Sequences', '/Connected_Eq_Codon_Alignments')
@@ -190,22 +184,6 @@ main_pop_dnds <- function(cnvs_path, nuc_file_path, prot_file_path = NA, aligner
   write.table(dnds_results, 'C:/Users/17735/Downloads/DuplicA/TRASH_dnds_results.tsv') # CHANGEEE
 
 }
-
-
-
-#main_pop_dnds(cnvs_path = 'C:/Users/17735/Downloads/AAAAA_Seg_Dups_Input_Example/connected_dups_sep.tsv',
- #             nuc_file_path = "C:/Users/17735/Downloads/DuplicA/app/Temp/Connected_Eq_Nucleotide_Sequences/group_24_TOM_008.fa",
-  #            prot_file_path = NA, # "C:/Users/17735/Downloads/DuplicA/app/Temp/Connected_Eq_Protein_Sequences/group_24_TOM_008.fa"
-   #           aligner = 'muscle', 
-    #          replace_dirs = F, 
-     #         use_all_fastas_in_dir = T)
-
-#cnvs_path = 'C:/Users/17735/Downloads/AAAAA_Seg_Dups_Input_Example/connected_dups_sep.tsv'
-#nuc_file_path = "C:/Users/17735/Downloads/DuplicA/app/Temp/Connected_Eq_Nucleotide_Sequences/group_24_TOM_008.fa"
-#prot_file_path = NA # "C:/Users/17735/Downloads/DuplicA/app/Temp/Connected_Eq_Protein_Sequences/group_24_TOM_008.fa"
-#aligner = 'muscle' 
-#replace_dirs = F
-#use_all_fastas_in_dir = T
 
 
 main_multispecies_dnds <- function(OF_dir_path, dups, allow_two_to_twos, nuc_file_path, prot_file_path, aligner) {
@@ -232,6 +210,4 @@ main_multispecies_dnds <- function(OF_dir_path, dups, allow_two_to_twos, nuc_fil
   return(dnds_results)
   
 }
-
-
 

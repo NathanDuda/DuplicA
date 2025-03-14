@@ -1,10 +1,3 @@
-library(tidyverse)
-library(biomartr)
-library(r3dmol)
-library(httr)
-library(bio3d)
-
-#source('./app/Scripts/multispecies_functions.R')
 
 get_alphafold_for_pair <- function(dup_1, dup_2, func, output_directory, output_file, output_file2) {
   
@@ -62,6 +55,7 @@ get_plddt <- function(accession) {
     return(plddt_score)
   }
 }
+
 
 get_best_pdb_for_gene <- function(avail_data, output_directory, gene) {
   
@@ -140,7 +134,6 @@ get_best_pdb_for_gene <- function(avail_data, output_directory, gene) {
 }
 
 
-
 main_alphafold <- function(all_copies, file_organism_table) {
   file_organism_table$organism_scientific_name <- gsub('_', ' ', file_organism_table$organism_scientific_name)
   
@@ -191,51 +184,4 @@ main_alphafold <- function(all_copies, file_organism_table) {
   #return(final_output)
   
 }
-
-
-#pdb1 <- read.pdb(paste0(output_directory, dup_1, '.pdb'))
-#pdb2 <- read.pdb(paste0(output_directory, dup_2, '.pdb'))
-
-
-
-
-#pdb$atom      # atom-level information (coordinates, element types)
-#pdb$xyz       # atomic coordinates
-#pdb$seqres    # sequence of residues
-#pdb$calpha    # alpha carbons
-
-
-
-
-
-
-
-#accession <- 'AF-Q5MK24-F1'
-#url <- paste0("https://alphafold.ebi.ac.uk/files/", accession, "-model_v3.pdb")
-#response1 <- GET(url)
-#dup1_pdb <- read.pdb(response1$url)
-
-#accession <- 'AF-Q5MK23-F1'
-#url <- paste0("https://alphafold.ebi.ac.uk/files/", accession, "-model_v3.pdb")
-#response2 <- GET(url)
-#dup2_pdb <- read.pdb(response2$url)
-
-#accession <- 'AF-Q8SYH1-F1'
-#url <- paste0("https://alphafold.ebi.ac.uk/files/", accession, "-model_v3.pdb")
-#responsea <- GET(url)
-#anc_pdb <- read.pdb(responsea$url)
-
-
-
-#pdbaln(files = list(response1$url, response2$url), 
- #      exefile = 'C:/Users/17735/Downloads/muscle-win64.v5.3.exe', 
-  #     outfile = 'C:/Users/17735/Downloads/alignment.pir')
-
-
-
-
-# does it make enough sense to use your own expression data on public database sequences?
-
-
-
 

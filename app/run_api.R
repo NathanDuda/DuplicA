@@ -1,9 +1,11 @@
+
+############################################################
+# Change this to your path:
+path_to_duplica <- 'C:/Users/17735/Downloads/DuplicA'
+############################################################
+
 library(plumber)
 
-
-prefix <- '/mnt/c'
-prefix <- 'C:'
-
-r <- plumb(paste0(prefix, "/Users/17735/Downloads/DuplicA/app/api.R"))
+r <- plumb(paste0(path_to_duplica, "/app/api.R"))
 r$run(host = "0.0.0.0", port = 8000)
 

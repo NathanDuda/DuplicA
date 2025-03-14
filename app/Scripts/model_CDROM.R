@@ -1,8 +1,4 @@
 
-source(paste0(here_duplica, '/app/Scripts/multispecies_functions.R'))
-
-
-
 get_all_sc_genes <- function(OF_dir_path) {
   orthogroups <- read.delim(paste0(OF_dir_path, "Orthogroups/Orthogroups.tsv"))
   sc_orthogroups <- read.table(paste0(OF_dir_path, "Orthogroups/Orthogroups_SingleCopyOrthologues.txt"), quote="\"", comment.char="")
@@ -23,6 +19,7 @@ get_all_sc_genes <- function(OF_dir_path) {
   return(sc_orthogroups)
 }
 
+
 list_species_pairs <- function(dups_anc, min_dups_per_species_pair) {
   
   dups_anc <- dups_anc %>%
@@ -37,6 +34,7 @@ list_species_pairs <- function(dups_anc, min_dups_per_species_pair) {
   return(species_pair_list)
   
 }
+
 
 get_CDROM_inputs <- function(spec_pair, dups_anc, all_sc_genes, clean_expression, PC) {
   
@@ -92,9 +90,6 @@ get_CDROM_inputs <- function(spec_pair, dups_anc, all_sc_genes, clean_expression
 }
 
 
-
-
-# CDROM functions:
 CreatePlot_EuclideanDistanceDensities_NOTPC <- function(densS1S2, densBoth, densPCA, 
                                                         lowerX, upperX, upperY, Ediv, legend) {
   
@@ -119,6 +114,8 @@ CreatePlot_EuclideanDistanceDensities_NOTPC <- function(densS1S2, densBoth, dens
   
   title(ylab = "Density", mgp = c(1.6, 1, 0), cex.lab = 2.2)
 }
+
+
 CreatePlot_EuclideanDistanceDensities_PC <- function(densS1S2, densCA, densPA, densPCA, 
                                                      lowerX, upperX, upperY, Ediv, legend) {
   # make plot 
@@ -145,7 +142,8 @@ CreatePlot_EuclideanDistanceDensities_PC <- function(densS1S2, densCA, densPA, d
   
   title(ylab = "Density", mgp = c(1.6, 1, 0), cex.lab = 2.2)
 }
-# change so the plot does not appear when generating 
+
+
 CreatePlot_ClassificationCross <- function(classes, PC, Ediv) {
   
   if(PC == FALSE){
@@ -179,6 +177,8 @@ CreatePlot_ClassificationCross <- function(classes, PC, Ediv) {
   }
   return(ClassificationCross)
 }
+
+
 CDROM <- function(dupFile, singleFile, exprFile1, exprFile2, out = "out", Ediv,  
                   PC = FALSE, useAbsExpr = FALSE, legend = "topleft", 
                   PlotEuclideanDistanceDensities = TRUE, PlotClassificationCross = TRUE) {
@@ -547,8 +547,6 @@ CDROM <- function(dupFile, singleFile, exprFile1, exprFile2, out = "out", Ediv,
   return(out)
 } 
 
-####
-
 
 add_pseudo_to_func <- function(all_func, pseudo, PC) {
   
@@ -578,6 +576,7 @@ add_pseudo_to_func <- function(all_func, pseudo, PC) {
   
 }
 
+
 CreatePlot_FuncPie <- function(all_func){
   
   FuncPie <- all_func %>%
@@ -593,29 +592,6 @@ CreatePlot_FuncPie <- function(all_func){
     
   return(FuncPie)
 }
-
-
-########
-
-
-#OF_dir_path <- 'C:/Users/17735/Downloads/Eight_Species/OrthoFinder_Output/Results_Jan01/'
-#exp_path <- 'C:/Users/17735/Downloads/Eight_Species/All_Expression_Data.tsv'
-#add_pseudofunc <- TRUE
-#missing_expr_is_pseudo <- FALSE # only when add_pseudofunc is TRUE 
-#rm_exp_lower_than <- 1 # set default to 1 - ensure numeric 
-#PC <- T 
-# MAKE SURE first column is p (dup_1) then c then a 
-# ensure OGs dont repeat
-# rm unecessary objects throughout code 
-# make sure all necessary orthofinder files exist 
-
-
-
-
-#out <- main_get_dups_anc_exp_from_OF(OF_dir_path, exp_path, add_pseudofunc, missing_expr_is_pseudo, rm_exp_lower_than)
-#dups_anc <- out$dups_anc
-#dups <- out$dups
-#clean_expression <- out$clean_expression
 
 
 main_CDROM <- function(dups, dups_anc, clean_expression, OF_dir_path, add_pseudofunc, missing_expr_is_pseudo, rm_exp_lower_than, PC, min_dups_per_species_pair, useAbsExpr, pseudo = NA){
@@ -671,25 +647,6 @@ main_CDROM <- function(dups, dups_anc, clean_expression, OF_dir_path, add_pseudo
 
 
 
-#args <- c('C:/Users/17735/Downloads/AAAAA___EXAMPLE_Expression.tsv', 'C:/Users/17735/Downloads/AAAAA_Results_Jan01', 'True', 'False', '1', 'False', '10', 'False')
-
-#exp_path <- args[1]
-#OF_dir_path <- args[2]
-#add_pseudofunc <- as.logical(args[3])
-#missing_expr_is_pseudo <- as.logical(args[4])
-#rm_exp_lower_than <- as.numeric(args[5])
-#PC <- as.logical(args[6])
-#min_dups_per_species_pair <- as.numeric(args[7])
-#useAbsExpr <- as.logical(args[8])
-
-#args <- commandArgs(trailingOnly = TRUE)
-#main_CDROM(args[1], args[2], as.logical(args[3]), as.logical(args[4]), as.numeric(args[5]), as.logical(args[6]), as.numeric(args[7]), as.logical(args[8]))
-
-
-
-
-
-
 
 # min_dups_per_species_pair must be above 2 (maybe 3) 
 
@@ -701,4 +658,11 @@ main_CDROM <- function(dups, dups_anc, clean_expression, OF_dir_path, add_pseudo
 # change euc densities to ggplot
 
 # when custom input (not orthofinder) force separate files for each species 
+
+
+# MAKE SURE first column is p (dup_1) then c then a 
+# ensure OGs dont repeat
+# make sure all necessary orthofinder files exist 
+
+
 

@@ -1,12 +1,4 @@
 
-library(data.table)
-library(R.utils)
-library(biomartr)
-#source('./app/Scripts/multispecies_functions.R')
-
-#library(conflicted)
-#conflicts_prefer(dplyr::select)
-
 get_gff_file <- function(selected_organism, selected_database_exon, must_be_reference) {
   
   selected_database_exon <- 'ensembl' # CHANGEEGEGEGEGEGESGEGEGEGEGEGEGEG
@@ -24,6 +16,7 @@ get_gff_file <- function(selected_organism, selected_database_exon, must_be_refe
   
   return(exon_file_path)
 }
+
 
 get_exon_counts <- function(exon_file_path) {
   
@@ -57,6 +50,7 @@ get_exon_counts <- function(exon_file_path) {
   return(gn_exon_counts)
 }
 
+
 write_exon_tsv <- function(gn_exon_counts, selected_organism) {
   # create a new directory for the exon files
   exon_output_dir <- paste0(here_results, '/Exon_Counts/')
@@ -69,7 +63,6 @@ write_exon_tsv <- function(gn_exon_counts, selected_organism) {
   # write the exon counts to file
   write.table(gn_exon_counts, new_exon_file, sep = "\t", row.names = FALSE)
 }
-
 
 
 main_exon_datasets <- function(selected_organisms, selected_database_exon, must_be_reference, id_type_of_gene_ids, kept_transcript_dir) {
@@ -100,24 +93,4 @@ main_exon_datasets <- function(selected_organisms, selected_database_exon, must_
   
   unlink(paste0(here_results, '/public_datasets_output'), recursive = T)
 }
-
-
-
-
-# example inputs: 
-
-#selected_database_exon <- 'ensembl'
-#selected_organisms <- c('Arabidopsis thaliana')
-#must_be_reference <- T
-#kept_transcript_dir <- paste0(here_results, '/Fastas/kept_transcript/')
-
-#main_exon_datasets(selected_organisms = selected_organisms, 
-#                   selected_database_exon = selected_database_exon, 
- #                  id_type_of_gene_ids = 'ensembl',
-  #                 must_be_reference = must_be_reference,
-   #                kept_transcript_dir = kept_transcript_dir)
-
-
-
-
 
