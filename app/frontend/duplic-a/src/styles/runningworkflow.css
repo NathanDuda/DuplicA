@@ -1,0 +1,92 @@
+/* Container Styling */
+/* .container {
+    background-color: #F5F7FB;
+    padding: 20px;
+    border-radius: 10px;
+    max-width: 900px;
+    margin: auto;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+} */
+
+/* Grid Layout */
+.workflow-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    /* Two equal columns */
+    gap: 20px;
+}
+
+/* Grid Items */
+.grid-item {
+    background-color: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Make items span across both columns */
+.grid-span {
+    grid-column: span 2;
+}
+
+/* Workflow Progress */
+.workflow-progress {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.workflow-progress label {
+    font-size: 16px;
+    color: #333;
+}
+
+.workflow-progress input[type="radio"] {
+    accent-color: #4F46E5;
+    transform: scale(1.2);
+}
+
+/* Workflow Diagram */
+.workflow-diagram {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.workflow-node {
+    border: 2px solid #4F46E5;
+    padding: 10px 15px;
+    border-radius: 20px;
+    color: #4F46E5;
+    font-weight: bold;
+    text-align: center;
+}
+
+/* Messages Box */
+.messages {
+    background-color: #E3E8F1;
+    padding: 15px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+}
+
+/* Buttons */
+button {
+    background-color: #4F46E5;
+    color: white;
+    padding: 10px 15px;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 10px 5px;
+    transition: background 0.3s ease;
+}
+
+button:hover {
+    background-color: #4338CA;
+}

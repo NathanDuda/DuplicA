@@ -1,0 +1,186 @@
+/* --------------------------------------------------------node customization -------------------------------------------------------------  */
+
+.custom-node {
+    background: #f8f7ff;
+    border-radius: 10px;
+    padding: 15px;
+    text-align: center;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+    font-family: sans-serif;
+    border: 1px solid #e0e0e0;
+    width: 217px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 14px;
+}
+
+.title-section {
+
+    width: 100%;
+
+
+}
+
+.node-title {
+    font-size: 16px;
+    font-weight: bold;
+    color: #000;
+    margin: 0px 0px 0px 0px;
+    white-space: nowrap;
+    padding-bottom: 15px;
+    text-align: left;
+
+
+
+}
+
+.node-button {
+    background: #D2D3F8;
+    color: black;
+    font-weight: bold;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 12px;
+    cursor: pointer;
+    width: 200px;
+    margin: 5px 0;
+    font-size: 14px;
+    text-align: left;
+
+
+}
+
+.node-button:hover {
+    background: #4338ca;
+    color: white;
+    transition: width 0.3s ease-in-out;
+}
+
+
+.node-button.selected {
+    background: #4338ca;
+    color: white;
+}
+
+
+
+.handle-text {
+
+    font-size: 14px;
+    font-weight: bold;
+    color: black;
+    background: #D2D3F8;
+
+}
+
+.right-handle {
+    width: 25px;
+    height: 25px;
+    background: #D2D3F8;
+
+    border: none;
+    position: absolute;
+    right: -10px;
+
+}
+
+.left-handle {
+    width: 25px;
+    height: 25px;
+    background: #D2D3F8;
+
+    border: none;
+    position: absolute;
+    left: -15px;
+}
+
+
+
+/*-------------------------------------------------- PARAMETER CUSTOMIZATION --------------------------------------------------------------------------- */
+
+.param-section {
+    width: 100%;
+    background-color: white;
+    margin: auto;
+    text-align: left;
+
+
+}
+
+
+.param-section h3 {
+    text-align: left;
+
+
+    margin-bottom: 15px;
+    font-weight: 200;
+    font-size: 30px;
+}
+
+
+.param-types {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+
+.text-param,
+.select-param,
+.number-param,
+.boolean-param,
+.file-param {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+
+.param-types p {
+    font-size: 17px;
+    font-weight: 200;
+
+    color: #23235f;
+    flex: 1;
+
+}
+
+
+.param-types input,
+.param-types select {
+    flex: 1;
+    padding: 8px 12px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background: #f9f9f9;
+    text-align: left;
+    width: 100px;
+}
+
+
+.param-types input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #23235f;
+
+}
+
+
+.file-param input[type="file"] {
+    border: none;
+    background: white;
+    font-size: 14px;
+}
+
+
+.param-types select {
+    appearance: none;
+    background: white;
+    border: 1px solid #ccc;
+    padding: 8px;
+    border-radius: 5px;
+    cursor: pointer;
+}
