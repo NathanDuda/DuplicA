@@ -23,7 +23,7 @@ generate_figure <- function(data,
                             color_set = NULL
 ) {
   
-  
+  print(data)
   # test for proper inputs 
   if (x_log && !is.numeric(data[[x]])) {
     stop("Log scale can only be applied to numeric variables for x.")
@@ -94,7 +94,7 @@ generate_figure <- function(data,
 # every time a parameter is changed by the user, rerun the function
 main_generate_figure <- function(parameters) {
   generate_figure(
-    data = get_all_results(here_results),
+    data = get_all_results(paste0(here_duplica, '/app/Results')),
     figure_type = parameters$figure_type,
     x = parameters$x_axis,
     y = parameters$y_axis,

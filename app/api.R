@@ -55,9 +55,15 @@ function(req) {
 # function to run workflow  
 #* @post /runWorkflow
 function(req, selected_models, parameters) {
-  selected_models <- req$body$selected_models
-  parameters <- req$body$parameters
   
+  #body <- fromJSON(req$postBody)
+  #selected_models <- body$selected_models
+  #parameters <- body$parameters
+  
+  
+  
+  selected_models <- as.character(unlist(selected_models))
+
   main_run_workflow(selected_models, parameters)
   
 }

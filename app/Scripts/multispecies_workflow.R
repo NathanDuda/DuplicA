@@ -17,10 +17,8 @@ source(paste0(here_duplica, '/app/Scripts/tool_ID_conversion.R'))
 source(paste0(here_duplica, '/app/Dependencies/EVE/initParamsTwoTheta_gene_tree.R'))
 source(paste0(here_duplica, '/app/Dependencies/EVE/initParamsBetaShared_gene_tree.R'))
 
-
-
-
-status_file_path <- paste0(here_duplica, 'app/Results/status.txt')
+# status file 
+status_file_path <- paste0(here_duplica, '/app/Results/status.txt')
 
 
 
@@ -120,9 +118,12 @@ parameters$get_public_exon_data <- T
 
 main_run_workflow <- function(selected_models, parameters) {
   
+  print(parameters)
+  print(selected_models)
+  
   cat('', file = status_file_path, append = F)
   
-  if(parameters$get_public_exon_data) {selected_models <- c(selected_models, 'exon_datasets')}
+  #if(parameters$get_public_exon_data) {selected_models <- c(selected_models, 'exon_datasets')}
   
   # split strings into lists 
   if (!is.null(parameters$selected_organisms)) {parameters$selected_organisms <- split_into_list(parameters$selected_organisms)}
@@ -369,7 +370,7 @@ main_run_workflow <- function(selected_models, parameters) {
 
 main_get_relevant_parameter_list <- function(selected_models, parameters) {
   
-  print(selected_models)
+  #print(selected_models)
   #print(parameters)
   
   #print(parameters[["missing_exp_is_zero"]])
@@ -399,7 +400,7 @@ main_get_relevant_parameter_list <- function(selected_models, parameters) {
     if('OrthoFinder' %in% selected_models) {
       if(!'Proteomes' %in% parameters[['data_types']]) {required_parameter_list <- c(required_parameter_list, 'protein_folder')}
       additional_parameter_list <- c(additional_parameter_list, 'custom_species_tree', 'sequence_search_method', 'gene_tree_inference_method', 'mcl_inflation', 'split_hogs', 'nuc_not_prot')
-      if(parameters[['gene_tree_inference_method']] == 'msa') {additional_parameter_list <- c(additional_parameter_list, 'msa_method', 'tree_method', 'msa_trim')}
+      if(!is.null(parameters[['gene_tree_inference_method']])) {if(parameters[['gene_tree_inference_method']] == 'msa') {additional_parameter_list <- c(additional_parameter_list, 'msa_method', 'tree_method', 'msa_trim')}}
     }
   }
   
@@ -447,8 +448,8 @@ main_get_relevant_parameter_list <- function(selected_models, parameters) {
     
   }
 
-  print('returning :D')
-  print(required_parameter_list)
+  #print('returning :D')
+  #print(required_parameter_list)
   return(list(additional_parameter_list = additional_parameter_list,
               required_parameter_list = required_parameter_list))
 }
