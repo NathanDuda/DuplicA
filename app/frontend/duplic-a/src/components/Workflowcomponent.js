@@ -99,7 +99,7 @@ const Workflowcomponent = () => {
             // If model is already selected, remove it
             if (prevModels.includes(model)) {
                 const updatedModels = prevModels.filter(m => m !== model);
-                console.log("Selected Models (Updated - Removed):", updatedModels);
+                console.log("Selected Models (Updated ):", updatedModels);
                 return updatedModels;
             }
             // If model is not selected, add it
