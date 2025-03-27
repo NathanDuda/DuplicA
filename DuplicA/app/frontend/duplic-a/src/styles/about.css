@@ -1,0 +1,32 @@
+.about-container {
+  display: flex;
+  justify-content: center; /* Horizontal centering */
+  padding: 5px;           /* Optional: Adds spacing around edges */
+}
+
+.about-content {
+    width: 80%;
+    padding-left: 70px;
+    padding-right: 70px;
+    padding-bottom: 20px;
+    padding-top: 20px;
+    /*max-width: 1000px;*/
+   
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    align-self: center;
+}
+
+.about-content h3 {
+    color: #6c63ff;
+    margin-bottom: 15px;
+    font-size: 48px;
+}
+
+.about-content p {
+    color: black;
+    line-height: 1.6;
+    font-size: 32px;
+}
+
