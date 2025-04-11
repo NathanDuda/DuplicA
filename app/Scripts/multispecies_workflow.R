@@ -18,8 +18,7 @@ source(paste0(here_duplica, '/app/Dependencies/EVE/initParamsTwoTheta_gene_tree.
 source(paste0(here_duplica, '/app/Dependencies/EVE/initParamsBetaShared_gene_tree.R'))
 
 # status file 
-status_file_path <- paste0(here_duplica, '/app/Results/status.txt')
-
+status_file_path <- paste0(here_duplica, '/app/status/status.txt')
 
 
 
@@ -135,6 +134,9 @@ main_run_workflow <- function(selected_models, parameters) {
     
     cat('Gathering Public Datasets...', file = status_file_path, sep = "\n", append = TRUE)
     
+    
+    public_datasets_dir <- paste0(here_results, '/public_datasets_output/')
+    if(dir.exists(public_datasets_dir)) {dir_delete(public_datasets_dir)}
     result_dir <- paste0(here_results, '/Fastas/')
     if(dir.exists(result_dir)) {dir_delete(result_dir)}
     

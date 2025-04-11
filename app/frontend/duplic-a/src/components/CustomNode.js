@@ -26,7 +26,7 @@ const CustomNode = ({ data, isConnectable }) => {
 
     return (
         <div className="custom-node">
-            <div className="title-section">
+            <div className="title-section1">
                 <h3 className="node-title">{data.title}</h3>
             </div>
 
@@ -51,12 +51,28 @@ const CustomNode = ({ data, isConnectable }) => {
                     )
                 }
             </div>
-            <Handle type="source" position={Position.Right} className="right-handle" isConnectable={isConnectable}>
-                <span className="handle-text">{">"}</span>
-            </Handle>
-            <Handle type="target" position={Position.Left} className="left-handle" isConnectable={isConnectable} >
-                <span className="handle-text">{">"}</span>
-            </Handle>
+            {data.hasLeft && (
+                <Handle
+                    type="target"
+                    position={Position.Left}
+                    className="left-handle"
+                    isConnectable={isConnectable}
+                >
+                    <span className="handle-text">{'>'}</span>
+                </Handle>
+            )}
+
+            {data.hasRight && (
+                <Handle
+                    type="source"
+                    position={Position.Right}
+                    className="right-handle"
+                    isConnectable={isConnectable}
+                >
+                    <span className="handle-text">{'>'}</span>
+                </Handle>
+            )}
+
         </div>
     );
 };

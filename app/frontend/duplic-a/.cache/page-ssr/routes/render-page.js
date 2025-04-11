@@ -14,6 +14,7 @@ exports.components = {
   "component---src-pages-homeextended-js": () => __webpack_require__.e(/*! import() | component---src-pages-homeextended-js */ "component---src-pages-homeextended-js").then(__webpack_require__.bind(__webpack_require__, /*! ./../../../src/pages/Homeextended.js?export=default */ "./src/pages/Homeextended.js?export=default")),
   "component---src-pages-hypothesis-js": () => __webpack_require__.e(/*! import() | component---src-pages-hypothesis-js */ "component---src-pages-hypothesis-js").then(__webpack_require__.bind(__webpack_require__, /*! ./../../../src/pages/Hypothesis.js?export=default */ "./src/pages/Hypothesis.js?export=default")),
   "component---src-pages-index-js": () => __webpack_require__.e(/*! import() | component---src-pages-index-js */ "component---src-pages-index-js").then(__webpack_require__.bind(__webpack_require__, /*! ./../../../src/pages/index.js?export=default */ "./src/pages/index.js?export=default")),
+  "component---src-pages-modelinfo-js": () => __webpack_require__.e(/*! import() | component---src-pages-modelinfo-js */ "component---src-pages-modelinfo-js").then(__webpack_require__.bind(__webpack_require__, /*! ./../../../src/pages/Modelinfo.js?export=default */ "./src/pages/Modelinfo.js?export=default")),
   "component---src-pages-runningworkflow-js": () => __webpack_require__.e(/*! import() | component---src-pages-runningworkflow-js */ "component---src-pages-runningworkflow-js").then(__webpack_require__.bind(__webpack_require__, /*! ./../../../src/pages/Runningworkflow.js?export=default */ "./src/pages/Runningworkflow.js?export=default")),
   "component---src-pages-visualization-js": () => __webpack_require__.e(/*! import() | component---src-pages-visualization-js */ "component---src-pages-visualization-js").then(__webpack_require__.bind(__webpack_require__, /*! ./../../../src/pages/Visualization.js?export=default */ "./src/pages/Visualization.js?export=default")),
   "component---src-pages-workflow-js": () => __webpack_require__.e(/*! import() | component---src-pages-workflow-js */ "component---src-pages-workflow-js").then(__webpack_require__.bind(__webpack_require__, /*! ./../../../src/pages/Workflow.js?export=default */ "./src/pages/Workflow.js?export=default"))
@@ -5160,24 +5161,24 @@ module.exports = require("punycode");
 /***/ }),
 
 /***/ "react":
-/*!*********************************************************************************************************!*\
-  !*** external "/mnt/c/Users/17735/Downloads/DuplicA/app/frontend/duplic-a/node_modules/react/index.js" ***!
-  \*********************************************************************************************************/
+/*!***********************************************************************************************************!*\
+  !*** external "/mnt/c/Users/NathanD/Downloads/DuplicA/app/frontend/duplic-a/node_modules/react/index.js" ***!
+  \***********************************************************************************************************/
 /***/ ((module) => {
 
 "use strict";
-module.exports = require("/mnt/c/Users/17735/Downloads/DuplicA/app/frontend/duplic-a/node_modules/react/index.js");
+module.exports = require("/mnt/c/Users/NathanD/Downloads/DuplicA/app/frontend/duplic-a/node_modules/react/index.js");
 
 /***/ }),
 
 /***/ "react-dom/server":
-/*!**************************************************************************************************************!*\
-  !*** external "/mnt/c/Users/17735/Downloads/DuplicA/app/frontend/duplic-a/node_modules/react-dom/server.js" ***!
-  \**************************************************************************************************************/
+/*!****************************************************************************************************************!*\
+  !*** external "/mnt/c/Users/NathanD/Downloads/DuplicA/app/frontend/duplic-a/node_modules/react-dom/server.js" ***!
+  \****************************************************************************************************************/
 /***/ ((module) => {
 
 "use strict";
-module.exports = require("/mnt/c/Users/17735/Downloads/DuplicA/app/frontend/duplic-a/node_modules/react-dom/server.js");
+module.exports = require("/mnt/c/Users/NathanD/Downloads/DuplicA/app/frontend/duplic-a/node_modules/react-dom/server.js");
 
 /***/ }),
 

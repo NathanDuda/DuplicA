@@ -1,0 +1,25 @@
+Gathering Public Datasets...
+Successfully gathered Public Datasets!
+Running OrthoFinder...
+Finishing touches
+Runnoing CDROM
+Testing 
+test 3
+test 5
+testing 6
+orthofinder running 
+
+\hello world 
+.......
+ 
+testing
+running model 
+Completed Successfuly!
+
+Workflow Completed!
+test run
+workflow running
+Completed Successfuly!
+Workflow Completed!
+running
+Workflow Completed!

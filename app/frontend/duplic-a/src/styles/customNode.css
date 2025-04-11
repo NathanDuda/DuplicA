@@ -3,27 +3,29 @@
 .custom-node {
     background: #f8f7ff;
     border-radius: 10px;
-    padding: 15px;
+    padding: 16px;
     text-align: center;
     box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
     font-family: sans-serif;
     border: 1px solid #e0e0e0;
-    width: 217px;
+    width: 267px;
     display: flex;
     flex-direction: column;
     align-items: center;
     font-size: 14px;
 }
 
-.title-section {
+.title-section1 {
 
     width: 100%;
+    background-color: #f8f7ff;
+
 
 
 }
 
 .node-title {
-    font-size: 16px;
+    font-size: 22px;
     font-weight: bold;
     color: #000;
     margin: 0px 0px 0px 0px;
@@ -43,23 +45,23 @@
     border-radius: 20px;
     padding: 8px 12px;
     cursor: pointer;
-    width: 200px;
+    width: 260px;
     margin: 5px 0;
-    font-size: 14px;
+    font-size: 17px;
     text-align: left;
 
 
 }
 
 .node-button:hover {
-    background: #4338ca;
+    background: #b071f7;
     color: white;
     transition: width 0.3s ease-in-out;
 }
 
 
 .node-button.selected {
-    background: #4338ca;
+    background: #8c2cf9;
     color: white;
 }
 
@@ -67,120 +69,170 @@
 
 .handle-text {
 
-    font-size: 14px;
+    font-size: 24px;
     font-weight: bold;
-    color: black;
-    background: #D2D3F8;
+    color: #8430fb;
+
+    position: absolute;
+    margin-top: -13px;
+
+
 
 }
 
 .right-handle {
-    width: 25px;
-    height: 25px;
-    background: #D2D3F8;
-
-    border: none;
+    width: 0;
+    height: 0;
+    background: "transparent";
+    border: "none";
     position: absolute;
     right: -10px;
+    background-color: #8430fb;
 
 }
 
 .left-handle {
-    width: 25px;
-    height: 25px;
-    background: #D2D3F8;
-
-    border: none;
+    width: 0;
+    height: 0;
+    background: "transparent";
+    border: "none";
     position: absolute;
     left: -15px;
+    background-color: #8430fb;
 }
 
+
+.runworkflow-btn :disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+    opacity: 0.7;
+
+    border-radius: 5px;
+
+    font-size: 14px;
+    width: fit-content;
+    border-style: none;
+}
+
+.runworkflow-btn {
+
+    padding: 8px 16px;
+    background-color: #8430fb;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    width: fit-content;
+    border-style: none;
+}
 
 
 /*-------------------------------------------------- PARAMETER CUSTOMIZATION --------------------------------------------------------------------------- */
 
 .param-section {
     width: 100%;
-    background-color: white;
+
+    background-color: rgb(246 246 246);
     margin: auto;
     text-align: left;
-
-
-}
-
-
-.param-section h3 {
-    text-align: left;
-
-
-    margin-bottom: 15px;
-    font-weight: 200;
-    font-size: 30px;
-}
-
-
-.param-types {
+    padding: 24px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    overflow: hidden;
 }
 
+.param-scroll-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    gap: 16px;
+}
+
+.param-section h3 {
+
+    font-size: 1.25rem;
+    margin-top: 10px;
+}
+
+.param-section p {
+    margin: 10px 0px 3px 0px;
+    font-size: 0.95rem;
+}
 
 .text-param,
 .select-param,
 .number-param,
 .boolean-param,
+.folder-param,
 .file-param {
+    margin-bottom: 20px;
     display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.text-param input,
+.select-param select,
+.number-param input,
+.folder-param input,
+.file-param input {
+    padding: 8px 10px;
+    font-size: 1rem;
+    border: solid 1px #e2e2e3;
+    border-radius: 5px;
+    width: 300px;
+    max-width: 100%;
+    margin-left: 5px;
+
+}
+
+.boolean-param {
+    flex-direction: row;
     align-items: center;
-    justify-content: space-between;
-    gap: 15px;
+}
+
+.boolean-param input {
+    width: auto;
+    margin-left: 8px;
 }
 
 
-.param-types p {
-    font-size: 17px;
-    font-weight: 200;
-
-    color: #23235f;
-    flex: 1;
-
-}
 
 
-.param-types input,
-.param-types select {
-    flex: 1;
-    padding: 8px 12px;
-    font-size: 14px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    background: #f9f9f9;
-    text-align: left;
-    width: 100px;
-}
-
-
-.param-types input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
-    accent-color: #23235f;
-
-}
-
-
-.file-param input[type="file"] {
-    border: none;
+.additional-param-section,
+.required-param-section {
     background: white;
-    font-size: 14px;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    overflow-y: scroll;
+    scrollbar-width: thin;
+    width: 400px;
+    margin-top: 15px;
+    max-height: 400px;
+
 }
 
+.required-param-section::-webkit-scrollbar,
+.additional-param-section::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
 
-.param-types select {
-    appearance: none;
-    background: white;
-    border: 1px solid #ccc;
-    padding: 8px;
-    border-radius: 5px;
-    cursor: pointer;
+.required-param-section::-webkit-scrollbar-track,
+.additional-param-section::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+    margin: 5px;
+}
+
+.error-message {
+    color: red;
+    font-weight: 500;
+    margin-top: 10px;
+    background-color: #ffe6e6;
+    border: 1px solid red;
+    padding: 10px;
+    border-radius: 4px;
 }

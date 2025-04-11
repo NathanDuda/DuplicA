@@ -1,0 +1,62 @@
+.info-wrapper {
+    max-width: 720px;
+    margin: 30px auto;
+    padding: 32px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    font-family: "Segoe UI", Roboto, sans-serif;
+}
+
+
+.model-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.dna-icon {
+    font-size: 28px;
+    color: #4f46e5;
+}
+
+.model-name {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 12px;
+    border-bottom: 3px solid #8430fb;
+
+    display: inline-block;
+    padding-bottom: 4px;
+}
+
+.model-sub {
+    font-size: 18px;
+    font-weight: 500;
+    color: #4b5563;
+    margin-bottom: 16px;
+}
+
+.model-des {
+    font-size: 16px;
+    line-height: 1.6;
+    color: #374151;
+    margin-bottom: 12px;
+}
+
+.model-custom {
+    font-size: 15px;
+    color: #334155;
+    background-color: #f3f4f6;
+    padding: 12px 16px;
+    border-left: 4px solid #8430fb;
+
+    border-radius: 6px;
+}
+
+.dna-icon {
+    font-size: 30px;
+    color: #8430fb;
+}

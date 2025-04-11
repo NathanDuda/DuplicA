@@ -1,13 +1,16 @@
 import React from "react";
 import { Link } from "gatsby";
 import "../styles/navbar.css";
+import { LuDna } from "react-icons/lu";
 
 const Navbar = () => {
     return (
         <nav className="navbar">
 
-            <a href="/" className="logo">Duplic
-                A</a>
+            <a href="/" className="logo">
+                <LuDna className="nav-logo"></LuDna>
+
+                DuplicA</a>
 
 
             <ul>

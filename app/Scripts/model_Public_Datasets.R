@@ -19,6 +19,9 @@ get_data_for_organisms <- function(selected_organisms, data_types, selected_data
 
 get_organisms_prot_fasta_data <- function(selected_organism, prot_files) {
   prot_file <- prot_files[grepl(selected_organism, prot_files) & grepl("\\.pep\\.", prot_files)]
+  
+  # if refseq 
+  #prot_file <- prot_files[grepl(selected_organism, prot_files) & grepl("_protein_refseq.faa", prot_files)]
   prot_fasta_data <- readAAStringSet(prot_file)
   
   return(prot_fasta_data)
@@ -152,7 +155,8 @@ move_genome_files <- function(selected_organism, genome_files) {
 
 main_public_datasets <- function(selected_organisms, data_types, selected_database_protein, selected_database_cds, selected_database_genome, keep_which_transcript, must_be_reference) {
   
-  selected_organisms <- gsub(' ', '_', selected_organisms)
+  selected_database_protein = 'ensembl'
+  selected_database_cds = 'ensembl'
   
   prot_data_dir <- paste0(here_results, '/public_datasets_output/protein_data')
   cds_data_dir <- paste0(here_results, '/public_datasets_output/cds_data')
@@ -166,6 +170,8 @@ main_public_datasets <- function(selected_organisms, data_types, selected_databa
   cds_files <- list.files(cds_data_dir, full.names = TRUE)
   genome_files <- list.files(genome_data_dir, full.names = TRUE)
 
+  selected_organisms <- gsub(' ', '_', selected_organisms)
+  
   # interate over each selected organism 
   for (selected_organism in selected_organisms) {
     

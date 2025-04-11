@@ -5,6 +5,7 @@ exports.components = {
   "component---src-pages-homeextended-js": () => import("./../../../src/pages/Homeextended.js?export=default" /* webpackChunkName: "component---src-pages-homeextended-js" */),
   "component---src-pages-hypothesis-js": () => import("./../../../src/pages/Hypothesis.js?export=default" /* webpackChunkName: "component---src-pages-hypothesis-js" */),
   "component---src-pages-index-js": () => import("./../../../src/pages/index.js?export=default" /* webpackChunkName: "component---src-pages-index-js" */),
+  "component---src-pages-modelinfo-js": () => import("./../../../src/pages/Modelinfo.js?export=default" /* webpackChunkName: "component---src-pages-modelinfo-js" */),
   "component---src-pages-runningworkflow-js": () => import("./../../../src/pages/Runningworkflow.js?export=default" /* webpackChunkName: "component---src-pages-runningworkflow-js" */),
   "component---src-pages-visualization-js": () => import("./../../../src/pages/Visualization.js?export=default" /* webpackChunkName: "component---src-pages-visualization-js" */),
   "component---src-pages-workflow-js": () => import("./../../../src/pages/Workflow.js?export=default" /* webpackChunkName: "component---src-pages-workflow-js" */)

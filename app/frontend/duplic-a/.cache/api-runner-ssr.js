@@ -1,6 +1,6 @@
 var plugins = [{
       name: 'partytown',
-      plugin: require('/mnt/c/Users/17735/Downloads/DuplicA/app/frontend/duplic-a/node_modules/gatsby/dist/internal-plugins/partytown/gatsby-ssr.js'),
+      plugin: require('/mnt/c/Users/NathanD/Downloads/DuplicA/app/frontend/duplic-a/node_modules/gatsby/dist/internal-plugins/partytown/gatsby-ssr.js'),
       options: {"plugins":[]},
     }]
 /* global plugins */

@@ -82,7 +82,7 @@ generate_figure <- function(data,
     if(custom_theme == 'linedraw') {p <- p + theme_linedraw()}
   }
   
-  ggsave(p, filename = paste0(here_duplica, '/app/Front_end/vite-project/public/Figure.png'), height = 5, width = 7, dpi = 400)
+  ggsave(p, filename = paste0(here_duplica, '/app/status/Figure.png'), height = 5, width = 7, dpi = 400)
   
   return(p)
 }
@@ -112,5 +112,22 @@ main_generate_figure <- function(parameters) {
 }
 
 
+
+
+generate_figure(
+  data = get_all_results(paste0(here_duplica, '/app/Results')),
+  figure_type = 'boxplot',
+  x = 'exp_dup_1',
+  y = 'Functional_Category',
+  color_groups = 'Functional_Category',
+  title ='Expression Level in Duplicate 1 across Functional Categories',
+  x_label = 'log10(Expression Level of Duplicate 1)',
+  y_label = 'Functional Category',
+  x_log = T,
+  custom_theme = 'bw',
+  color_set = 'Dark2'
+)
+
+ggsave(filename = 'plot.png', height = 4, width = 8, dpi = 1800)
 
 

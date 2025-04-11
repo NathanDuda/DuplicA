@@ -1,141 +1,294 @@
- .container {
-     display: flex;
-     justify-content: space-between;
-     max-width: 900px;
-     margin: auto;
-     padding: 20px;
-     margin-left: 350px;
- }
+.home-title {
+    margin-left: 390px;
+    font-weight: 400;
+}
 
+.data-icon {
+    font-size: 20px;
+    color: #8430fb;
 
- .selection-container {
-     width: 40%;
- }
-
- h3 {
-     font-size: 20px;
-     font-weight: bold;
-     margin-bottom: 10px;
-     color: #232360;
-
- }
-
-
- .model-info-btn {
-     text-decoration: none;
-     font-weight: bold;
-     font-size: 24px;
- }
-
- /* Checkbox List */
- .data-type-list {
-     display: flex;
-     flex-direction: column;
-     gap: 15px;
-     padding-top: 25px;
-
- }
+}
 
 
 
- .model-container {
-     width: 50%;
- }
-
- .model-list {
-     display: flex;
-     flex-direction: column;
-     gap: 20px;
-     padding-top: 25px;
- }
-
- .model-item {
-     padding: 10px;
-     border-radius: 6px;
-     text-align: left;
-     font-weight: bold;
-     display: inline-block;
-     width: fit-content;
-     font-size: 17px;
+.model_s_container {
+    display: flex;
+    justify-content: space-between;
+    max-width: 900px;
+    margin-left: 4%;
+    padding: 0px 0px 0px 0px;
+    gap: 32px;
 
 
- }
+}
 
- /* Enabled Models */
- .enabled {
-     background-color: white;
+.selection-container {
+    width: 279px;
+    min-width: 279px;
+    padding: 26pxpx;
 
-     color: #232360;
- }
-
- /* Disabled Models */
- .disabled {
-     background-color: rgba(255, 255, 255, 0.4);
-     color: #aaa;
-
-     cursor: not-allowed;
- }
-
- .checkbox-wrapper {
-     display: flex;
-     align-items: center;
-     gap: 10px;
-
-     margin-bottom: 8px;
- }
-
- .checkbox-label {
-     padding: 10px;
-     border-radius: 6px;
-
-     font-weight: bold;
-     display: flex;
-     width: fit-content;
-     font-size: 17px;
-     color: #232360;
-     background-color: white;
-
- }
+    border-top: 1px solid #e1e1e1;
+    border-bottom: 1px solid #e1e1e1;
+    background-color: rgb(246 246 246);
+}
 
 
- .checkbox-input[type="checkbox"] {
-     appearance: none;
-     width: 28px;
-     height: 28px;
-     border: 2px solid #5051F9;
-     ;
-     border-radius: 4px;
-     position: relative;
-     cursor: pointer;
-     transition: all 0.2s ease-in-out;
- }
 
- /* Hover effect */
- .checkbox-input[type="checkbox"]:hover {
-     border-color: #4338CA;
- }
+h3 {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: black;
 
- /* Checked state */
- .checkbox-input[type="checkbox"]:checked {
-     background-color: #5051F9;
-     ;
-     border-color: #5051F9;
-     ;
- }
+}
 
- /* Custom checkmark */
- .checkbox-input[type="checkbox"]::after {
-     content: "✓";
-     font-size: 14px;
-     color: white;
-     position: absolute;
-     top: 50%;
-     left: 50%;
-     transform: translate(-50%, -50%);
-     display: none;
- }
+.filter-des {
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+    font-size: 16px;
+    margin-bottom: 10px;
+    gap: 6px;
+    padding-left: 10px;
+}
 
- /* Show checkmark when checked */
- .checkbox-input[type="checkbox"]:checked::after {
-     display: block;
- }
+.model-info-btn {
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 24px;
+}
+
+/* Checkbox List */
+.data-type-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    padding-left: 25px;
+
+}
+
+
+
+.model-container {
+    width: 50%;
+}
+
+.model-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding-top: 25px;
+}
+
+.model-item {
+    padding: 10px;
+    border-radius: 6px;
+    text-align: left;
+    font-weight: bold;
+    display: inline-block;
+    width: fit-content;
+    font-size: 17px;
+
+
+}
+
+
+
+.checkbox-wrapper {
+    display: flex;
+    align-items: center;
+
+}
+
+.checkbox-label {
+    padding-left: 10px;
+    border-radius: 6px;
+
+    display: flex;
+    width: fit-content;
+    font-size: 1rem;
+
+
+
+}
+
+
+.checkbox-input[type="checkbox"] {
+    appearance: none;
+    width: 17px;
+    height: 17px;
+    border: 2px solid #8430fb;
+    ;
+    border-radius: 4px;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+/* Hover effect */
+.checkbox-input[type="checkbox"]:hover {
+    border-color: #8430fb;
+}
+
+/* Checked state */
+.checkbox-input[type="checkbox"]:checked {
+    background-color: #8430fb;
+    ;
+    border-color: #8430fb;
+    ;
+}
+
+/* Custom checkmark */
+.checkbox-input[type="checkbox"]::after {
+    content: "✓";
+    font-size: 14px;
+    color: white;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: none;
+}
+
+/* Show checkmark when checked */
+.checkbox-input[type="checkbox"]:checked::after {
+    display: block;
+}
+
+
+/* --------- Cards CSS ----------- */
+
+.all-model-section {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+
+}
+
+
+.heading {
+
+    font-size: 30px;
+    font-weight: bold;
+
+
+    text-align: left;
+    max-width: 1200px;
+
+    width: 100%;
+
+    padding-left: 40px;
+
+
+
+
+}
+
+.section {
+    margin-bottom: 40px;
+}
+
+.section-title {
+    font-size: 25px;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+/* Grid for Three Columns */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+
+    gap: 25px;
+    align-items: stretch;
+
+}
+
+/* Card Styling */
+.card {
+    border: 1px solid #DFDFDF;
+    padding: 15px;
+    background-color: white;
+    transition: box-shadow 0.3s ease-in-out;
+    width: 301px;
+    height: 130px;
+    position: relative;
+
+}
+
+.card-link {
+    text-decoration: none;
+    color: inherit;
+  }
+
+
+.card p {
+    margin: 0px 0px 6px 0px;
+}
+
+.card:hover {
+    transform: scale(1.05);
+
+}
+
+.card-title {
+    font-size: 20px;
+    font-weight: 600;
+    position: relative;
+    padding-top: 25px;
+
+
+}
+
+
+
+
+.card-arrow {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    font-size: 20px;
+    color: rgb(124 58 237);
+    text-decoration: none;
+
+}
+
+.card:hover .card-title::after {
+    width: 100%;
+
+}
+
+.card-sub {
+    font-size: 18px;
+    color: #555;
+    margin-bottom: 5px;
+}
+
+.card-des {
+    font-size: 15px;
+    color: #777;
+    margin-bottom: 5px;
+}
+
+.card-custom {
+    font-size: 14px;
+    font-weight: bold;
+    color: #333;
+}
+
+.card p {
+    white-space: normal;
+    /* Allows text to wrap */
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+
+.model-type-heading {
+    font-size: 20px;
+    font-weight: 400;
+    margin-top: 0px;
+
+}

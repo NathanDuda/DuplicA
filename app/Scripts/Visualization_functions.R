@@ -137,10 +137,9 @@ make_visualization_json_file <- function(all_data) {
   json$separate_figure$options <- vis_options$group_options
   
   json <- toJSON(json, pretty = T)
-  write(json, file = paste0(here_duplica, '/app/Front_end/vite-project/public/visualization_options.json')) # CHANGE VITE 
+  write(json, file = paste0(here_duplica, '/app/frontend/duplic-a/src/components/visualization_options.json')) # CHANGE VITE 
   
 }
-
 
 
 

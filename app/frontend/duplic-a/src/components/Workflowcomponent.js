@@ -6,39 +6,46 @@ import CustomNode from "./CustomNode";
 import parameterOptions from "../components/multispecies_model_options.json"
 import axios from "axios";
 import { ResizableBox } from 'react-resizable';
+import { Background } from 'reactflow';
+import { v4 as uuidv4 } from 'uuid';
 
 
 const API_BASE_URL = "http://127.0.0.1:8001";
 
 const nodeTypes = { custom: CustomNode };
 
+
 const initialNodes = [
     {
         id: "1",
         type: "custom",
-        position: { x: -900, y: 380 },
+        position: { x: -1000, y: 420 },
         data: {
             title: "Get Public Data",
             buttonLabel: "Public Datasets",
             onModelSelect: null,
-            selectedModels: []
+            selectedModels: [],
+            hasLeft: false,
+            hasRight: true
         },
     },
     {
         id: "2",
         type: "custom",
-        position: { x: -300, y: 380 },
+        position: { x: -650, y: 420 },
         data: {
             title: "Detect Duplications",
             buttonLabel: "OrthoFinder",
             onModelSelect: null,
-            selectedModels: []
+            selectedModels: [],
+            hasLeft: true,
+            hasRight: true
         },
     },
     {
         id: "3",
         type: "custom",
-        position: { x: 500, y: 150 },
+        position: { x: -200, y: -80 },
         data: {
             title: "Functional Models",
             buttonLabel: [
@@ -50,48 +57,64 @@ const initialNodes = [
                 "Post-duplication Fates"
             ],
             onModelSelect: null,
-            selectedModels: []
+            selectedModels: [],
+            hasLeft: true,
+            hasRight: false
         },
     },
     {
         id: "4",
         type: "custom",
-        position: { x: 500, y: 550 },
+        position: { x: -200, y: 570 },
         data: {
             title: "Mechanism Models",
             buttonLabel: "Duplication Mechanism",
             onModelSelect: null,
-            selectedModels: []
+            selectedModels: [],
+            hasLeft: true,
+            hasRight: false
         },
     },
     {
         id: "5",
         type: "custom",
-        position: { x: 500, y: 750 },
+        position: { x: -200, y: 370 },
         data: {
             title: "Selection Models",
             buttonLabel: ["Dn/Ds", "EVE Diversity/Divergence"],
             onModelSelect: null,
-            selectedModels: []
+            selectedModels: [],
+            hasLeft: true,
+            hasRight: false
         },
     },
 ];
 
 const initialEdges = [
-    { id: "e1-2", source: "1", target: "2", style: { stroke: "#D2D3F8", strokeWidth: 3 } },
-    { id: "e2-3", source: "2", target: "3", style: { stroke: "#D2D3F8", strokeWidth: 3 } },
-    { id: "e2-4", source: "2", target: "4", style: { stroke: "#D2D3F8", strokeWidth: 3 } },
-    { id: "e2-5", source: "2", target: "5", style: { stroke: "#D2D3F8", strokeWidth: 3 } },
+    { id: "e1-2", source: "1", target: "2", style: { stroke: "#8430fb", strokeWidth: 3 } },
+    { id: "e2-3", source: "2", target: "3", style: { stroke: "#8430fb", strokeWidth: 3 } },
+    { id: "e2-4", source: "2", target: "4", style: { stroke: "#8430fb", strokeWidth: 3 } },
+    { id: "e2-5", source: "2", target: "5", style: { stroke: "#8430fb", strokeWidth: 3 } },
 ];
 
 const Workflowcomponent = () => {
     const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-    const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+    const [edges, onEdgesChange] = useEdgesState(initialEdges);
     const [selectedModels, setSelectedModels] = useState([]);
     const [parameters, setParameters] = useState({});
     const [availableOptions, setAvailableOptions] = useState({});
     const [isLoading, setIsLoading] = useState(false);
     const [apiError, setApiError] = useState(null);
+    const [sidebarWidth, setSidebarWidth] = useState(490);
+    const [requiredParams, setRequiredParams] = useState({});
+    const [additionalParams, setAdditionalParams] = useState({});
+    const [showAdditionalParams, setShowAdditonalParmas] = useState(false);
+    const [isReadyToRun, setIsReadyToRun] = useState(false);
+    const [isRunningWorkflow, setIsRunningWorkflow] = useState(false);
+
+    const [validationErrors, setValidationErrors] = useState({});
+
+
 
     // Handler for model selection that toggles models
     const handleModelSelect = useCallback((model) => {
@@ -136,48 +159,60 @@ const Workflowcomponent = () => {
             // Clear parameters if no models selected
             setAvailableOptions({});
             setParameters({});
+            setRequiredParams({});
+            setAdditionalParams({});
         }
     }, [selectedModels]);
 
 
+
+
     // Fetch parameters from API
-    const fetchParametersFromAPI = async () => {
+    const fetchParametersFromAPI = async (updatedParams = parameters) => {
         setIsLoading(true);
         setApiError(null);
 
         try {
             const response = await axios.post(`${API_BASE_URL}/getInputs`, {
                 selected_models: selectedModels,
-                parameters: parameters,
+                parameters: flattenParameters(updatedParams),
             });
 
+            console.log("API Request Payload:", {
+                selected_models: selectedModels,
+                parameters: flattenParameters(updatedParams),
+            });
             console.log("API Response:", response.data);
 
             const requiredList = response.data.required_parameter_list || [];
             const additionalList = response.data.additional_parameter_list || [];
 
-            const matchedRequired = requiredList.reduce((acc, param) => {
+            const allParameters = [...requiredList, ...additionalList];
+
+            const updatedParameters = allParameters.reduce((acc, param) => {
                 if (parameterOptions[param]) {
                     acc[param] = {
                         ...parameterOptions[param],
-                        value: parameters[param] ?? parameterOptions[param].default ?? "",
+                        value: updatedParams[param]?.value ?? parameterOptions[param].default ?? "",
                     };
                 }
                 return acc;
             }, {});
 
-            const matchedAdditional = additionalList.reduce((acc, param) => {
+            setParameters(updatedParameters);
+            setAvailableOptions(updatedParameters);
+            setRequiredParams(requiredList.reduce((acc, param) => {
                 if (parameterOptions[param]) {
-                    acc[param] = {
-                        ...parameterOptions[param],
-                        value: parameters[param] ?? parameterOptions[param].default ?? "",
-                    };
+                    acc[param] = updatedParameters[param];
                 }
                 return acc;
-            }, {});
-
-            setParameters({ ...matchedRequired, ...matchedAdditional });
-            setAvailableOptions({ ...matchedRequired, ...matchedAdditional });
+            }, {}));
+            setAdditionalParams(additionalList.reduce((acc, param) => {
+                if (parameterOptions[param]) {
+                    acc[param] = updatedParameters[param];
+                }
+                return acc;
+            }, {}));
         } catch (error) {
             console.error("Error fetching parameters:", error);
             setApiError("Failed to fetch parameters from API.");
@@ -186,236 +221,549 @@ const Workflowcomponent = () => {
         }
     };
 
-
-
+    // Modified handleInputChange to update state and then call API
     const handleInputChange = (key, value) => {
-        setParameters((prev) => ({
-            ...prev,
-            [key]: value,
-        }));
-        setAvailableOptions((prev) => ({
+        // First update the local state
+        const updatedParams = {
+            ...parameters,
+            [key]: {
+                ...parameters[key],
+                value: value,
+            },
+        };
+
+        // Update both state objects
+        setParameters(updatedParams);
+        setAvailableOptions(prev => ({
             ...prev,
             [key]: {
                 ...prev[key],
                 value: value,
             },
         }));
+
+        // Call API with updated parameters but without triggering workflow run
+        fetchParametersFromAPI(updatedParams);
+    };
+
+    // Simplified flattenParameters
+    const flattenParameters = (params) => {
+        return Object.keys(params).reduce((acc, key) => {
+            acc[key] = typeof params[key] === 'object' ? params[key]?.value : params[key];
+            return acc;
+        }, {});
+    };
+
+
+
+    const handleFolderChange = (key, event) => {
+        const file = event.target.files;
+        if (!file.length) return;
+
+        const firstFile = file[0];
+        const fullPath = firstFile.webkitRelativePath;
+        const folderName = fullPath.split("/")[0];
+
+        console.log(`Folder Name:`, folderName);
+
+        // Update parameters and call API
+        const updatedParams = {
+            ...parameters,
+            [key]: {
+                ...parameters[key],
+                value: folderName,
+            },
+        };
+
+        setParameters(updatedParams);
+        setAvailableOptions(prev => ({
+            ...prev,
+            [key]: {
+                ...prev[key],
+                value: folderName,
+            },
+        }));
+
+        fetchParametersFromAPI(updatedParams);
     };
 
     const handleFileChange = (key, event) => {
-        const file = event.target.files[0];
+        const files = event.target.files;
 
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const fileContent = e.target.result;
+        if (!files.length) return;
+        const file = files[0];
+        const fileName = file.name;
 
-            setParameters((prev) => ({
-                ...prev,
-                [key]: {
-                    name: file.name,
-                    content: fileContent,
-                    type: file.type,
-                },
-            }));
-            setAvailableOptions((prev) => ({
-                ...prev,
-                [key]: {
-                    ...prev[key],
-                    value: {
-                        name: file.name,
-                        content: fileContent,
-                        type: file.type,
-                    },
-                },
-            }));
+        console.log("uploaded file", fileName);
+
+        // Update parameters and call API
+        const updatedParams = {
+            ...parameters,
+            [key]: {
+                ...parameters[key],
+                value: fileName,
+            },
         };
 
-        reader.readAsDataURL(file);
+        setParameters(updatedParams);
+        setAvailableOptions(prev => ({
+            ...prev,
+            [key]: {
+                ...prev[key],
+                value: fileName,
+            },
+        }));
+
+        fetchParametersFromAPI(updatedParams);
     };
 
-    // Run workflow function
+
     const runWorkflow = async () => {
+        // Validate required parameters first
+        const errors = {};
+        let hasErrors = false;
+    
+        Object.keys(requiredParams).forEach((key) => {
+            const paramValue = parameters[key]?.value;
+            let isValid = true;
+    
+            if (!Array.isArray(paramValue)) {
+                isValid = paramValue !== undefined && paramValue !== null && paramValue !== "";
+            } else {
+                isValid = paramValue.length > 0 &&
+                    !paramValue.some(item => item === undefined || item === null || item === "");
+            }
+    
+            if (!isValid) {
+                errors[key] = `${requiredParams[key].label || key} is required`;
+                hasErrors = true;
+            }
+        });
+    
+        setValidationErrors(errors);
+        if (hasErrors) {
+            setApiError("Please fill out all required inputs.");
+            return;
+        }
+    
+        setIsRunningWorkflow(true);
         setIsLoading(true);
         setApiError(null);
-
+    
+        const submissionTime = new Date().toLocaleString();
+        const workflowId = uuidv4();
+    
         try {
-            // Submit workflow to API
-            const response = await axios.post(`${API_BASE_URL}/runWorkflow`, {
+            // Submit workflow to backend
+            await axios.post(`${API_BASE_URL}/runWorkflow`, {
                 selected_models: selectedModels,
-                parameters: parameters
+                parameters: flattenParameters(parameters),
             });
-
-            console.log("Workflow response:", response.data);
-
-            // Navigate to results page
-            navigate("/Runningworkflow", {
-                state: {
-                    workflowId: response.data.workflowId,
-                    selectedModels: selectedModels
+    
+            // Wait for confirmation from status.txt
+            const checkStatusFile = async () => {
+                try {
+                    const response = await axios.get("http://localhost:8002/status.txt");
+                    const firstLine = response.data.split("\n")[0].trim();
+                    console.log("status.txt first line:", firstLine);
+                    return firstLine === "Starting Workflow...";
+                } catch (error) {
+                    console.error("Error checking status.txt:", error);
+                    return false;
                 }
-            });
-
+            };
+    
+            const waitForWorkflowStart = async (maxAttempts = 10, delay = 1000) => {
+                for (let i = 0; i < maxAttempts; i++) {
+                    const started = await checkStatusFile();
+                    if (started) return true;
+                    await new Promise(res => setTimeout(res, delay));
+                }
+                return false;
+            };
+    
+            const started = await waitForWorkflowStart();
+    
+            if (started) {
+                navigate("/Runningworkflow", {
+                    state: {
+                        submissionTime,
+                        selectedModels,
+                        workflowId,
+                    },
+                });
+            } else {
+                setApiError("Workflow submitted, but status.txt did not confirm it started.");
+            }
+    
         } catch (error) {
             console.error("Error running workflow:", error);
+            setApiError("Failed to run workflow. Please try again.");
         } finally {
             setIsLoading(false);
+            setIsRunningWorkflow(false);
         }
     };
+    
 
-    const [sidebarWidth, setSidebarWidth] = useState(600);
+    //Check if all required parameters are filled
 
+    useEffect(() => {
+        const allRequiredFilled = Object.keys(requiredParams).every((key) => {
+            // If parameter doesn't exist in state, it's not filled
+            if (!parameters[key]) {
+                return false;
+            }
+
+            const paramValue = parameters[key].value;
+            const paramType = requiredParams[key].type;
+
+            // Check based on parameter type
+            switch (paramType) {
+                case "text":
+                case "select":
+                    return typeof paramValue === 'string' && paramValue.trim() !== "";
+
+                case "number":
+                    return paramValue !== undefined && paramValue !== null && paramValue !== 0;  // Assuming 0 is not a valid value
+
+                case "boolean":
+                    // For booleans, consider the parameter filled only if it's explicitly set to true
+                    // If this isn't your requirement, you can adjust this logic
+                    return paramValue === true;
+
+                case "file":
+                case "directory":
+                    // For files/directories, any non-empty string value should be sufficient
+                    return typeof paramValue === 'string' && paramValue.trim() !== "";
+
+                default:
+                    // For arrays or other types
+                    if (Array.isArray(paramValue)) {
+                        // Check if array has content and no empty strings
+                        return paramValue.length > 0 &&
+                            !paramValue.some(item => item === undefined || item === null || item === "");
+                    }
+
+                    // Default fallback check
+                    return paramValue !== undefined && paramValue !== null && paramValue !== "";
+            }
+        });
+
+        console.log("All required filled:", allRequiredFilled);
+        setIsReadyToRun(allRequiredFilled && selectedModels.length > 0);
+    }, [parameters, requiredParams, selectedModels]);
+
+    function parmaInput(key, param) {
+
+        const hasError = validationErrors[key] !== undefined;
+        const errorStyle = hasError ? {
+            border: '1px solid red',
+            backgroundColor: '#fff0f0'
+        } : {};
+
+        if (param.type === "text") {
+            return (
+                <div key={key} className="text-param">
+                    <p>{param.label}:</p>
+
+                    <input
+                        type="text"
+                        value={parameters[key]?.value || ""}
+                        onChange={(e) => {
+                            handleInputChange(key, e.target.value);
+                            // Clear error when user types
+                            if (validationErrors[key]) {
+                                setValidationErrors(prev => {
+                                    const updated = { ...prev };
+                                    delete updated[key];
+                                    return updated;
+                                });
+                            }
+                        }}
+                        style={errorStyle}
+                    />
+
+                </div>
+            );
+        }
+
+        if (param.type === "select") {
+            return (
+                <div key={key} className="select-param">
+                    <p>{param.label}:</p>
+                    <select
+                        value={parameters[key]?.value || ""}
+                        onChange={(e) => {
+                            const newValue = e.target.value;
+                            console.log("Select change:", key, newValue);
+                            handleInputChange(key, newValue);
+                            // Clear error when user selects
+                            if (validationErrors[key]) {
+                                setValidationErrors(prev => {
+                                    const updated = { ...prev };
+                                    delete updated[key];
+                                    return updated;
+                                });
+                            }
+                        }}
+                        style={errorStyle}
+                    >
+                        <option value="">Select an option</option>
+                        {param.choices?.map((choice) => (
+                            <option key={choice} value={choice}>{choice}</option>
+                        ))}
+                    </select>
+                    {hasError && <p className="error-message">{validationErrors[key]}</p>}
+                </div>
+            );
+        }
+
+        if (param.type === "number") {
+            return (
+                <div key={key} className="number-param">
+                    <p>{param.label}:</p>
+                    <input
+                        type="number"
+                        value={parameters[key]?.value || 0}
+                        min={param.min || 0}
+                        max={param.max || undefined}
+                        step={param.step || 1}
+                        onChange={(e) => {
+                            handleInputChange(key, parseFloat(e.target.value));
+                            // Clear error when user types
+                            if (validationErrors[key]) {
+                                setValidationErrors(prev => {
+                                    const updated = { ...prev };
+                                    delete updated[key];
+                                    return updated;
+                                });
+                            }
+                        }}
+                        style={errorStyle}
+                    />
+                    {hasError && <p className="error-message">{validationErrors[key]}</p>}
+                </div>
+            );
+        }
+
+        if (param.type === "boolean") {
+            return (
+                <div key={key} className="boolean-param" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <p>{param.label}:</p>
+                    <input
+                        style={{
+                            accentColor: "#8430fb",
+                            ...(hasError ? { outline: '1px solid red' } : {})
+                        }}
+                        type="checkbox"
+                        checked={parameters[key]?.value || false}
+                        onChange={(e) => {
+                            handleInputChange(key, e.target.checked);
+                            // Clear error when user checks/unchecks
+                            if (validationErrors[key]) {
+                                setValidationErrors(prev => {
+                                    const updated = { ...prev };
+                                    delete updated[key];
+                                    return updated;
+                                });
+                            }
+                        }}
+                    />
+                    {hasError && <p className="error-message" style={{ marginLeft: "8px" }}>{validationErrors[key]}</p>}
+                </div>
+            );
+        }
+
+        if (param.type === "directory") {
+            return (
+                <div key={key} className="folder-param">
+                    <p>{param.label}:</p>
+                    <label htmlFor={`folderUpload_${key}`}
+                        style={{
+                            display: "inline-block",
+                            padding: "8px 16px",
+                            backgroundColor: "#8430fb",
+                            color: "white",
+                            borderRadius: "5px",
+                            cursor: "pointer",
+                            fontSize: "14px",
+                            width: "fit-content",
+                            ...(hasError ? { boxShadow: '0 0 0 2px red' } : {})
+                        }}>
+                        Upload Folder
+                    </label>
+                    <input
+                        style={{ display: "none" }}
+                        id={`folderUpload_${key}`}
+                        type="file"
+                        webkitdirectory=""
+                        directory=""
+                        multiple
+                        onChange={(e) => {
+                            handleFolderChange(key, e);
+                            // Clear error when user uploads
+                            if (validationErrors[key]) {
+                                setValidationErrors(prev => {
+                                    const updated = { ...prev };
+                                    delete updated[key];
+                                    return updated;
+                                });
+                            }
+                        }}
+                    />
+                    {parameters[key]?.value && (
+                        <p style={{ fontSize: "0.8em", marginTop: "5px" }}>
+                            Selected: {parameters[key].value}
+                        </p>
+                    )}
+                    {hasError && <p className="error-message">{validationErrors[key]}</p>}
+                </div>
+            );
+        }
+
+        if (param.type === "file") {
+            return (
+                <div key={key} className="file-param">
+                    <p>{param.label}</p>
+                    <label htmlFor={`fileUpload_${key}`}
+                        style={{
+                            display: "inline-block",
+                            padding: "8px 16px",
+                            backgroundColor: "#8430fb",
+                            color: "white",
+                            borderRadius: "5px",
+                            cursor: "pointer",
+                            fontSize: "14px",
+                            width: "fit-content",
+                            ...(hasError ? { boxShadow: '0 0 0 2px red' } : {})
+                        }}>
+                        Upload File
+                    </label>
+                    <input
+                        style={{ display: "none" }}
+                        id={`fileUpload_${key}`}
+                        type="file"
+                        onChange={(e) => {
+                            handleFileChange(key, e);
+                            // Clear error when user uploads
+                            if (validationErrors[key]) {
+                                setValidationErrors(prev => {
+                                    const updated = { ...prev };
+                                    delete updated[key];
+                                    return updated;
+                                });
+                            }
+                        }}
+                    />
+                    {parameters[key]?.value && (
+                        <p>Selected: {parameters[key].value}</p>
+                    )}
+                    {hasError && <p className="error-message">{validationErrors[key]}</p>}
+                </div>
+            );
+        }
+
+        return null;
+    }
 
     return (
-
-
         <div style={{ display: 'flex', height: '100vh' }}>
-            <div style={{ minwidth: "100px", flex: "1", background: "#F3F4F8" }}>
+            <div style={{
+                minwidth: "100px",
+                flex: "1",
+                transition: 'width 0.2s ease-in-out'
+            }}>
                 <ReactFlow
                     nodes={nodes}
                     edges={edges}
                     onNodesChange={onNodesChange}
                     onEdgesChange={onEdgesChange}
                     nodeTypes={nodeTypes}
-                    fitView
+                    defaultViewport={{ x: 1000, y: -60, zoom: 1 }}
+                    fitView={false}
                 >
+                    <Background
+                        variant="lines"
+                        gap={20}
+                        size={.5}
+                    />
                     <Controls />
                 </ReactFlow>
             </div>
 
-
-            {isLoading && (
-                <div style={{ textAlign: "center", padding: "20px" }}>
-                    <p>Loading...</p>
-                </div>
-            )}
-
-            {apiError && (
-                <div style={{ color: "red", padding: "10px", margin: "10px 0", background: "#ffeeee", borderRadius: "5px" }}>
-                    {apiError}
-                </div>
-            )}
-
             {Object.keys(availableOptions).length > 0 && (
-                <ResizableBox width={sidebarWidth} height={Infinity} axis="x" minConstraints={[150, Infinity]} maxConstraints={[600, Infinity]} resizeHandles={['w']} onResizeStop={(e, data) => setSidebarWidth(data.size.width)}>
-                    <div className="param-section" style={{ height: "100%" }} >
-                        <h3 >Additional Parameters</h3>
-                        <div className="param-types" >
-                            {Object.keys(availableOptions).map((key) => {
-                                const param = availableOptions[key];
+                <ResizableBox
+                    width={sidebarWidth}
+                    height={Infinity}
+                    axis="x"
+                    minConstraints={[150, Infinity]}
+                    maxConstraints={[600, Infinity]}
+                    resizeHandles={['w']}
+                    onResizeStop={(e, data) => setSidebarWidth(data.size.width)}
+                >
+                    <div className="param-section" style={{ height: "100%" }}>
+                        <div className="param-scroll-container">
+                            <div className="required-param-section">
+                                <h3>Required Inputs</h3>
+                                {Object.keys(requiredParams).map((key) => {
+                                    const param = requiredParams[key];
+                                    return parmaInput(key, param);
+                                })}
+                            </div>
 
-                                if (param.type === "text") {
-                                    return (
-                                        <div key={key} className="text-param" >
-                                            <p>{param.label}:</p>
-                                            <input
-                                                type="text"
-                                                value={parameters[key] || ""}
-                                                onChange={(e) => handleInputChange(key, e.target.value)}
+                            <div className="hide-additional-param-section">
+                                <button
+                                    style={{
+                                        background: "none",
+                                        border: "none",
+                                        textDecoration: "underline",
+                                        textDecorationColor: "#8430fb",
+                                        fontSize: "18px",
+                                        fontWeight: "bold",
+                                        marginTop: "10px",
+                                        textDecorationThickness: "2.5px",
+                                        marginBottom: "10px"
+                                    }}
+                                    onClick={() => setShowAdditonalParmas(!showAdditionalParams)}
+                                >
+                                    {showAdditionalParams ? "Hide Additional Options" : "Additional Options >"}
+                                </button>
 
-                                            />
-                                        </div>
-                                    );
-                                }
+                                {showAdditionalParams && (
+                                    <div className="additional-param-section">
+                                        <h3>Additional Options</h3>
+                                        {Object.keys(additionalParams).map((key) => {
+                                            const param = additionalParams[key];
+                                            return parmaInput(key, param);
+                                        })}
+                                    </div>
+                                )}
+                            </div>
 
-                                if (param.type === "select") {
-                                    return (
-                                        <div key={key} className="select-param">
-                                            <p>{param.label}:</p>
-                                            <select
-                                                value={parameters[key] || ""}
-                                                onChange={(e) => handleInputChange(key, e.target.value)}
-
-                                                multiple={param.multiple}
-                                            >
-                                                {param.choices.map((choice) => (
-                                                    <option key={choice} value={choice}>{choice}</option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                    );
-                                }
-
-                                if (param.type === "number") {
-                                    return (
-                                        <div key={key} className="number-param">
-                                            <p>{param.label}:</p>
-                                            <input
-                                                type="number"
-                                                value={parameters[key] || 0}
-                                                min={param.min || 0}
-                                                max={param.max || undefined}
-                                                step={param.step || 1}
-                                                onChange={(e) => handleInputChange(key, parseFloat(e.target.value))}
-
-                                            />
-                                        </div>
-                                    );
-                                }
-
-                                if (param.type === "boolean") {
-                                    return (
-                                        <div key={key} className="boolean-param">
-                                            <p>{param.label}:</p>
-                                            <input
-                                                type="checkbox"
-                                                checked={parameters[key] || false}
-                                                onChange={(e) => handleInputChange(key, e.target.checked)}
-                                            />
-                                        </div>
-                                    );
-                                }
-
-                                if (param.type === "file" || param.type === "directory") {
-                                    return (
-                                        <div key={key} className="file-param" >
-                                            <p>{param.label}:</p>
-                                            <input
-                                                type="file"
-                                                onChange={(e) => handleFileChange(key, e)}
-                                                style={{ width: "100%" }}
-                                                multiple={param.multiple}
-                                            />
-                                            {parameters[key] && (
-                                                <p style={{ fontSize: "0.8em", marginTop: "5px" }}>
-                                                    Selected: {parameters[key].name}
-                                                </p>
-                                            )}
-                                        </div>
-                                    );
-                                }
-
-                                return null;
-                            })}
-                        </div>
-                        <div style={{ marginTop: "20px", display: "flex", gap: "10px" }}>
-                            <button
-                                onClick={runWorkflow}
-                                style={{
-                                    padding: "10px",
-                                    background: "#007bff",
-                                    color: "#fff",
-                                    border: "none",
-                                    borderRadius: "5px",
-                                    cursor: "pointer",
-                                }}
-                                disabled={selectedModels.length === 0 || isLoading}
-                            >
-                                Run Workflow
-                            </button>
+                            <div style={{ marginTop: "20px", marginLeft: "150px" }}>
+                                <button
+                                    className="runworkflow-btn"
+                                    onClick={runWorkflow}
+                                    type="button"
+                                //disabled={!isReadyToRun || isLoading || isRunningWorkflow}
+                                >
+                                    {isLoading && isRunningWorkflow ? "Submitting..." : "Run Workflow"}
+                                </button>
+                                {/* 
+                                {apiError && (
+                                    <div className="error-message">
+                                        {apiError}
+                                    </div>
+                                )} */}
 
 
+                            </div>
                         </div>
                     </div>
                 </ResizableBox>
-            )
-            }
-
-
-
-
-
-
-        </div >
+            )}
+        </div>
     );
 };
 

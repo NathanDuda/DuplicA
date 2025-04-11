@@ -21,6 +21,9 @@ main_OrthoFinder <- function(protein_folder, is_dna = FALSE, method = "dendrobla
   
   #protein_folder <- gsub('C:/Users/17735/Downloads', '/mnt/c/Users/17735/Downloads', protein_folder)
   #protein_folder <- as.character(dirname(protein_folder))
+  
+  here <- 'C:/Users/NathanD/Downloads'
+  here_linux <- '/mnt/c/Users/NathanD/Downloads'
   protein_folder <- gsub(here, here_linux, protein_folder)
 
   path_to_orthofinder <- paste0(here_linux, '/DuplicA/app/Dependencies/OrthoFinder/orthofinder')
@@ -29,6 +32,8 @@ main_OrthoFinder <- function(protein_folder, is_dna = FALSE, method = "dendrobla
   # base command
   command <- paste(path_to_orthofinder, "-f", shQuote(protein_folder))
   
+  is_dna <- FALSE
+  no_msa_trim <- FALSE
   if (is_dna) {command <- paste(command, "-d")}
   
   command <- paste(command, "-M", method)

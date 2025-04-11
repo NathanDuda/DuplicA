@@ -18,12 +18,16 @@ install.packages("r3dmol")
 install.packages("httr")
 install.packages("bio3d")
 install.packages("igraph")
+install.packages("future")
+install.packages("furrr")
+
+install.packages("plumber") # for the API 
 
 install.packages("BiocManager")
-BiocManager::install("Biostrings")# translate() in translate_nucs_to_prots() in model_OrthoFinder.R
-BiocManager::install("biomaRt")
-BiocManager::install("biomartr")
-BiocManager::install("clusterProfiler")
+BiocManager::install("Biostrings", ask = F)# translate() in translate_nucs_to_prots() in model_OrthoFinder.R
+BiocManager::install("biomaRt", ask = F)
+BiocManager::install("biomartr", ask = F)
+BiocManager::install("clusterProfiler", ask = F)
 
 install.packages("devtools")
 remotes::install_gitlab("sandve-lab/evemodel")
