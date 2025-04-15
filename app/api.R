@@ -70,5 +70,16 @@ function(req, selected_models, parameters) {
 
 
 
+#* Delete the generated image file
+#* @post /deleteImage
+function() {
+  file_path <- paste0(here_duplica, '/app/status/Figure.png')
+  
+  # delete the file
+  if (file.exists(file_path)) {file.remove(file_path)}
+  
+}
+
+
 
 

@@ -25,33 +25,49 @@ const VisualizationComponent = () => {
             console.error("No options");
             return;
         }
-
+    
         const formattedParams = {};
-
+    
         Object.keys(options).forEach((key) => {
             let value = updatedParams[key];
-
+    
             // Ensure select inputs always have a value
             if (!value && options[key].type[0] === "select" && options[key].options.length > 0) {
                 value = options[key].options[0];
             }
-
+    
             formattedParams[key] = value === "" ? null : value;
         });
-
+    
         fetch("http://localhost:8001/makeImage", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(formattedParams),
         })
             .then((response) => response.json())
-            .then((data) => {
-                setTimeout(() => {
-                    setImageSrc(`http://localhost:8002/Figure.png?${new Date().getTime()}`);
-                }, 2000);
+            .then(() => {
+                const imageUrl = `http://localhost:8002/Figure.png?${new Date().getTime()}`;
+    
+                const img = new Image();
+                img.onload = () => {
+                    setImageSrc(imageUrl); // update UI with loaded image
+    
+                    // Delete image file after it's been loaded
+                    fetch("http://localhost:8001/deleteImage", {
+                        method: "POST"
+                    }).catch(err => console.error("Failed to delete image:", err));
+                };
+    
+                img.onerror = (err) => {
+                    console.error("Image failed to load:", err);
+                };
+    
+                img.src = imageUrl; // start loading the image
             })
             .catch((error) => console.error("Error updating visualization:", error));
     };
+    
+    
 
     // Handle parameter changes
     const handleChange = (e) => {
@@ -108,13 +124,14 @@ const VisualizationComponent = () => {
                                 </div>
 
                                 <div className="option-item">
-                                    <label>Color by group:</label>
-                                    <select name="color_groups" value={params.color_groups} onChange={handleChange}>
-                                        {options?.color_groups?.options?.map((option, index) => (
+                                    <label>Separate figure:</label>
+                                    <select name="separate_figure" value={params.separate_figure} onChange={handleChange}>
+                                        {options?.separate_figure?.options?.map((option, index) => (
                                             <option key={index} value={option}>{option}</option>
                                         ))}
                                     </select>
                                 </div>
+
                             </div>
 
                             {/* Column 2 */}
@@ -129,13 +146,14 @@ const VisualizationComponent = () => {
                                 </div>
 
                                 <div className="option-item">
-                                    <label>Separate figure:</label>
-                                    <select name="separate_figure" value={params.separate_figure} onChange={handleChange}>
-                                        {options?.separate_figure?.options?.map((option, index) => (
+                                    <label>Color by group:</label>
+                                    <select name="color_groups" value={params.color_groups} onChange={handleChange}>
+                                        {options?.color_groups?.options?.map((option, index) => (
                                             <option key={index} value={option}>{option}</option>
                                         ))}
                                     </select>
                                 </div>
+
 
                                 <div className="option-item">
                                     <label>Title:</label>

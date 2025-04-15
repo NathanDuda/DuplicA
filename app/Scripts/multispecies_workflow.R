@@ -1,5 +1,4 @@
 
-
 source(paste0(here_duplica, '/app/Scripts/multispecies_functions.R'))
 source(paste0(here_duplica, '/app/Scripts/model_Public_Datasets.R'))
 source(paste0(here_duplica, '/app/Scripts/model_OrthoFinder.R'))
@@ -38,12 +37,14 @@ parameters$PC = F
 
 ####parameters$selected_organisms <- 'Drosophila melanogaster, Drosophila ananassae, Drosophila mojavensis'
 parameters$selected_organisms <- 'Drosophila ananassae, Drosophila melanogaster'
+parameters$selected_organisms <- 'Drosophila ananassae, Drosophila melanogaster, Drosophila mojavensis'
 parameters$selected_organisms <- 'Homo sapiens, Drosophila melanogaster'
 parameters$exp_path <- NULL
 
 # for expression shift
 ####parameters$dup_species_list <- 'Drosophila_melanogaster_prot, Drosophila_ananassae_prot, Drosophila_mojavensis_prot'
 parameters$dup_species_list <- 'Drosophila ananassae, Drosophila melanogaster'
+parameters$dup_species_list <- 'Drosophila ananassae, Drosophila melanogaster, Drosophila mojavensis'
 parameters$dup_species_list <- 'Homo sapiens, Drosophila melanogaster'
 
 parameters$copy_amount = 2
@@ -268,72 +269,78 @@ main_run_workflow <- function(selected_models, parameters) {
   # run parallel models
   parallel_models <- c('CDROM', 'dnds', 'expression_shift', 'diversity_divergence', 'postduplication_fates', 'pathway', 'duplication_mechanism', 'go')
   selected_parallel_models <- intersect(parallel_models, selected_models)
-  cat(paste0('Running ', format_list(selected_parallel_models), '...'), file = status_file_path, sep = "\n", append = TRUE)
   
-  plan(multisession, workers = parallel::detectCores() - 1)  
+  if (length(selected_parallel_models) > 0) {
+    cat(paste0('Running ', format_list(selected_parallel_models), '...'), file = status_file_path, sep = "\n", append = TRUE)
   
-  future_map(parallel_models, function(model) {
-    if (model %in% selected_models) {
-      
-      if (model == 'CDROM') {
-        main_CDROM(dups = dups, dups_anc = dups_anc, clean_expression = clean_expression, 
-                   OF_dir_path = of_output_dir, add_pseudofunc = parameters$add_pseudofunc,
-                   missing_expr_is_zero = parameters$missing_expr_is_zero,
-                   PC = parameters$PC, min_dups_per_species_pair = parameters$min_dups_per_species_pair_custom,
-                   useAbsExpr = parameters$use_absolute_exp, pseudo = pseudo)
+    plan(multisession, workers = parallel::detectCores() - 1)  
+    
+    future_map(parallel_models, function(model) {
+      if (model %in% selected_models) {
+        
+        if (model == 'CDROM') {
+          main_CDROM(dups = dups, dups_anc = dups_anc, clean_expression = clean_expression, 
+                     OF_dir_path = of_output_dir, add_pseudofunc = parameters$add_pseudofunc,
+                     missing_expr_is_zero = parameters$missing_expr_is_zero,
+                     PC = parameters$PC, min_dups_per_species_pair = parameters$min_dups_per_species_pair_custom,
+                     useAbsExpr = parameters$use_absolute_exp, pseudo = pseudo)
+        }
+        
+        if (model == 'dnds') {
+          main_multispecies_dnds(OF_dir_path = of_output_dir, dups = dups, allow_two_to_twos = parameters$allow_two_to_twos,
+                                 nuc_file_path = list.files(nuc_output_dir, full.names = T)[1],
+                                 prot_file_path = list.files(prot_output_dir, full.names = T)[1],
+                                 aligner = parameters$aligner)
+        }
+        
+        if (model == 'expression_shift') {
+          main_Expression_Shift(OF_dir_path = of_output_dir, clean_expression = clean_expression, 
+                                dup_species_list = parameters$dup_species_list, tissue_list = parameters$tissue_list,
+                                copy_amount = parameters$copy_amount, nondup_species_need_onecopy = parameters$nondup_species_need_onecopy, 
+                                use_gene_trees = parameters$use_gene_trees)
+        }
+        
+        if (model == 'diversity_divergence') {
+          main_DiversityDivergence(OF_dir_path = of_output_dir, clean_expression = clean_expression, copy_amount = parameters$copy_amount,
+                                   dup_species_list = parameters$dup_species_list, tissue_list = parameters$tissue_list, 
+                                   nondup_species_need_onecopy = parameters$nondup_species_need_onecopy, use_gene_trees = parameters$use_gene_trees, 
+                                   lower_beta_lim = parameters$lower_beta_lim, upper_beta_lim = parameters$upper_beta_lim)
+        }
+        
+        if (model == 'postduplication_fates') {
+          main_postduplication_fates_output <- main_postduplication_fates(dups_anc = dups_anc, 
+                                                                          clean_expression = clean_expression, 
+                                                                          v = parameters$v, 
+                                                                          p = parameters$p)
+        }
+        
+        if (model == 'duplication_mechanism') {
+          main_dup_mechanism(gn_exons_dir = gn_exons_dir, dups_anc = dups_anc, 
+                             mech_type = parameters$mech_type, selected_organisms = parameters$selected_organisms)
+        }
+        
+        if (model == 'go') {
+          main_go(all_copies, file_organism_table)
+        }
+        
+        
       }
-      
-      if (model == 'dnds') {
-        main_multispecies_dnds(OF_dir_path = of_output_dir, dups = dups, allow_two_to_twos = parameters$allow_two_to_twos,
-                               nuc_file_path = list.files(nuc_output_dir, full.names = T)[1],
-                               prot_file_path = list.files(prot_output_dir, full.names = T)[1],
-                               aligner = parameters$aligner)
-      }
-      
-      if (model == 'expression_shift') {
-        main_Expression_Shift(OF_dir_path = of_output_dir, clean_expression = clean_expression, 
-                              dup_species_list = parameters$dup_species_list, tissue_list = parameters$tissue_list,
-                              copy_amount = parameters$copy_amount, nondup_species_need_onecopy = parameters$nondup_species_need_onecopy, 
-                              use_gene_trees = parameters$use_gene_trees)
-      }
-      
-      if (model == 'diversity_divergence') {
-        main_DiversityDivergence(OF_dir_path = of_output_dir, clean_expression = clean_expression, copy_amount = parameters$copy_amount,
-                                 dup_species_list = parameters$dup_species_list, tissue_list = parameters$tissue_list, 
-                                 nondup_species_need_onecopy = parameters$nondup_species_need_onecopy, use_gene_trees = parameters$use_gene_trees, 
-                                 lower_beta_lim = parameters$lower_beta_lim, upper_beta_lim = parameters$upper_beta_lim)
-      }
-      
-      if (model == 'postduplication_fates') {
-        main_postduplication_fates_output <- main_postduplication_fates(dups_anc = dups_anc, 
-                                                                        clean_expression = clean_expression, 
-                                                                        v = parameters$v, 
-                                                                        p = parameters$p)
-      }
-      
-      if (model == 'duplication_mechanism') {
-        main_dup_mechanism(gn_exons_dir = gn_exons_dir, dups_anc = dups_anc, 
-                           mech_type = parameters$mech_type, selected_organisms = parameters$selected_organisms)
-      }
-      
-      if (model == 'go') {
-        main_go(all_copies, file_organism_table)
-      }
-      
-      
-    }
-  })
+    })
+    
+    plan(sequential) 
+    
+    
+    cat(paste0(format_list(selected_parallel_models), ' finished sucessfully!'), file = status_file_path, sep = "\n", append = TRUE)
+    
+  }
   
-  plan(sequential) 
-  
-  
-  cat(paste0(format_list(selected_parallel_models), ' finished sucessfully!'), file = status_file_path, sep = "\n", append = TRUE)
   cat('Finalizing results...', file = status_file_path, sep = "\n", append = TRUE)
   
   
   cat('Running final analyses...', file = status_file_path, sep = "\n", append = TRUE)
+  if('duplication_mechanism' %in% selected_models) {raw_dup_mechanism_output_file_path <- paste0(here_results, '/raw_dup_mechanism_output.tsv')}
   main_get_misc_results(dups, prot_output_dir, nuc_output_dir, 
-                        raw_dup_mechanism_output_file_path = paste0(here_results, '/raw_dup_mechanism_output.tsv'))
+                        raw_dup_mechanism_output_file_path = raw_dup_mechanism_output_file_path)
   cat('Sucessfully finished all analyses!', file = status_file_path, sep = "\n", append = TRUE)
   
   cat('Saving results...', file = status_file_path, sep = "\n", append = TRUE)
@@ -386,9 +393,33 @@ main_get_relevant_parameter_list <- function(selected_models, parameters) {
   
   # NOTE: if 'Public Datasets' in selected_models, 'OrthoFinder' must be chosen
   
+  
+  rename_map <- c(
+    "Dn/Ds" = "dnds",
+    "Duplication Mechanism" = "duplication_mechanism",
+    "EVE Diversity/Divergence" = "diversity_divergence",
+    "EVE Expression Shift" = "expression_shift",
+    "Post-duplication Fates" = "postduplication_fates"
+  )
+  
+  selected_models <- sapply(selected_models, function(x) {
+    if (x %in% names(rename_map)) rename_map[[x]] else x
+  })
+  
+  
+  
+  
+  if(length(selected_models) > 1) {
+    selected_models <- selected_models[order(selected_models)]
+  }
+  parameters <- parameters[order(names(parameters))]
+  
+  
   required_parameter_list <- list() 
   additional_parameter_list <- list() 
 
+  
+  print(selected_models)
   if('Public Datasets' %in% selected_models) {
     required_parameter_list <- c(required_parameter_list, 'selected_organisms')
     additional_parameter_list <- c(additional_parameter_list, 'data_types', 'must_be_reference', 'keep_which_transcript')
@@ -441,6 +472,7 @@ main_get_relevant_parameter_list <- function(selected_models, parameters) {
   }
   
   if('dnds' %in% selected_models) {
+    if(!'Public Datasets' %in% selected_models) {required_parameter_list <- c(required_parameter_list, 'nuc_folder')}
     if(!'CDS' %in% parameters[['data_types']]) {required_parameter_list <- c(required_parameter_list, 'nuc_folder')}
     additional_parameter_list <- c(additional_parameter_list, 'dnds_aligner')
   }

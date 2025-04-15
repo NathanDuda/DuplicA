@@ -23,7 +23,17 @@ generate_figure <- function(data,
                             color_set = NULL
 ) {
   
-  print(data)
+  if (is.null(x)) {return()}
+  if (is.null(y)) {return()}
+  
+  
+  if (is.null(color_groups)) {color_set <- NULL}
+  
+  
+  if (is.null(point_size)) {point_size <- 3}
+  if (is.null(x_log)) {x_log <- FALSE}
+  if (is.null(y_log)) {y_log <- FALSE}
+  
   # test for proper inputs 
   if (x_log && !is.numeric(data[[x]])) {
     stop("Log scale can only be applied to numeric variables for x.")
@@ -84,7 +94,6 @@ generate_figure <- function(data,
   
   ggsave(p, filename = paste0(here_duplica, '/app/status/Figure.png'), height = 5, width = 7, dpi = 400)
   
-  return(p)
 }
 
 
@@ -114,20 +123,23 @@ main_generate_figure <- function(parameters) {
 
 
 
-generate_figure(
-  data = get_all_results(paste0(here_duplica, '/app/Results')),
-  figure_type = 'boxplot',
-  x = 'exp_dup_1',
-  y = 'Functional_Category',
-  color_groups = 'Functional_Category',
-  title ='Expression Level in Duplicate 1 across Functional Categories',
-  x_label = 'log10(Expression Level of Duplicate 1)',
-  y_label = 'Functional Category',
-  x_log = T,
-  custom_theme = 'bw',
-  color_set = 'Dark2'
-)
+# generate_figure(
+#   data = get_all_results(paste0(here_duplica, '/app/Results')),
+#   figure_type = 'boxplot',
+#   x = 'Functional_Category',
+#   y = 'N_dup_2',
+#   color_groups = NULL,
+#   title = NULL,
+#   separate_figure = NULL,
+#   x_label = NULL,
+#   y_label = NULL,
+#   legend_label = NULL,
+#   y_log = F,
+#   x_log = F,
+#   point_size = NULL,
+#   custom_theme = 'classic',
+#   color_set = 'Accent'
+# )
 
-ggsave(filename = 'plot.png', height = 4, width = 8, dpi = 1800)
 
 

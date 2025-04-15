@@ -13,7 +13,10 @@ r$run(host = "0.0.0.0", port = 8001)
 
 
 
-#system(paste0("wsl cd ", wsl_path_to_duplica, "/app/status && python3 -m http.server 8002"))
-
+# system(paste0(
+#   "wsl cd ", wsl_path_to_duplica, 
+#   "/app/status && python3 ", 
+#   wsl_path_to_duplica, "/app/status_file_hosting.py"
+# ))
 
 

@@ -2,8 +2,8 @@
   "figure_type": {
     "type": "select",
     "label": "Figure type",
-    "options": ["scatterplot", "boxplot", "violin"],
-    "default": ["scatterplot"],
+    "options": ["scatterplot", "boxplot", "violin", ""],
+    "default": [""],
     "multiple": false
   },
 
@@ -13,21 +13,25 @@
   "x_axis": {
     "type": "select",
     "label": "x-axis",
+    "default": [""],
     "options": []
   },
   "y_axis": {
     "type": "select",
     "label": "y-axis",
+    "default": [""],
     "options": []
   },
   "color_groups": {
     "type": "select",
     "label": "Color by group",
+    "default": [""],
     "options": []
   },
   "separate_figure": {
     "type": "select",
     "label": "Separate figure",
+    "default": [""],
     "options": []
   },
 
@@ -37,18 +41,22 @@
 
   "title": {
     "type": "text",
+    "default": "",
     "label": "Title"
   },
   "x_axis_label": {
     "type": "text",
+    "default": "",
     "label": "x-axis label"
   },
   "y_axis_label": {
     "type": "text",
+    "default": "",
     "label": "y-axis label"
   },
   "legend_label": {
     "type": "text",
+    "default": "",
     "label": "Legend label"
   },
   "point_size": {
@@ -58,7 +66,7 @@
   },
   "custom_theme": {
     "type": "select",
-    "label": "Point size",
+    "label": "Custome Theme",
     "options": ["classic", "bw", "minimal", "linedraw"],
     "default": ["classic"]
   },

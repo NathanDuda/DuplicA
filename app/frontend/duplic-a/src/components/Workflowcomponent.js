@@ -19,7 +19,7 @@ const initialNodes = [
     {
         id: "1",
         type: "custom",
-        position: { x: -1000, y: 420 },
+        position: { x: -950, y: 420 },
         data: {
             title: "Get Public Data",
             buttonLabel: "Public Datasets",
@@ -32,7 +32,7 @@ const initialNodes = [
     {
         id: "2",
         type: "custom",
-        position: { x: -650, y: 420 },
+        position: { x: -600, y: 420 },
         data: {
             title: "Detect Duplications",
             buttonLabel: "OrthoFinder",
@@ -45,7 +45,7 @@ const initialNodes = [
     {
         id: "3",
         type: "custom",
-        position: { x: -200, y: -80 },
+        position: { x: -200, y: 60 },
         data: {
             title: "Functional Models",
             buttonLabel: [
@@ -78,7 +78,7 @@ const initialNodes = [
     {
         id: "5",
         type: "custom",
-        position: { x: -200, y: 370 },
+        position: { x: -200, y: 390 },
         data: {
             title: "Selection Models",
             buttonLabel: ["Dn/Ds", "EVE Diversity/Divergence"],
@@ -346,64 +346,29 @@ const Workflowcomponent = () => {
             return;
         }
     
-        setIsRunningWorkflow(true);
-        setIsLoading(true);
-        setApiError(null);
-    
         const submissionTime = new Date().toLocaleString();
         const workflowId = uuidv4();
     
+        // 🚀 Navigate right away
+        navigate("/runningworkflow", {
+            state: {
+                submissionTime,
+                selectedModels,
+                workflowId,
+            },
+        });
+    
+        // 🔄 Then fire the backend call *after*
         try {
-            // Submit workflow to backend
             await axios.post(`${API_BASE_URL}/runWorkflow`, {
                 selected_models: selectedModels,
                 parameters: flattenParameters(parameters),
             });
-    
-            // Wait for confirmation from status.txt
-            const checkStatusFile = async () => {
-                try {
-                    const response = await axios.get("http://localhost:8002/status.txt");
-                    const firstLine = response.data.split("\n")[0].trim();
-                    console.log("status.txt first line:", firstLine);
-                    return firstLine === "Starting Workflow...";
-                } catch (error) {
-                    console.error("Error checking status.txt:", error);
-                    return false;
-                }
-            };
-    
-            const waitForWorkflowStart = async (maxAttempts = 10, delay = 1000) => {
-                for (let i = 0; i < maxAttempts; i++) {
-                    const started = await checkStatusFile();
-                    if (started) return true;
-                    await new Promise(res => setTimeout(res, delay));
-                }
-                return false;
-            };
-    
-            const started = await waitForWorkflowStart();
-    
-            if (started) {
-                navigate("/Runningworkflow", {
-                    state: {
-                        submissionTime,
-                        selectedModels,
-                        workflowId,
-                    },
-                });
-            } else {
-                setApiError("Workflow submitted, but status.txt did not confirm it started.");
-            }
-    
         } catch (error) {
             console.error("Error running workflow:", error);
-            setApiError("Failed to run workflow. Please try again.");
-        } finally {
-            setIsLoading(false);
-            setIsRunningWorkflow(false);
         }
     };
+    
     
 
     //Check if all required parameters are filled
@@ -493,11 +458,15 @@ const Workflowcomponent = () => {
                 <div key={key} className="select-param">
                     <p>{param.label}:</p>
                     <select
-                        value={parameters[key]?.value || ""}
+                        value={parameters[key]?.value || (param.multiple ? [] : "")}
                         onChange={(e) => {
-                            const newValue = e.target.value;
+                            const newValue = param.multiple
+                                ? Array.from(e.target.selectedOptions, opt => opt.value)
+                                : e.target.value;
+        
                             console.log("Select change:", key, newValue);
                             handleInputChange(key, newValue);
+        
                             // Clear error when user selects
                             if (validationErrors[key]) {
                                 setValidationErrors(prev => {
@@ -507,17 +476,27 @@ const Workflowcomponent = () => {
                                 });
                             }
                         }}
-                        style={errorStyle}
+                        multiple={param.multiple}
+                        style={{
+                            ...(param.multiple ? { height: "100px" } : {}),
+                            ...(validationErrors[key] ? {
+                                border: '1px solid red',
+                                backgroundColor: '#fff0f0'
+                            } : {})
+                        }}
                     >
-                        <option value="">Select an option</option>
+                        {!param.multiple && <option value="">Select an option</option>}
                         {param.choices?.map((choice) => (
                             <option key={choice} value={choice}>{choice}</option>
                         ))}
                     </select>
-                    {hasError && <p className="error-message">{validationErrors[key]}</p>}
+                    {validationErrors[key] && (
+                        <p className="error-message">{validationErrors[key]}</p>
+                    )}
                 </div>
             );
         }
+        
 
         if (param.type === "number") {
             return (

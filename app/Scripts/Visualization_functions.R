@@ -130,14 +130,14 @@ make_visualization_json_file <- function(all_data) {
   json <- fromJSON(paste0(here_duplica, '/app/Front_end/blank_visualization_options.json'))
   
   # update json file with parameters
-  json$x_axis$options <- vis_options$x_and_y_axis_options
-  json$y_axis$options <- vis_options$x_and_y_axis_options
+  json$x_axis$options <- c(vis_options$x_and_y_axis_options, '')
+  json$y_axis$options <- c(vis_options$x_and_y_axis_options, '')
   
-  json$color_groups$options <- vis_options$group_options
-  json$separate_figure$options <- vis_options$group_options
+  json$color_groups$options <- c(vis_options$group_options, '')
+  json$separate_figure$options <- c(vis_options$group_options, '')
   
   json <- toJSON(json, pretty = T)
-  write(json, file = paste0(here_duplica, '/app/frontend/duplic-a/src/components/visualization_options.json')) # CHANGE VITE 
+  write(json, file = paste0(here_duplica, '/app/frontend/duplic-a/src/components/visualization_options.json'))  
   
 }
 

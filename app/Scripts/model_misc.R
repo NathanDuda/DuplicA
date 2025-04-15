@@ -49,15 +49,16 @@ get_misc_exon_counts <- function(dups, raw_dup_mechanism_output_file_path) {
 }
 
 
-main_get_misc_results <- function(dups, prot_output_dir, nuc_output_dir = NULL, raw_dup_mechanism_output_file_path) {
+main_get_misc_results <- function(dups, prot_output_dir, nuc_output_dir = NULL, raw_dup_mechanism_output_file_path = NULL) {
   dups <- get_prot_length(dups, prot_output_dir)
   
   if(!is.null(nuc_output_dir)) {
     dups <- get_gc_content_AND_cpg_count(dups, nuc_output_dir)
   }
   
-  dups <- get_misc_exon_counts(dups, raw_dup_mechanism_output_file_path)
-  
+  if(!is.null(raw_dup_mechanism_output_file_path)) {
+    dups <- get_misc_exon_counts(dups, raw_dup_mechanism_output_file_path)
+  }
   
   write.table(dups, file = paste0(here_results, '/misc_results.tsv'))
 }

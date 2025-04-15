@@ -1,7 +1,7 @@
 {
   "selected_organisms": {
     "type": "text",
-    "label": "Organisms (comma separated)",
+    "label": "Organisms (at least 2, comma separated)",
     "default": [
       " "
     ]
