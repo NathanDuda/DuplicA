@@ -22,12 +22,8 @@ main_OrthoFinder <- function(protein_folder, is_dna = FALSE, method = "dendrobla
   #protein_folder <- gsub('C:/Users/17735/Downloads', '/mnt/c/Users/17735/Downloads', protein_folder)
   #protein_folder <- as.character(dirname(protein_folder))
   
-  here <- 'C:/Users/NathanD/Downloads'
-  here_linux <- '/mnt/c/Users/NathanD/Downloads'
-  protein_folder <- gsub(here, here_linux, protein_folder)
-
-  path_to_orthofinder <- paste0(here_linux, '/DuplicA/app/Dependencies/OrthoFinder/orthofinder')
-  results_dir <- here_results
+  
+  path_to_orthofinder <- paste0(here_duplica, '/Dependencies/OrthoFinder/orthofinder')
   
   # base command
   command <- paste(path_to_orthofinder, "-f", shQuote(protein_folder))
@@ -55,10 +51,11 @@ main_OrthoFinder <- function(protein_folder, is_dna = FALSE, method = "dendrobla
   if (!is.null(stop_stage)) {command <- paste(command, "-", stop_stage)}
   
   # Run the command in WSL
-  wsl_command <- paste("wsl", command)
-
+  #wsl_command <- paste("wsl", command)
+  #system(wsl_command)
   
-  system(wsl_command)
+  # run the command in docker (already in wsl)
+  system(command)
   
 }
 

@@ -194,3 +194,39 @@ select {
     width: 50%;
     /* Adjust as needed */
 }
+
+
+
+/* warning box */
+
+/* Floating Warning Box */
+.warning-box {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #fff5f5;
+    border: 1px solid #ffcccc;
+    color: #b30000;
+    padding: 20px 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    z-index: 9999;
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+    font-size: 14px;
+}
+
+/* Purple Action Button inside Warning Box */
+.error-buttons button {
+    margin-top: 15px;
+    background-color: #8430fb;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 13px;
+    cursor: pointer;
+    gap: 15px;
+}

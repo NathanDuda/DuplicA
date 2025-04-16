@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# Default input directory (inside container)
+DEFAULT_INPUT_DIR="/app/Input_Data"
+
+# If the user provided an input directory, validate it
+if [ -n "$1" ]; then
+  INPUT_DIR="$1"
+
+  # Check if the directory exists
+  if [ ! -d "$INPUT_DIR" ]; then
+    echo "Error: Directory '$INPUT_DIR' does not exist."
+    exit 1
+  fi
+
+  VOLUME_ARG="-v \"$INPUT_DIR\":$DEFAULT_INPUT_DIR"
+else
+  VOLUME_ARG=""
+fi
+
+# Run the container with or without volume mount
+eval docker run -it --rm \
+  -p 8000:8000 -p 8001:8001 -p 8002:8002 \
+  $VOLUME_ARG \
+  duplic-a

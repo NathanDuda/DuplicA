@@ -1,23 +1,47 @@
 import React, { useState, useEffect } from "react";
+import { navigate } from "gatsby";
 import "../styles/Visualization.css";
-import visualizationOptions from './visualization_options.json';
+//import visualizationOptions from './visualization_options.json';
 
 const VisualizationComponent = () => {
-    const [options, setOptions] = useState(visualizationOptions);
+    const [options, setOptions] = useState(null); // starts as null until fetched
     const [params, setParams] = useState({});
     const [showAdditionalOptions, setShowAdditionalOptions] = useState(false);
     const [imageSrc, setImageSrc] = useState("");
+    const [fetchError, setFetchError] = useState(false);
+
 
     // Load JSON options dynamically
     useEffect(() => {
-        const initialParams = {};
-        Object.keys(visualizationOptions).forEach((key) => {
-            if (visualizationOptions[key].default) {
-                initialParams[key] = "";
+        const fetchOptions = async () => {
+            try {
+                const response = await fetch("http://localhost:8002/visualization_options.json");
+                if (!response.ok) throw new Error("Missing JSON");
+    
+                const data = await response.json();
+                setOptions(data);
+    
+                const initialParams = {};
+                Object.entries(data).forEach(([key, config]) => {
+                    const type = Array.isArray(config.type) ? config.type[0] : config.type;
+                    if (type === "boolean") {
+                        initialParams[key] = !!config.default;
+                    } else {
+                        initialParams[key] = config.default ?? "";
+                    }
+                });
+                
+                setParams(initialParams);
+            } catch (err) {
+                console.error("Failed to load visualization options:", err);
+                setFetchError(true); // Trigger error state
             }
-        });
-        setParams(initialParams);
+        };
+    
+        fetchOptions();
     }, []);
+    
+
 
     // Function to update visualization through R API
     const updateVisualization = (updatedParams) => {
@@ -81,9 +105,34 @@ const VisualizationComponent = () => {
         });
     };
 
+    
+    
+    const [showWarning, setShowWarning] = useState(true);
+
+    if (fetchError) {
+        return (
+            <div className="visualization-container">
+                <div className="warning-box" id="warningBox">
+                    <div className="visualization-error">
+                        <h2>Warning</h2>
+                        <p>Please run a workflow before trying to perform an analysis.</p>
+                        <div className="error-buttons">
+                            <button onClick={() => navigate("/")}>Go to Home</button>
+                            <button onClick={() => navigate("/Workflow")}>Go to Workflow</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+    
+
+
+    
     if (!options) {
         return <p>Loading options...</p>;
     }
+    
 
     return (
         <div className="visualization-container">

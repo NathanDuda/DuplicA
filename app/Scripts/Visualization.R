@@ -1,5 +1,5 @@
 
-source(paste0(here_duplica, '/app/Scripts/Visualization_functions.R'))
+source(paste0(here_duplica, '/Scripts/Visualization_functions.R'))
 
 
 # main function to make the figure 
@@ -7,7 +7,7 @@ generate_figure <- function(data,
                             
                             figure_type = NULL,
                             x = NULL,
-                            y = NULL,
+                            x = NULL,
                             color_groups = NULL,
                             separate_figure = NULL,
                             
@@ -22,6 +22,25 @@ generate_figure <- function(data,
                             y_log = FALSE,
                             color_set = NULL
 ) {
+  if (!exists("x") || length(x) == 0 || x == "") {x <- NULL}
+  if (!exists("y") || length(y) == 0 || y == "") {y <- NULL}
+  if (!exists("color_groups") || length(color_groups) == 0 || color_groups == "") {color_groups <- NULL}
+  if (!exists("separate_figure") || length(separate_figure) == 0 || separate_figure == "") {separate_figure <- NULL}
+  
+
+  if (!exists("x_label") || length(x_label) == 0 || x_label == "") {x_label <- NULL}
+  if (!exists("y_label") || length(y_label) == 0 || y_label == "") {y_label <- NULL}
+  if (!exists("legend_label") || length(legend_label) == 0 || legend_label == "") {legend_label <- NULL}
+  
+  
+  if (is.character(point_size)) {
+    if (!is.na(suppressWarnings(as.numeric(point_size)))) {
+      point_size <- as.numeric(point_size)
+    } else {
+      point_size <- 3
+    }
+  }
+  
   
   if (is.null(x)) {return()}
   if (is.null(y)) {return()}
@@ -82,6 +101,7 @@ generate_figure <- function(data,
   if (!is.null(title)) {p <- p + ggtitle(title)}
   if (!is.null(x_label)) {p <- p + xlab(x_label)}
   if (!is.null(y_label)) {p <- p + ylab(y_label)}
+  if (!is.null(color_groups)) {p <- p + labs(color = legend_label)}
   
   # add custom theme
   if(is.null(custom_theme)) {p <- p + theme_classic()}
@@ -92,7 +112,7 @@ generate_figure <- function(data,
     if(custom_theme == 'linedraw') {p <- p + theme_linedraw()}
   }
   
-  ggsave(p, filename = paste0(here_duplica, '/app/status/Figure.png'), height = 5, width = 7, dpi = 400)
+  ggsave(p, filename = paste0(here_duplica, '/status/Figure.png'), height = 5, width = 7, dpi = 400)
   
 }
 
@@ -103,7 +123,7 @@ generate_figure <- function(data,
 # every time a parameter is changed by the user, rerun the function
 main_generate_figure <- function(parameters) {
   generate_figure(
-    data = get_all_results(paste0(here_duplica, '/app/Results')),
+    data = get_all_results(paste0(here_duplica, '/Results')),
     figure_type = parameters$figure_type,
     x = parameters$x_axis,
     y = parameters$y_axis,

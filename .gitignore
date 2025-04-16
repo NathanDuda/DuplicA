@@ -2,3 +2,10 @@
 .Rhistory
 .RData
 .Ruserdata
+node_modules/
+# Gatsby/Parcel/Git junk
+.cache/
+*.pack
+*.mdb
+*.gz
+*.tmp

@@ -594,7 +594,7 @@ CreatePlot_FuncPie <- function(all_func){
 }
 
 
-main_CDROM <- function(dups, dups_anc, clean_expression, OF_dir_path, add_pseudofunc, missing_expr_is_pseudo, rm_exp_lower_than, PC, min_dups_per_species_pair, useAbsExpr, pseudo = NA){
+main_CDROM <- function(dups, dups_anc, clean_expression, OF_dir_path, add_pseudofunc, missing_expr_is_zero, rm_exp_lower_than, PC, min_dups_per_species_pair, useAbsExpr, pseudo = NA){
   
   all_sc_genes <- get_all_sc_genes(OF_dir_path)
   

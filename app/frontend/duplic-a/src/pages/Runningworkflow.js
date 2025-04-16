@@ -14,21 +14,23 @@ const Runningworkflow = () => {
     // function to check if the workflow is completed
     const checkWorkflowCompletion = async () => {
         try {
-            const response = await axios.get("http://localhost:8002/status.txt", {
+            const response = await axios.get(`http://localhost:8002/status.txt?${Date.now()}`, {
                 responseType: "text",
             });
     
             const rawText = response.data;
             setStatusText(rawText);
     
-            const lines = rawText.split("\n");
-            const lastLine = lines[lines.length - 1].trim();
-            setWorkflowCompleted(lastLine.includes("Workflow Completed!"));
+            const lines = rawText.split("\n").filter(line => line.trim() !== "");
+            const lastLine = lines[lines.length - 1]?.trim() || "";
+    
+            setWorkflowCompleted(lastLine.includes("Workflow completed!"));
         } catch (error) {
             console.error("Failed to fetch status.txt:", error);
             setStatusText("Failed to load status messages.");
         }
     };
+    
     
     
 
@@ -40,14 +42,14 @@ const Runningworkflow = () => {
     // Handle the download button
     const downloadResults = async () => {
         try {
-            const response = await axios.get("/api/results/workflow_results.txt", {
+            const response = await axios.get("http://localhost:8002/api/download-results", {
                 responseType: "blob",
             });
-
+    
             const url = window.URL.createObjectURL(new Blob([response.data]));
             const link = document.createElement("a");
             link.href = url;
-            link.setAttribute("download", "workflow_results.txt");
+            link.setAttribute("download", "Results.zip");
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -55,6 +57,7 @@ const Runningworkflow = () => {
             console.error("Error downloading results:", error);
         }
     };
+    
 
     const analyzeResults = async () => {
         navigate("/Visualization");
@@ -117,6 +120,7 @@ const Runningworkflow = () => {
                         <button 
                             className="options" 
                             onClick={analyzeResults}
+                            disabled={!workflowCompleted}
                             style={{
                                 backgroundColor: workflowCompleted ? "#8430fb" : "#ccc",
                                 cursor: workflowCompleted ? "pointer" : "not-allowed",

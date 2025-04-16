@@ -1,22 +1,23 @@
 
 ############################################################
 # Change this to your path:
-path_to_duplica <- 'C:/Users/NathanD/Downloads/DuplicA'
+#path_to_duplica <- 'C:/Users/NathanD/Downloads/DuplicA'
+path_to_duplica <- '/app'
 ############################################################
 
 
-library(shiny)
-library(shinyFiles)
+#library(shiny)
+#library(shinyFiles)
 library(bslib)
 library(htmltools)
-library(shinyalert)
+#library(shinyalert)
 library(fs)
 library(Biostrings) 
 library(tools)
 library(testthat) 
 library(tidyverse)
 library(readxl)
-library(shinyjs)
+#library(shinyjs)
 library(ape)
 library(R.utils)
 library(seqinr)
@@ -39,17 +40,15 @@ library(furrr)
 
 here_duplica <- path_to_duplica
 
-source(paste0(here_duplica, '/app/Scripts/multispecies_functions.R'))
-source(paste0(here_duplica, '/app/Scripts/model_OrthoFinder.R'))
-source(paste0(here_duplica, '/app/Scripts/model_DnDs.R'))
-source(paste0(here_duplica, '/app/Scripts/model_Segregating_Duplicates.R'))
-source(paste0(here_duplica, '/app/Scripts/model_EVE.R'))
-source(paste0(here_duplica, '/app/Scripts/model_Blat_Blast.R'))
+source(paste0(here_duplica, '/Scripts/multispecies_functions.R'))
+source(paste0(here_duplica, '/Scripts/model_OrthoFinder.R'))
+source(paste0(here_duplica, '/Scripts/model_DnDs.R'))
+source(paste0(here_duplica, '/Scripts/model_EVE.R'))
 
 
-here_temp <- paste0(here_duplica, '/app/Temp')
-here_results <- paste0(here_duplica, '/app/Results')
-here_static_images <- paste0(here_duplica, '/app/Static/Images')
+here_temp <- paste0(here_duplica, '/Temp')
+here_results <- paste0(here_duplica, '/Results')
+here_static_images <- paste0(here_duplica, '/Static/Images')
 
 
 #here_duplica_linux <- '/mnt/c/Users/17735/Downloads/DuplicA'

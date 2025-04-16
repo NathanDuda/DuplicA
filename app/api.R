@@ -1,7 +1,7 @@
 
-source(paste0(path_to_duplica, '/app/Scripts/setup.R'))
-source(paste0(path_to_duplica, '/app/Scripts/multispecies_workflow.R'))
-source(paste0(path_to_duplica, '/app/Scripts/Visualization.R'))
+source(paste0(path_to_duplica, '/Scripts/setup.R'))
+source(paste0(path_to_duplica, '/Scripts/multispecies_workflow.R'))
+source(paste0(path_to_duplica, '/Scripts/Visualization.R'))
 
 
 #* Enable Cross-origin Resource Sharing
