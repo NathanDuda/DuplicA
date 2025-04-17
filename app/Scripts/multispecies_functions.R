@@ -38,8 +38,8 @@ get_dups_from_OF <- function(OF_dir_path) {
   
   # add a column with the name of the species with the duplication
   two_to_ones$duplicate_pair_species <- 
-    apply(two_to_ones[, 2:(n_species + 1)], 1, function(x) {
-      col_index <- which(x == 2)
+    apply(two_to_ones[, 2:(n_species + 1)], 1, function(tto) {
+      col_index <- which(tto == 2)
       return(colnames(two_to_ones[, 2:(n_species + 1)])[col_index])})
   
   two_to_ones <- two_to_ones %>%
@@ -295,7 +295,7 @@ main_get_dups_anc_exp_from_OF <- function(OF_dir_path, exp_path = NA, normalizat
   
   
   if (!is.na(exp_path)) {
-    clean_expression <- clean_exp_and_pseudo(exp_path, dups, normalization_type, add_pseudofunc, missing_expr_is_zero, rm_exp_lower_than, PC = F)
+    clean_expression <- clean_exp_and_pseudo(exp_path = exp_path, dups = dups, normalization_type = normalization_type, add_pseudofunc = add_pseudofunc, missing_expr_is_zero = missing_expr_is_zero, exp_cutoff = rm_exp_lower_than, PC = F)
     
     }
   if (is.na(exp_path)) {

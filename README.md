@@ -18,7 +18,7 @@ DuplicA is an interactive web-based platform for running models of gene duplicat
 &nbsp;
 ## Requirements
 
-- Docker (install at: https://docs.docker.com/engine/install/)
+- Docker (install from: https://docs.docker.com/engine/install/)
 
 &nbsp;
 ## Installation

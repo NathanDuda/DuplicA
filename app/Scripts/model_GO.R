@@ -11,6 +11,7 @@ library(biomartr)
 
 
 main_go <- function(all_copies, file_organism_table) {
+  colnames(file_organism_table)[2] <- 'organism_scientific_name'
   file_organism_table$organism_scientific_name <- gsub('_', ' ', file_organism_table$organism_scientific_name)
   
   
@@ -66,7 +67,7 @@ main_go <- function(all_copies, file_organism_table) {
     }
     
     # combine go output for all species 
-    go_output <- go_output %>% mutate(protein_file_name = species_name)
+    go_output <- go_output %>% mutate(protein_file_name = chosen_organism)
     all_go_output <- rbind(all_go_output, go_output)
   }
   

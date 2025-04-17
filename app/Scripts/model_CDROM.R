@@ -179,7 +179,7 @@ CreatePlot_ClassificationCross <- function(classes, PC, Ediv) {
 }
 
 
-CDROM <- function(dupFile, singleFile, exprFile1, exprFile2, out = "out", Ediv,  
+CDROM <- function(dupFile, singleFile, exprFile1, exprFile2, out = "out", Ediv = NULL,  
                   PC = FALSE, useAbsExpr = FALSE, legend = "topleft", 
                   PlotEuclideanDistanceDensities = TRUE, PlotClassificationCross = TRUE) {
   
@@ -253,7 +253,7 @@ CDROM <- function(dupFile, singleFile, exprFile1, exprFile2, out = "out", Ediv,
     eucS1S2 <- (rowSums((exprS1 - exprS2) ^ 2)) ^ (1/2)
   
   ## Ediv is calculated 
-  if (missing(Ediv)) {
+  if (is.null(Ediv)) {
     SIQR <- (IQR(eucS1S2, na.rm = TRUE) / 2)
     Ediv <- median(eucS1S2, na.rm = TRUE) + SIQR
     } 
@@ -594,11 +594,16 @@ CreatePlot_FuncPie <- function(all_func){
 }
 
 
-main_CDROM <- function(dups, dups_anc, clean_expression, OF_dir_path, add_pseudofunc, missing_expr_is_zero, rm_exp_lower_than, PC, min_dups_per_species_pair, useAbsExpr, pseudo = NA){
+main_CDROM <- function(dups, dups_anc, clean_expression, OF_dir_path, add_pseudofunc, rm_exp_lower_than, PC, min_dups_per_species_pair, useAbsExpr, pseudo = NA){
+  
+  OF_dir_path <- paste0(OF_dir_path, '/')
   
   all_sc_genes <- get_all_sc_genes(OF_dir_path)
   
 
+  
+  if (!exists("min_dups_per_species_pair") || is.null(min_dups_per_species_pair) || 
+      length(min_dups_per_species_pair) == 0 || min_dups_per_species_pair == "") {min_dups_per_species_pair <- 1}
   species_pairs <- list_species_pairs(dups_anc, min_dups_per_species_pair)
   
   

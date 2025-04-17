@@ -21,7 +21,7 @@ cors <- function(req, res) {
 
 # get input button list from selected_models 
 #* @post /getInputs
-function(req, selected_models, parameters) {
+getInputs <- function(req, selected_models, parameters) {
 
   selected_models <- as.character(unlist(selected_models))
     
@@ -37,7 +37,7 @@ function(req, selected_models, parameters) {
 
 # generate figure image 
 #* @post /makeImage
-function(req) {
+makeImage <- function(req) {
   # Parse incoming JSON request body
   parameters <- fromJSON(req$postBody)
   
@@ -54,7 +54,7 @@ function(req) {
 
 # function to run workflow  
 #* @post /runWorkflow
-function(req, selected_models, parameters) {
+runWorkflow <- function(req, selected_models, parameters) {
   
   #body <- fromJSON(req$postBody)
   #selected_models <- body$selected_models
@@ -72,7 +72,7 @@ function(req, selected_models, parameters) {
 
 #* Delete the generated image file
 #* @post /deleteImage
-function() {
+deleteImage <- function() {
   file_path <- paste0(here_duplica, '/app/status/Figure.png')
   
   # delete the file

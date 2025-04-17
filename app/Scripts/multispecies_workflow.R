@@ -1,4 +1,6 @@
 
+# here_duplica <- 'C:/Users/NathanD/Downloads/DuplicA/app/'
+
 source(paste0(here_duplica, '/Scripts/multispecies_functions.R'))
 source(paste0(here_duplica, '/Scripts/model_Public_Datasets.R'))
 source(paste0(here_duplica, '/Scripts/model_OrthoFinder.R'))
@@ -10,6 +12,7 @@ source(paste0(here_duplica, '/Scripts/model_postduplication_fates.R'))
 source(paste0(here_duplica, '/Scripts/model_Exon_Datasets.R'))
 source(paste0(here_duplica, '/Scripts/model_duplication_mechanism.R'))
 source(paste0(here_duplica, '/Scripts/model_misc.R'))
+source(paste0(here_duplica, '/Scripts/model_GO.R'))
 source(paste0(here_duplica, '/Scripts/tool_ID_conversion.R'))
 
 # source dependencies for eve model
@@ -21,7 +24,7 @@ status_file_path <- paste0(here_duplica, '/status/status.txt')
 
 
 
-#######################################################
+# ######################################################
 # example parameterss
 # parameters <- list()
 # 
@@ -65,7 +68,7 @@ status_file_path <- paste0(here_duplica, '/status/status.txt')
 # ## additional for main_public_datasets
 # parameters$selected_database_protein <- 'ensembl'
 # 
-# if(parameters$selected_database_protein == 'ensembl') {parameters$id_type_of_gene_ids <- 'ensembl'} # will convert exon datasets id to this format  
+# if(parameters$selected_database_protein == 'ensembl') {parameters$id_type_of_gene_ids <- 'ensembl'} # will convert exon datasets id to this format
 # 
 # 
 # parameters$selected_database_cds <- 'ensembl'
@@ -78,8 +81,8 @@ status_file_path <- paste0(here_duplica, '/status/status.txt')
 # 
 # 
 # 
-# #user_provided_path_to_protein_directory # If Public Datasets not selected 
-# #nuc_output_dir <- user_provided_path_to_nucleotide_directory # If Public Datasets not selected 
+# #user_provided_path_to_protein_directory # If Public Datasets not selected
+# #nuc_output_dir <- user_provided_path_to_nucleotide_directory # If Public Datasets not selected
 # 
 # ## additional
 # parameters$nuc_not_prot = F
@@ -92,7 +95,7 @@ status_file_path <- paste0(here_duplica, '/status/status.txt')
 # parameters$split_hogs = F
 # parameters$msa_trim = F
 # 
-# # 
+# #
 # #user_provided_path_to_orthofinder_output # If OrthoFinder not selected
 # 
 # #user_provided_path_to_exon_output_dir # If no exon_datasets but yes duplication_mechanism
@@ -112,19 +115,19 @@ status_file_path <- paste0(here_duplica, '/status/status.txt')
 # 
 # 
 # ###
-# selected_models <- list('Public Datasets', 'OrthoFinder', 'expression_shift', 'diversity_divergence')
+# selected_models <- list('OrthoFinder', 'Gene Ontology')
 # parameters$get_public_exon_data <- T
-#######################################################
+# ######################################################
 
 
 main_run_workflow <- function(selected_models, parameters) {
   
   # rename models 
-  rename_map <- c(
+  rename_map <- list(
     "AlphaFold" = "alphafold_db",
     "CDROM" = "CDROM",
     "EVE Diversity/Divergence" = "diversity_divergence",
-    "Dn/Ds" = "dnds",
+    "dN/dS" = "dnds",
     "Duplication Mechanism" = "duplication_mechanism",
     "EVE Expression Shift" = "expression_shift",
     "Gene Ontology" = "go",
@@ -132,10 +135,9 @@ main_run_workflow <- function(selected_models, parameters) {
     "Post-duplication Fates" = "postduplication_fates"
   )
   
-  selected_models <- sapply(selected_models, function(x) {
-    if (x %in% names(rename_map)) rename_map[[x]] else x
-  })
-  
+  model_names <- unlist(rename_map)
+  matched <- selected_models %in% names(rename_map)
+  selected_models <- ifelse(matched, model_names[selected_models], selected_models)
   
   
   cat('', file = status_file_path, append = F)
@@ -148,7 +150,8 @@ main_run_workflow <- function(selected_models, parameters) {
   
   for (key in file_param_keys) {
     if (!is.null(parameters[[key]]) && !is.na(parameters[[key]])) {
-      parameters[[key]] <- file.path(input_base_path, parameters[[key]])
+      clean_path <- sub("^/+", "", parameters[[key]])
+      parameters[[key]] <- paste0(input_base_path, clean_path)
     }
   }
   
@@ -185,7 +188,7 @@ main_run_workflow <- function(selected_models, parameters) {
                            keep_which_transcript = parameters$keep_which_transcript, 
                            must_be_reference = parameters$must_be_reference)
     }, error = function(e) {
-      cat("ERROR in Public Datasets.", file = status_file_path, sep = "\n", append = TRUE)
+      cat("ERROR in Public Datasets.", message = e$message, file = status_file_path, sep = "\n", append = TRUE)
       stop()
     })
     
@@ -224,7 +227,7 @@ main_run_workflow <- function(selected_models, parameters) {
                        result_dir = result_dir,
                        result_name = 'Results')
     }, error = function(e) {
-      cat("ERROR in OrthoFinder.", file = status_file_path, sep = "\n", append = TRUE)
+      cat("ERROR in OrthoFinder.", message = e$message, file = status_file_path, sep = "\n", append = TRUE)
       stop()
     })
     
@@ -259,7 +262,7 @@ main_run_workflow <- function(selected_models, parameters) {
                                          missing_expr_is_zero = parameters$missing_expr_is_zero, 
                                          rm_exp_lower_than = parameters$rm_exp_lower_than)
   }, error = function(e) {
-    cat("ERROR in formatting OrthoFinder output.", file = status_file_path, sep = "\n", append = TRUE)
+    cat("ERROR in formatting OrthoFinder output.", message = e$message, file = status_file_path, sep = "\n", append = TRUE)
     stop()
   })
   
@@ -286,6 +289,8 @@ main_run_workflow <- function(selected_models, parameters) {
 
   }
   
+  #of_output_dir <- "C:/Users/NathanD/Downloads/Input_Data_for_DuplicA/AAAAA_Results_Jan01/"
+  #prot_output_dir <- "C:/Users/NathanD/Downloads/Input_Data_for_DuplicA/AAAAA_Protein_Folder/"
   
   if ('alphafold_db' %in% selected_models) {
     cat('Running AlphaFold...', file = status_file_path, sep = "\n", append = TRUE)
@@ -294,7 +299,7 @@ main_run_workflow <- function(selected_models, parameters) {
       main_alphafold(all_copies = all_copies,
                      file_organism_table = file_organism_table)
     }, error = function(e) {
-      cat("ERROR in AlphaFold.", file = status_file_path, sep = "\n", append = TRUE)
+      cat("ERROR in AlphaFold.", message = e$message, file = status_file_path, sep = "\n", append = TRUE)
       stop()
     })
     
@@ -319,7 +324,7 @@ main_run_workflow <- function(selected_models, parameters) {
                          id_type_of_gene_ids = 'ensembl',
                          kept_transcript_dir = kept_transcript_dir) # remove last '/'
     }, error = function(e) {
-      cat("ERROR in Exon datasets.", file = status_file_path, sep = "\n", append = TRUE)
+      cat("ERROR in Exon datasets.", message = e$message, file = status_file_path, sep = "\n", append = TRUE)
       stop()
     })
     gn_exons_dir <- paste0(here_results, '/Exon_Counts/')
@@ -359,11 +364,10 @@ main_run_workflow <- function(selected_models, parameters) {
           tryCatch({
             main_CDROM(dups = dups, dups_anc = dups_anc, clean_expression = clean_expression, 
                        OF_dir_path = of_output_dir, add_pseudofunc = parameters$add_pseudofunc,
-                       missing_expr_is_zero = parameters$missing_expr_is_zero,
                        PC = parameters$PC, min_dups_per_species_pair = parameters$min_dups_per_species_pair_custom,
                        useAbsExpr = parameters$use_absolute_exp, pseudo = pseudo)
           }, error = function(e) {
-            cat("ERROR in CDROM.", file = status_file_path, sep = "\n", append = TRUE)
+            cat("ERROR in CDROM.", message = e$message, file = status_file_path, sep = "\n", append = TRUE)
             stop()
           })
           
@@ -377,7 +381,7 @@ main_run_workflow <- function(selected_models, parameters) {
                                    prot_file_path = list.files(prot_output_dir, full.names = T)[1],
                                    aligner = parameters$aligner)
           }, error = function(e) {
-            cat("ERROR in dN/dS.", file = status_file_path, sep = "\n", append = TRUE)
+            cat("ERROR in dN/dS.", message = e$message, file = status_file_path, sep = "\n", append = TRUE)
             stop()
           })
           
@@ -391,7 +395,7 @@ main_run_workflow <- function(selected_models, parameters) {
                                   copy_amount = parameters$copy_amount, nondup_species_need_onecopy = parameters$nondup_species_need_onecopy, 
                                   use_gene_trees = parameters$use_gene_trees)
           }, error = function(e) {
-            cat("ERROR in EVE Expression Shift.", file = status_file_path, sep = "\n", append = TRUE)
+            cat("ERROR in EVE Expression Shift.", message = e$message, file = status_file_path, sep = "\n", append = TRUE)
             stop()
           })
         }
@@ -403,7 +407,7 @@ main_run_workflow <- function(selected_models, parameters) {
                                      nondup_species_need_onecopy = parameters$nondup_species_need_onecopy, use_gene_trees = parameters$use_gene_trees, 
                                      lower_beta_lim = parameters$lower_beta_lim, upper_beta_lim = parameters$upper_beta_lim)
           }, error = function(e) {
-            cat("ERROR in EVE Diversity Divergence.", file = status_file_path, sep = "\n", append = TRUE)
+            cat("ERROR in EVE Diversity Divergence.", message = e$message, file = status_file_path, sep = "\n", append = TRUE)
             stop()
           })
           
@@ -416,7 +420,7 @@ main_run_workflow <- function(selected_models, parameters) {
                                                                             v = parameters$v, 
                                                                             p = parameters$p)
           }, error = function(e) {
-            cat("ERROR in Post-duplication Fates.", file = status_file_path, sep = "\n", append = TRUE)
+            cat("ERROR in Post-duplication Fates.", message = e$message, file = status_file_path, sep = "\n", append = TRUE)
             stop()
           })
           
@@ -428,7 +432,7 @@ main_run_workflow <- function(selected_models, parameters) {
             main_dup_mechanism(gn_exons_dir = gn_exons_dir, dups_anc = dups_anc, 
                                mech_type = parameters$mech_type, selected_organisms = parameters$selected_organisms)
           }, error = function(e) {
-            cat("ERROR in Duplication Mechanism.", file = status_file_path, sep = "\n", append = TRUE)
+            cat("ERROR in Duplication Mechanism.", message = e$message, file = status_file_path, sep = "\n", append = TRUE)
             stop()
           })
           
@@ -439,7 +443,7 @@ main_run_workflow <- function(selected_models, parameters) {
           tryCatch({
             main_go(all_copies, file_organism_table)
           }, error = function(e) {
-            cat("ERROR in Gene Ontology.", file = status_file_path, sep = "\n", append = TRUE)
+            cat("ERROR in Gene Ontology.", message = e$message, file = status_file_path, sep = "\n", append = TRUE)
             stop()
           })
           
@@ -470,7 +474,7 @@ main_run_workflow <- function(selected_models, parameters) {
     main_get_misc_results(dups, prot_output_dir, nuc_output_dir, 
                           raw_dup_mechanism_output_file_path = raw_dup_mechanism_output_file_path)
   }, error = function(e) {
-    cat("ERROR in final analyses.", file = status_file_path, sep = "\n", append = TRUE)
+    cat("ERROR in final analyses.", message = e$message, file = status_file_path, sep = "\n", append = TRUE)
     stop()
   })
   
@@ -488,7 +492,6 @@ main_run_workflow <- function(selected_models, parameters) {
   cat('Workflow completed!', file = status_file_path, sep = "\n", append = TRUE)
   
 }
-
 
 
 
@@ -530,7 +533,7 @@ main_get_relevant_parameter_list <- function(selected_models, parameters) {
     "AlphaFold" = "alphafold_db",
     "CDROM" = "CDROM",
     "EVE Diversity/Divergence" = "diversity_divergence",
-    "Dn/Ds" = "dnds",
+    "dN/dS" = "dnds",
     "Duplication Mechanism" = "duplication_mechanism",
     "EVE Expression Shift" = "expression_shift",
     "Gene Ontology" = "go",
@@ -538,9 +541,10 @@ main_get_relevant_parameter_list <- function(selected_models, parameters) {
     "Post-duplication Fates" = "postduplication_fates"
   )
   
-  selected_models <- sapply(selected_models, function(x) {
-    if (x %in% names(rename_map)) rename_map[[x]] else x
-  })
+  model_names <- unlist(rename_map)
+  matched <- selected_models %in% names(rename_map)
+  selected_models <- ifelse(matched, model_names[selected_models], selected_models)
+  
   
   
   

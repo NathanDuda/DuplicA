@@ -2,6 +2,7 @@
 ############################################################
 # Change this to your path:
 path_to_duplica <- '/app'
+#path_to_duplica <- "C:/Users/NathanD/Downloads/DuplicA/app"
 
 #wsl_path_to_duplica <- "/mnt/c/Users/NathanD/Downloads/DuplicA"
 ############################################################

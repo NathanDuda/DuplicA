@@ -1,4 +1,21 @@
 
+
+
+make_temp_dirs <- function(replace_dirs, temp_dir_list) {
+  
+  create_or_replace_dir <- function(dir_path) {
+    if (replace_dirs == T) {system(paste0('wsl ', 'rm -rf ', dir_path), intern = TRUE)}
+    system(paste0('wsl ', 'mkdir -p ', dir_path), intern = TRUE)
+  }
+  
+  # create each directory
+  for (temp_dir in temp_dir_list) {
+    create_or_replace_dir(paste0(here_linux_temp, temp_dir))
+  }
+}
+
+
+
 # this function allows two to two to twos
 get_two_to_two_pairs_from_OF <- function(OF_dir_path) {
 

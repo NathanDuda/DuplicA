@@ -135,6 +135,7 @@ get_best_pdb_for_gene <- function(avail_data, output_directory, gene) {
 
 
 main_alphafold <- function(all_copies, file_organism_table) {
+  colnames(file_organism_table)[2] <- 'organism_scientific_name'
   file_organism_table$organism_scientific_name <- gsub('_', ' ', file_organism_table$organism_scientific_name)
   
   

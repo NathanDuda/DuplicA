@@ -24,12 +24,14 @@ const VisualizationComponent = () => {
                 const initialParams = {};
                 Object.entries(data).forEach(([key, config]) => {
                     const type = Array.isArray(config.type) ? config.type[0] : config.type;
+                    
                     if (type === "boolean") {
-                        initialParams[key] = !!config.default;
+                        initialParams[key] = false;
                     } else {
                         initialParams[key] = config.default ?? "";
                     }
                 });
+
                 
                 setParams(initialParams);
             } catch (err) {
@@ -54,14 +56,15 @@ const VisualizationComponent = () => {
     
         Object.keys(options).forEach((key) => {
             let value = updatedParams[key];
-    
+        
             // Ensure select inputs always have a value
             if (!value && options[key].type[0] === "select" && options[key].options.length > 0) {
                 value = options[key].options[0];
             }
-    
+        
             formattedParams[key] = value === "" ? null : value;
         });
+        
     
         fetch("http://localhost:8001/makeImage", {
             method: "POST",

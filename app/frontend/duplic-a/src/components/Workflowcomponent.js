@@ -19,7 +19,7 @@ const initialNodes = [
     {
         id: "1",
         type: "custom",
-        position: { x: -950, y: 420 },
+        position: { x: -990, y: 320 },
         data: {
             title: "Get Public Data",
             buttonLabel: "Public Datasets",
@@ -32,7 +32,7 @@ const initialNodes = [
     {
         id: "2",
         type: "custom",
-        position: { x: -600, y: 420 },
+        position: { x: -690, y: 320 },
         data: {
             title: "Detect Duplications",
             buttonLabel: "OrthoFinder",
@@ -45,7 +45,7 @@ const initialNodes = [
     {
         id: "3",
         type: "custom",
-        position: { x: -200, y: 60 },
+        position: { x: -370, y: 80 },
         data: {
             title: "Functional Models",
             buttonLabel: [
@@ -65,7 +65,7 @@ const initialNodes = [
     {
         id: "4",
         type: "custom",
-        position: { x: -200, y: 570 },
+        position: { x: -370, y: 570 },
         data: {
             title: "Mechanism Models",
             buttonLabel: "Duplication Mechanism",
@@ -78,10 +78,10 @@ const initialNodes = [
     {
         id: "5",
         type: "custom",
-        position: { x: -200, y: 390 },
+        position: { x: -370, y: 400 },
         data: {
             title: "Selection Models",
-            buttonLabel: ["Dn/Ds", "EVE Diversity/Divergence"],
+            buttonLabel: ["dN/dS", "EVE Diversity/Divergence"],
             onModelSelect: null,
             selectedModels: [],
             hasLeft: true,

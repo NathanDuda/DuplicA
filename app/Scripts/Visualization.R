@@ -7,7 +7,7 @@ generate_figure <- function(data,
                             
                             figure_type = NULL,
                             x = NULL,
-                            x = NULL,
+                            y = NULL,
                             color_groups = NULL,
                             separate_figure = NULL,
                             
