@@ -33,7 +33,7 @@ status_file_path <- paste0(here_duplica, '/status/status.txt')
 # parameters$add_pseudofunc <- T
 # parameters$missing_expr_is_zero <- F
 # parameters$rm_exp_lower_than <- 1
-# parameters$min_dups_per_species_pair_custom <- 10
+# parameters$min_dups_per_species_pair <- 10
 # 
 # parameters$use_absolute_exp = T
 # parameters$PC = F
@@ -122,6 +122,13 @@ status_file_path <- paste0(here_duplica, '/status/status.txt')
 
 main_run_workflow <- function(selected_models, parameters) {
   
+  parameters$exp_path <- parameters$expression_directory
+  parameters$missing_expr_is_zero <- FALSE
+  parameters$normalization_type <- NA
+  parameters$add_pseudofunc <- T
+  parameters$PC <- F
+  parameters$rm_exp_lower_than <- parameters$exp_cutoff
+  
   # rename models 
   rename_map <- list(
     "AlphaFold" = "alphafold_db",
@@ -171,6 +178,10 @@ main_run_workflow <- function(selected_models, parameters) {
     public_datasets_dir <- paste0(here_results, '/public_datasets_output/')
     if(dir.exists(public_datasets_dir)) {dir_delete(public_datasets_dir)}
     result_dir <- paste0(here_results, '/Fastas/')
+    if(dir.exists(result_dir)) {dir_delete(result_dir)}
+    result_dir <- paste0(here_results, '/Fastas/Nucleotide_Fastas/')
+    if(dir.exists(result_dir)) {dir_delete(result_dir)}
+    result_dir <- paste0(here_results, '/Fastas/Protein_Fastas/')
     if(dir.exists(result_dir)) {dir_delete(result_dir)}
     
     kept_transcript_dir <- paste0(here_results, '/Fastas/kept_transcript/')
@@ -251,8 +262,6 @@ main_run_workflow <- function(selected_models, parameters) {
     parameters$missing_expr_is_zero <- NA
     parameters$rm_exp_lower_than <- NA
   }
-  
-  
   
   tryCatch({
     out <- main_get_dups_anc_exp_from_OF(OF_dir_path = of_output_dir, 
@@ -357,14 +366,14 @@ main_run_workflow <- function(selected_models, parameters) {
   
     plan(multisession, workers = parallel::detectCores() - 1)  
     
-    future_map(parallel_models, function(model) {
+    future_map(selected_parallel_models, function(model) {
       if (model %in% selected_models) {
         
         if (model == 'CDROM') {
           tryCatch({
             main_CDROM(dups = dups, dups_anc = dups_anc, clean_expression = clean_expression, 
                        OF_dir_path = of_output_dir, add_pseudofunc = parameters$add_pseudofunc,
-                       PC = parameters$PC, min_dups_per_species_pair = parameters$min_dups_per_species_pair_custom,
+                       PC = parameters$PC, min_dups_per_species_pair = parameters$min_dups_per_species_pair,
                        useAbsExpr = parameters$use_absolute_exp, pseudo = pseudo)
           }, error = function(e) {
             cat("ERROR in CDROM.", message = e$message, file = status_file_path, sep = "\n", append = TRUE)

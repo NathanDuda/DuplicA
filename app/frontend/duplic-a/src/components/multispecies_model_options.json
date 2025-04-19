@@ -251,7 +251,7 @@
     "default": false
   },
   "expression_directory": {
-    "type": "directory",
-    "label": "Folder of Expression Data"
+    "type": "file",
+    "label": "Expression Data File:"
   }
 }

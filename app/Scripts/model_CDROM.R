@@ -620,11 +620,7 @@ main_CDROM <- function(dups, dups_anc, clean_expression, OF_dir_path, add_pseudo
                   exprFile2 = out3$exp_2_input,
                   PC = PC,
                   useAbsExpr = useAbsExpr)
-    
-    
-    out4$EDiv_values
-    out4$EuclideanDistanceDensities
-    out4$ClassificationCross
+
     
     if (PC == F) {
       func <- out4$classes %>%

@@ -65,6 +65,17 @@ Change `/path/to/your/data_folder` to the actual path to your data.
 &nbsp;
 ## Troubleshooting
 
+### **Error: `Cannot connect to the Docker daemon at unix:///var/run/docker.sock`**
+
+**Solution:**
+
+Run docker daemon:
+
+```sh
+sudo service docker start 
+```
+
+
 ### **Error: `permission denied while trying to connect to the Docker daemon`**
 
 **Solution:**

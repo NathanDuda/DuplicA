@@ -193,7 +193,10 @@ const Workflowcomponent = () => {
                 if (parameterOptions[param]) {
                     acc[param] = {
                         ...parameterOptions[param],
-                        value: updatedParams[param]?.value ?? parameterOptions[param].default ?? "",
+                        value: updatedParams[param]?.value !== undefined
+                                ? updatedParams[param].value
+                                : parameterOptions[param]?.default ?? "",
+
                     };
                 }
                 return acc;

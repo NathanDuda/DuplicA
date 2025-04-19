@@ -61,7 +61,6 @@ runWorkflow <- function(req, selected_models, parameters) {
   #parameters <- body$parameters
   
   
-  
   selected_models <- as.character(unlist(selected_models))
 
   main_run_workflow(selected_models, parameters)
@@ -73,7 +72,7 @@ runWorkflow <- function(req, selected_models, parameters) {
 #* Delete the generated image file
 #* @post /deleteImage
 deleteImage <- function() {
-  file_path <- paste0(here_duplica, '/app/status/Figure.png')
+  file_path <- paste0(here_duplica, '/status/Figure.png')
   
   # delete the file
   if (file.exists(file_path)) {file.remove(file_path)}
