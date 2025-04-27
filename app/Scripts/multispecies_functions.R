@@ -115,8 +115,10 @@ clean_exp_and_pseudo <- function(exp_path, dups, normalization_type, add_pseudof
   
   
   # format expression file 
-  all_expression[all_expression < exp_cutoff] <- 0 
-  colnames(all_expression)[1] <- 'id'
+  all_expression <- all_expression %>%
+    mutate(across(-1, ~ as.numeric(.))) %>%
+    mutate(across(-1, ~ ifelse(. < as.numeric(exp_cutoff), 0, .))) %>%
+    rename(id = 1)
   
   clean_expression <- all_expression
   pseudo <- NA
@@ -448,6 +450,10 @@ cat_all_in_dir <- function(dir, file_type = 'delim') {
     if(file_type == 'aa_fasta'){
       output_file_one <- readAAStringSet(file)
       output_file_one <- as.data.frame(output_file_one)
+      if (colnames(output_file_one) == 'x') {
+        output_file_one  <- output_file_one %>% rownames_to_column('id')
+        colnames(output_file_one) <- c('id', 'aa_seq')
+      }
     }
     
     if(file_type == 'nuc_fasta'){

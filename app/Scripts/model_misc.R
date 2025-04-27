@@ -4,8 +4,9 @@ get_prot_length <- function(dups, prot_output_dir) {
   prot_fasta_table <- cat_all_in_dir(dir = prot_output_dir, file_type = 'aa_fasta')
   
   prot_lengths <- prot_fasta_table %>%
-    rename(aa_seq = colnames(.)) %>%
-    mutate(id = rownames(.)) %>%
+    #as.data.frame() %>%
+    #rename(aa_seq = 1) %>%
+    #mutate(id = rownames(.)) %>%
     mutate(aa_length = nchar(aa_seq)) %>%
     dplyr::select(id, aa_length)
   
@@ -50,7 +51,10 @@ get_misc_exon_counts <- function(dups, raw_dup_mechanism_output_file_path) {
 
 
 main_get_misc_results <- function(dups, prot_output_dir, nuc_output_dir = NULL, raw_dup_mechanism_output_file_path = NULL) {
-  dups <- get_prot_length(dups, prot_output_dir)
+  
+  if(!is.null(prot_output_dir)) {
+    dups <- get_prot_length(dups, prot_output_dir)
+  }
   
   if(!is.null(nuc_output_dir)) {
     dups <- get_gc_content_AND_cpg_count(dups, nuc_output_dir)

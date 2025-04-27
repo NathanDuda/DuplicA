@@ -5,8 +5,10 @@ import_if_exists <- function(file_name) {
 
 
 merge_by_gene <- function(dups, data_to_add, prefix, merge_by_each) {
+  orig_colnames_data_to_add <- colnames(data_to_add)
+  orig_colnames_data_to_add <- gsub('aa_length', 'prot_length', orig_colnames_data_to_add)
   for (merge_col in merge_by_each) {
-    colnames(data_to_add) <- c(merge_col, paste0(prefix, '_', merge_col))
+    colnames(data_to_add) <- c(merge_col, paste0(orig_colnames_data_to_add[-1], '_', merge_col))
     dups <- left_join(dups, data_to_add, by = merge_col)
   }
   return(dups)

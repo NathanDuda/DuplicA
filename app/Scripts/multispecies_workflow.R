@@ -14,6 +14,8 @@ source(paste0(here_duplica, '/Scripts/model_duplication_mechanism.R'))
 source(paste0(here_duplica, '/Scripts/model_misc.R'))
 source(paste0(here_duplica, '/Scripts/model_GO.R'))
 source(paste0(here_duplica, '/Scripts/tool_ID_conversion.R'))
+source(paste0(here_duplica, '/Scripts/Visualization_functions.R'))
+source(paste0(here_duplica, '/Scripts/Visualization.R'))
 
 # source dependencies for eve model
 source(paste0(here_duplica, '/Dependencies/EVE/initParamsTwoTheta_gene_tree.R'))
@@ -162,7 +164,8 @@ main_run_workflow <- function(selected_models, parameters) {
     }
   }
   
-  
+  prot_output_dir <- parameters$protein_folder
+  print(prot_output_dir)
   
   # split strings into lists 
   if (!is.null(parameters$selected_organisms)) {parameters$selected_organisms <- split_into_list(parameters$selected_organisms)}
@@ -478,7 +481,7 @@ main_run_workflow <- function(selected_models, parameters) {
   
   if(!exists('prot_output_dir')) {prot_output_dir <- NULL}
   if(!exists('nuc_output_dir')) {nuc_output_dir <- NULL}
-  
+
   tryCatch({
     main_get_misc_results(dups, prot_output_dir, nuc_output_dir, 
                           raw_dup_mechanism_output_file_path = raw_dup_mechanism_output_file_path)

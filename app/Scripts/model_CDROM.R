@@ -42,7 +42,7 @@ get_CDROM_inputs <- function(spec_pair, dups_anc, all_sc_genes, clean_expression
   # get duplicate gene input (CPA columns) and sc gene input (two ortholog columns)
   dups_for_spec_pair <- dups_anc %>%
     mutate(species_pair = paste0(duplicate_pair_species, ancestral_species)) %>% 
-    filter(species_pair == spec_pair) 
+    filter(species_pair == spec_pair)
   
   ################################
   # unit tests
