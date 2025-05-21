@@ -5,7 +5,7 @@
   <a href="https://github.com/NathanDuda/DuplicA">
     <img src="app/Static/Images/DuplicA_logo.png" alt="Logo">
   </a>
-    <h3 align="center">A user-friendly software for the comprehensive analysis of duplicate genes</h3>
+    <h3 align="center">A phylogenomic toolkit for duplicate gene analysis.</h3>
 </div>
 
 
