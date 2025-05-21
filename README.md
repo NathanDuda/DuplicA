@@ -63,6 +63,45 @@ Change `/path/to/your/data_folder` to the actual path to your data.
 
 
 &nbsp;
+## Tutorial
+
+### Home Page
+**Browse and filter available models**<br>
+<img src="app/Static/Tutorial/Home_Demo_Filter.gif" width="60%" height="60%">
+
+**View information about a selected model**<br>
+<img src="app/Static/Tutorial/Home_Demo_Model_Page.gif" width="60%" height="60%">
+
+---
+
+### Run a Workflow 
+**Select models to include in your workflow**<br>
+<img src="app/Static/Tutorial/Workflow_Demo_Model_Selection.gif" width="60%" height="60%">
+
+**Exclude models and required inputs update automatically**<br>
+<img src="app/Static/Tutorial/Workflow_Demo_Model_Deselection.gif" width="60%" height="60%">
+
+**Upload your data**<br>
+<img src="app/Static/Tutorial/Workflow_Demo_Input.gif" width="60%" height="60%">
+
+**Execute the workflow**<br>
+<img src="app/Static/Tutorial/Run_Workflow_Demo.gif" width="60%" height="60%">
+
+**Monitor progress and status updates**<br>
+<img src="app/Static/Tutorial/Workflow_Progress.gif" width="60%" height="60%">
+
+---
+
+### Analyze Workflow Results
+**Easily generate custom figures from your results**<br>
+<img src="app/Static/Tutorial/Example_Analysis_Boxplot.png" width="60%" height="60%">
+
+**Choose from multiple figure types**<br>
+<img src="app/Static/Tutorial/Example_Analysis_Scatterplot.png" width="60%" height="60%">
+
+
+
+&nbsp;
 ## Troubleshooting
 
 ### **Error: `Cannot connect to the Docker daemon at unix:///var/run/docker.sock`**
